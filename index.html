@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MonProf.ai</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <header>
+    <h1>MonProf.ai</h1>
+    <nav>
+      <button onclick="showModule('roster')">Classe</button>
+      <button onclick="showModule('observations')">Observations</button>
+      <button onclick="showModule('productions')">Productions</button>
+      <button onclick="showModule('bulletins')">Bulletins</button>
+    </nav>
+  </header>
+
+  <main id="app">
+    <div id="module-roster"></div>
+    <div id="module-observations" style="display:none"></div>
+    <div id="module-productions" style="display:none"></div>
+    <div id="module-bulletins" style="display:none"></div>
+  </main>
+
+  <script src="roster.js"></script>
+  <script src="observations.js"></script>
+  <script src="productions.js"></script>
+  <script src="bulletins.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
