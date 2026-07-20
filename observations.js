@@ -4,7 +4,6 @@
 
 var OBS_KEY = 'monprofai_observations';
 
-// Load all observations from localStorage
 function getObservations() {
   try {
     var data = localStorage.getItem(OBS_KEY);
@@ -14,7 +13,6 @@ function getObservations() {
   }
 }
 
-// Save all observations to localStorage
 function saveObservations(obs) {
   try {
     localStorage.setItem(OBS_KEY, JSON.stringify(obs));
@@ -23,16 +21,16 @@ function saveObservations(obs) {
   }
 }
 
-// Add a new observation entry
-function addObservation(studentCode, type, domaine, note) {
+function addObservation(studentCode, type, domaine, note, pending) {
   var obs = getObservations();
   var entry = {
     id: Date.now(),
     studentCode: studentCode,
-    type: type,           // 'observation' or 'conversation'
-    domaine: domaine,     // 'A', 'B', 'C', 'D' (or subject for grades 1-6 later)
-    note: note,
-    date: new Date().toISOString().slice(0, 10),  // YYYY-MM-DD
+    type: type,
+    domaine: domaine,
+    note: note || '',
+    pending: pending || false,
+    date: new Date().toISOString().slice(0, 10),
     timestamp: Date.now()
   };
   obs.push(entry);
@@ -40,14 +38,11 @@ function addObservation(studentCode, type, domaine, note) {
   return entry;
 }
 
-// Delete an observation by id
 function deleteObservation(id) {
-  var obs = getObservations();
-  obs = obs.filter(function(o) { return o.id !== id; });
+  var obs = getObservations().filter(function(o) { return o.id !== id; });
   saveObservations(obs);
 }
 
-// Get observations for one student
 function getObservationsForStudent(studentCode) {
   return getObservations().filter(function(o) {
     return o.studentCode === studentCode;
@@ -55,7 +50,7 @@ function getObservationsForStudent(studentCode) {
 }
 
 // ============================================================
-// RENDER OBSERVATIONS MODULE
+// RENDER
 // ============================================================
 
 function renderObservations() {
@@ -71,9 +66,18 @@ function renderObservations() {
     return;
   }
 
+  var pendingCount = getPendingCount();
   var html = '<h2>Observations et conversations</h2>';
 
-  // ---- CAPTURE FORM ----
+  // Pending transcription banner
+  if (pendingCount > 0) {
+    html += '<div class="pending-banner">';
+    html += '⏳ ' + pendingCount + ' note(s) vocale(s) en attente de transcription. ';
+    html += '<button onclick="handleProcessQueue()">Transcrire maintenant</button>';
+    html += '</div>';
+  }
+
+  // Capture form
   html += '<div id="obs-form">';
   html += '<h3>Nouvelle entrée</h3>';
 
@@ -107,16 +111,30 @@ function renderObservations() {
   html += '</div>';
   html += '<input type="hidden" id="obs-domaine" value="A">';
 
-  // Note
+  // Note + mic
   html += '<div class="form-row">';
   html += '<label>Note</label>';
-  html += '<textarea id="obs-note" rows="3" placeholder="Décrivez ce que vous avez observé ou entendu..."></textarea>';
+  html += '<textarea id="obs-note" rows="3" placeholder="Tapez votre note ou utilisez le micro ci-dessous..."></textarea>';
   html += '</div>';
 
-  html += '<button onclick="submitObsForm()">Enregistrer</button>';
-  html += '</div>'; // end obs-form
+  // Mic button
+  html += '<div class="mic-row">';
+  html += '<button id="btn-mic" class="mic-btn" onclick="toggleRecording()">🎤 Dicter</button>';
+  html += '<span id="mic-status" class="mic-status"></span>';
+  html += '</div>';
 
-  // ---- HISTORY ----
+  // Google notice (shown once)
+  if (!localStorage.getItem('monprofai_voice_notice')) {
+    html += '<div class="voice-notice" id="voice-notice">';
+    html += '⚠️ La transcription vocale utilise le service Google. Aucun nom de famille n\'est transmis. ';
+    html += '<button onclick="dismissVoiceNotice()">Compris</button>';
+    html += '</div>';
+  }
+
+  html += '<button onclick="submitObsForm()">Enregistrer</button>';
+  html += '</div>';
+
+  // History
   html += '<div id="obs-history">';
   html += renderObsHistory();
   html += '</div>';
@@ -124,14 +142,16 @@ function renderObservations() {
   container.innerHTML = html;
 }
 
-// Set observation type (toggle buttons)
+// ============================================================
+// FORM CONTROLS
+// ============================================================
+
 function setObsType(type) {
   document.getElementById('obs-type').value = type;
   document.getElementById('btn-type-obs').className = 'type-btn' + (type === 'observation' ? ' active' : '');
   document.getElementById('btn-type-conv').className = 'type-btn' + (type === 'conversation' ? ' active' : '');
 }
 
-// Set domain (toggle buttons)
 function setDomaine(d) {
   document.getElementById('obs-domaine').value = d;
   ['A','B','C','D'].forEach(function(x) {
@@ -139,7 +159,90 @@ function setDomaine(d) {
   });
 }
 
-// Submit the observation form
+function dismissVoiceNotice() {
+  localStorage.setItem('monprofai_voice_notice', 'seen');
+  var notice = document.getElementById('voice-notice');
+  if (notice) notice.style.display = 'none';
+}
+
+// ============================================================
+// RECORDING
+// ============================================================
+
+function toggleRecording() {
+  if (isRecording) {
+    stopRecording(function(blob) {
+      var micBtn = document.getElementById('btn-mic');
+      var micStatus = document.getElementById('mic-status');
+      if (micBtn) {
+        micBtn.textContent = '🎤 Dicter';
+        micBtn.classList.remove('recording');
+      }
+
+      if (navigator.onLine) {
+        // Online — transcribe immediately
+        if (micStatus) micStatus.textContent = 'Transcription en cours...';
+        var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+          var recognition = new SpeechRecognition();
+          recognition.lang = 'fr-FR';
+          recognition.continuous = true;
+          recognition.interimResults = false;
+          var url = URL.createObjectURL(blob);
+          var audio = new Audio(url);
+          recognition.onresult = function(e) {
+            var transcript = Array.from(e.results)
+              .map(function(r) { return r[0].transcript; })
+              .join(' ');
+            var noteField = document.getElementById('obs-note');
+            if (noteField) noteField.value = transcript;
+            if (micStatus) micStatus.textContent = '✓ Transcrit';
+            URL.revokeObjectURL(url);
+          };
+          recognition.onerror = function() {
+            if (micStatus) micStatus.textContent = 'Erreur de transcription.';
+            URL.revokeObjectURL(url);
+          };
+          recognition.start();
+          audio.play();
+        }
+      } else {
+        // Offline — save audio for later
+        var audioId = 'audio_' + Date.now();
+        saveAudioBlob(audioId, blob).then(function() {
+          // Save observation as pending
+          var studentCode = document.getElementById('obs-student').value;
+          var type = document.getElementById('obs-type').value;
+          var domaine = document.getElementById('obs-domaine').value;
+          if (!studentCode) {
+            alert('Veuillez sélectionner un élève avant de dicter.');
+            return;
+          }
+          var entry = addObservation(studentCode, type, domaine, '⏳ Note vocale en attente de transcription...', true);
+          addToAudioQueue(entry.id, audioId);
+          if (micStatus) micStatus.textContent = '⏳ Sauvegardé — transcription à la maison';
+          document.getElementById('obs-history').innerHTML = renderObsHistory();
+        });
+      }
+    });
+  } else {
+    startRecording(
+      function() {
+        var micBtn = document.getElementById('btn-mic');
+        var micStatus = document.getElementById('mic-status');
+        if (micBtn) {
+          micBtn.textContent = '⏹ Arrêter';
+          micBtn.classList.add('recording');
+        }
+        if (micStatus) micStatus.textContent = '🔴 Enregistrement...';
+      },
+      function(err) {
+        alert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
+      }
+    );
+  }
+}
+
 function submitObsForm() {
   var studentCode = document.getElementById('obs-student').value;
   var type = document.getElementById('obs-type').value;
@@ -151,17 +254,36 @@ function submitObsForm() {
     return;
   }
   if (!note) {
-    alert('Veuillez entrer une note.');
+    alert('Veuillez entrer une note ou dicter un message.');
     return;
   }
 
-  addObservation(studentCode, type, domaine, note);
+  addObservation(studentCode, type, domaine, note, false);
   document.getElementById('obs-note').value = '';
   document.getElementById('obs-student').value = '';
   document.getElementById('obs-history').innerHTML = renderObsHistory();
 }
 
-// Render the observation history list
+function handleProcessQueue() {
+  if (!navigator.onLine) {
+    alert('Aucune connexion internet détectée. Veuillez réessayer à la maison.');
+    return;
+  }
+  processPendingQueue(
+    function(done, total) {
+      console.log('Transcribed ' + done + ' of ' + total);
+    },
+    function(total) {
+      alert(total + ' note(s) transcrite(s) avec succès!');
+      renderObservations();
+    }
+  );
+}
+
+// ============================================================
+// HISTORY
+// ============================================================
+
 function renderObsHistory() {
   var obs = getObservations();
   var roster = getRoster();
@@ -170,27 +292,51 @@ function renderObsHistory() {
     return '<p><em>Aucune entrée pour le moment.</em></p>';
   }
 
-  // Sort newest first
   obs = obs.slice().sort(function(a, b) { return b.timestamp - a.timestamp; });
 
   var html = '<h3>Entrées récentes (' + obs.length + ')</h3>';
   html += '<table class="obs-table">';
-  html += '<tr><th>Date</th><th>Élève</th><th>Type</th><th>Domaine</th><th>Note</th><th></th></tr>';
+  html += '<tr><th>Date</th><th>Élève</th><th>Type</th><th>Dom.</th><th>Note</th><th></th></tr>';
 
   obs.forEach(function(o) {
     var student = roster.find(function(s) { return s.code === o.studentCode; });
     var name = student ? displayName(student) : o.studentCode;
     var typeLabel = o.type === 'conversation' ? '💬' : '👁';
+    var noteDisplay = o.pending
+      ? '<em class="pending-note">⏳ En attente de transcription</em>'
+      : '<span class="editable-note" onclick="editObsNote(' + o.id + ')">' + o.note + '</span>';
+
     html += '<tr>';
     html += '<td>' + o.date + '</td>';
     html += '<td>' + name + '</td>';
     html += '<td>' + typeLabel + '</td>';
     html += '<td><strong>' + o.domaine + '</strong></td>';
-    html += '<td>' + o.note + '</td>';
-    html += '<td><button class="btn-delete" onclick="deleteObservation(' + o.id + '); document.getElementById(\'obs-history\').innerHTML = renderObsHistory();">✕</button></td>';
+    html += '<td>' + noteDisplay + '</td>';
+    html += '<td><button class="btn-delete" onclick="deleteObsEntry(' + o.id + ')">✕</button></td>';
     html += '</tr>';
   });
 
   html += '</table>';
   return html;
+}
+
+function editObsNote(id) {
+  var obs = getObservations();
+  var entry = obs.find(function(o) { return o.id === id; });
+  if (!entry) return;
+
+  var newNote = prompt('Modifier la note:', entry.note);
+  if (newNote === null) return;
+
+  obs = obs.map(function(o) {
+    if (o.id === id) o.note = newNote.trim();
+    return o;
+  });
+  saveObservations(obs);
+  document.getElementById('obs-history').innerHTML = renderObsHistory();
+}
+
+function deleteObsEntry(id) {
+  deleteObservation(id);
+  document.getElementById('obs-history').innerHTML = renderObsHistory();
 }
