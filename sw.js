@@ -3,16 +3,17 @@
 // ============================================================
 
 var CACHE_NAME = 'monprofai-v1';
+var BASE = '/monprofai-app/';
 var FILES_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/app.js',
-  '/roster.js',
-  '/observations.js',
-  '/productions.js',
-  '/bulletins.js',
-  '/audio-queue.js',
-  '/styles.css'
+  BASE,
+  BASE + 'index.html',
+  BASE + 'app.js',
+  BASE + 'roster.js',
+  BASE + 'observations.js',
+  BASE + 'productions.js',
+  BASE + 'bulletins.js',
+  BASE + 'audio-queue.js',
+  BASE + 'styles.css'
 ];
 
 // Install: cache all app files
