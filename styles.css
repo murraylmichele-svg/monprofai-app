@@ -105,3 +105,107 @@ button:hover {
 .roster-table tr:hover {
   background: #f9fdf9;
 }
+/* Observations module */
+.obs-type-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.type-btn {
+  background: white;
+  color: #2d5a3d;
+  border: 2px solid #2d5a3d;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.type-btn.active {
+  background: #2d5a3d;
+  color: white;
+}
+
+.domaine-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.domaine-btn {
+  background: white;
+  color: #2d5a3d;
+  border: 2px solid #2d5a3d;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.domaine-btn.active {
+  background: #2d5a3d;
+  color: white;
+}
+
+textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: system-ui, sans-serif;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #2d5a3d;
+  font-size: 13px;
+}
+
+.obs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.obs-table th, .obs-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: top;
+}
+
+.obs-table th {
+  background: #e8f4ec;
+  color: #2d5a3d;
+  font-weight: 600;
+}
+
+.btn-delete {
+  background: #c0392b;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-delete:hover {
+  background: #96281b;
+}
+
+#obs-form {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
