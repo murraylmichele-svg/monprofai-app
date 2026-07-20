@@ -26,10 +26,26 @@
   </main>
 
   <script src="roster.js"></script>
+  <script src="audio-queue.js"></script>
   <script src="observations.js"></script>
   <script src="productions.js"></script>
   <script src="bulletins.js"></script>
   <script src="app.js"></script>
+
+  <script>
+    // Register service worker for offline support
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/monprofai-app/sw.js')
+          .then(function(reg) {
+            console.log('Service worker registered:', reg.scope);
+          })
+          .catch(function(err) {
+            console.log('Service worker registration failed:', err);
+          });
+      });
+    }
+  </script>
 
 </body>
 </html>
