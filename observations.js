@@ -170,77 +170,80 @@ function dismissVoiceNotice() {
 // ============================================================
 
 function toggleRecording() {
-  if (isRecording) {
-    stopRecording(function(blob) {
-      var micBtn = document.getElementById('btn-mic');
-      var micStatus = document.getElementById('mic-status');
-      if (micBtn) {
-        micBtn.textContent = '🎤 Dicter';
-        micBtn.classList.remove('recording');
-      }
+  var micBtn = document.getElementById('btn-mic');
+  var micStatus = document.getElementById('mic-status');
+  var noteField = document.getElementById('obs-note');
 
-      if (navigator.onLine) {
-        // Online — transcribe immediately
-        if (micStatus) micStatus.textContent = 'Transcription en cours...';
-        var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-          var recognition = new SpeechRecognition();
-          recognition.lang = 'fr-FR';
-          recognition.continuous = true;
-          recognition.interimResults = false;
-          var url = URL.createObjectURL(blob);
-          var audio = new Audio(url);
-          recognition.onresult = function(e) {
-            var transcript = Array.from(e.results)
-              .map(function(r) { return r[0].transcript; })
-              .join(' ');
-            var noteField = document.getElementById('obs-note');
-            if (noteField) noteField.value = transcript;
-            if (micStatus) micStatus.textContent = '✓ Transcrit';
-            URL.revokeObjectURL(url);
-          };
-          recognition.onerror = function() {
-            if (micStatus) micStatus.textContent = 'Erreur de transcription.';
-            URL.revokeObjectURL(url);
-          };
-          recognition.start();
-          audio.play();
-        }
-      } else {
-        // Offline — save audio for later
-        var audioId = 'audio_' + Date.now();
-        saveAudioBlob(audioId, blob).then(function() {
-          // Save observation as pending
-          var studentCode = document.getElementById('obs-student').value;
-          var type = document.getElementById('obs-type').value;
-          var domaine = document.getElementById('obs-domaine').value;
-          if (!studentCode) {
-            alert('Veuillez sélectionner un élève avant de dicter.');
-            return;
-          }
-          var entry = addObservation(studentCode, type, domaine, '⏳ Note vocale en attente de transcription...', true);
-          addToAudioQueue(entry.id, audioId);
-          if (micStatus) micStatus.textContent = '⏳ Sauvegardé — transcription à la maison';
-          document.getElementById('obs-history').innerHTML = renderObsHistory();
-        });
-      }
-    });
-  } else {
-    startRecording(
-      function() {
-        var micBtn = document.getElementById('btn-mic');
-        var micStatus = document.getElementById('mic-status');
-        if (micBtn) {
-          micBtn.textContent = '⏹ Arrêter';
-          micBtn.classList.add('recording');
-        }
-        if (micStatus) micStatus.textContent = '🔴 Enregistrement...';
-      },
-      function(err) {
-        alert('Impossible d\'accéder au microphone. Vérifiez les permissions.');
-      }
-    );
+  if (isRecording) {
+    // Stop recording
+    if (mediaRecorder) {
+      stopRecording(function() {});
+    }
+    isRecording = false;
+    if (micBtn) {
+      micBtn.textContent = '🎤 Dicter';
+      micBtn.classList.remove('recording');
+    }
+    if (micStatus) micStatus.textContent = '';
+    return;
   }
+
+  // Check for Speech Recognition support
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('La dictée vocale n\'est pas supportée dans ce navigateur. Utilisez Chrome.');
+    return;
+  }
+
+  if (!navigator.onLine) {
+    if (micStatus) micStatus.textContent = '⚠️ Hors ligne — tapez votre note manuellement.';
+    return;
+  }
+
+  // Start live speech recognition
+  var recognition = new SpeechRecognition();
+  recognition.lang = 'fr-FR';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  recognition.onstart = function() {
+    isRecording = true;
+    if (micBtn) {
+      micBtn.textContent = '⏹ Arrêter';
+      micBtn.classList.add('recording');
+    }
+    if (micStatus) micStatus.textContent = '🔴 Enregistrement...';
+  };
+
+  recognition.onresult = function(e) {
+    var transcript = '';
+    for (var i = 0; i < e.results.length; i++) {
+      transcript += e.results[i][0].transcript;
+    }
+    if (noteField) noteField.value = transcript;
+  };
+
+  recognition.onend = function() {
+    isRecording = false;
+    if (micBtn) {
+      micBtn.textContent = '🎤 Dicter';
+      micBtn.classList.remove('recording');
+    }
+    if (micStatus) micStatus.textContent = '✓ Terminé';
+  };
+
+  recognition.onerror = function(e) {
+    isRecording = false;
+    if (micBtn) {
+      micBtn.textContent = '🎤 Dicter';
+      micBtn.classList.remove('recording');
+    }
+    if (micStatus) micStatus.textContent = 'Erreur: ' + e.error;
+  };
+
+  recognition.start();
+  // Store reference to stop it later
+  window._activeRecognition = recognition;
 }
 
 function submitObsForm() {
