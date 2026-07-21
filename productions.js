@@ -588,3 +588,124 @@ async function loadProductionPhotoIntoContainer(productionId, photoId) {
   var objectUrl = URL.createObjectURL(mediaRecord.blob);
   photoContainer.innerHTML = '<img src="' + objectUrl + '" class="production-photo-thumb" alt="Photo de production">';
 }
+// ============================================================
+// productions.js — MonProf.ai
+// PART 4 of 4: Per-activity coverage grid — READ ONLY
+// ============================================================
+// APPEND this to the END of your productions.js file, after
+// Parts 1, 2, and 3. Also make the 2 small edits described
+// separately (setup button, dispatcher).
+//
+// Depends on:
+//   - Part 1 functions: getAllProductions(), getProductionsByActivity()
+//   - roster.js: getRoster(), displayName()
+//   - Part 3 functions: formatProductionDate()
+// ============================================================
+
+function switchToProductionGrid() {
+  productionViewMode = 'grid';
+  renderProductions();
+}
+
+async function getDistinctActivityTags() {
+  var all = await getAllProductions();
+  var latestByTag = {};
+
+  all.forEach(function(p) {
+    if (!p.activityTag) return;
+    if (!latestByTag[p.activityTag] || p.createdAt > latestByTag[p.activityTag]) {
+      latestByTag[p.activityTag] = p.createdAt;
+    }
+  });
+
+  var tags = Object.keys(latestByTag);
+  tags.sort(function(a, b) {
+    return latestByTag[b].localeCompare(latestByTag[a]); // most recent activity first
+  });
+
+  return tags;
+}
+
+async function renderProductionGridScreen(container) {
+  var html = '<h2>Productions</h2>';
+  html += '<button onclick="switchToProductionSetup()">Retour</button>';
+  html += '<h3>Couverture par activité</h3>';
+  html += '<div id="grid-select-area"><p>Chargement des activités...</p></div>';
+  html += '<div id="production-grid-results"></div>';
+
+  container.innerHTML = html;
+
+  var tags = await getDistinctActivityTags();
+  var selectArea = document.getElementById('grid-select-area');
+  if (!selectArea) return; // user navigated away before this finished loading
+
+  if (tags.length === 0) {
+    selectArea.innerHTML = '<p>Aucune activité enregistrée pour le moment.</p>';
+    return;
+  }
+
+  var selectHtml = '<div class="form-row">';
+  selectHtml += '<label for="grid-activity-select">Choisir une activité: </label>';
+  selectHtml += '<select id="grid-activity-select" onchange="loadAndRenderActivityGrid(this.value)">';
+  selectHtml += '<option value="">-- Sélectionner --</option>';
+  tags.forEach(function(tag) {
+    selectHtml += '<option value="' + tag + '">' + tag + '</option>';
+  });
+  selectHtml += '</select>';
+  selectHtml += '</div>';
+
+  selectArea.innerHTML = selectHtml;
+}
+
+async function loadAndRenderActivityGrid(activityTag) {
+  var resultsContainer = document.getElementById('production-grid-results');
+  if (!resultsContainer) return;
+
+  if (!activityTag) {
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  resultsContainer.innerHTML = '<p>Chargement...</p>';
+
+  var roster = getRoster();
+  var activeStudents = roster.filter(function(s) { return s.actif; });
+  var entries = await getProductionsByActivity(activityTag);
+
+  // Build studentCode -> { count, lastDate } lookup
+  var coverage = {};
+  entries.forEach(function(e) {
+    if (!coverage[e.studentCode]) {
+      coverage[e.studentCode] = { count: 0, lastDate: e.createdAt };
+    }
+    coverage[e.studentCode].count++;
+    if (e.createdAt > coverage[e.studentCode].lastDate) {
+      coverage[e.studentCode].lastDate = e.createdAt;
+    }
+  });
+
+  var coveredCount = activeStudents.filter(function(s) { return coverage[s.code]; }).length;
+
+  var html = '<p><strong>' + coveredCount + ' sur ' + activeStudents.length + '</strong> élèves ont une entrée pour cette activité.</p>';
+  html += '<table class="production-grid-table">';
+  html += '<tr><th>Élève</th><th>Statut</th><th>Entrées</th><th>Dernière</th></tr>';
+
+  activeStudents.forEach(function(s) {
+    var info = coverage[s.code];
+    html += '<tr>';
+    html += '<td>' + displayName(s) + '</td>';
+    if (info) {
+      html += '<td>✓</td>';
+      html += '<td>' + info.count + '</td>';
+      html += '<td>' + formatProductionDate(info.lastDate) + '</td>';
+    } else {
+      html += '<td class="production-grid-missing">✗ Manquant</td>';
+      html += '<td>0</td>';
+      html += '<td>—</td>';
+    }
+    html += '</tr>';
+  });
+
+  html += '</table>';
+  resultsContainer.innerHTML = html;
+}
