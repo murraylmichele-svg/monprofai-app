@@ -258,6 +258,8 @@ function renderProductions() {
     renderProductionCaptureScreen(container);
   } else if (productionViewMode === 'history') {
     renderProductionHistoryScreen(container);
+  } else if (productionViewMode === 'grid') {
+    renderProductionGridScreen(container);
   } else {
     renderProductionSetupScreen(container);
   }
@@ -282,7 +284,8 @@ function renderProductionSetupScreen(container) {
   html += '</select>';
   html += '</div>';
   html += '<button onclick="startProductionSession()">Commencer la séance</button> ';
-  html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button>';
+  html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
+  html += '<button onclick="switchToProductionGrid()">Voir la couverture par activité</button>';
   html += '</div>';
 
   container.innerHTML = html;
