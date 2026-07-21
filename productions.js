@@ -773,3 +773,37 @@ async function loadAndRenderActivityGrid(activityTag) {
   html += '</table>';
   resultsContainer.innerHTML = html;
 }
+// ============================================================
+// productions.js — MonProf.ai
+// PART 5 of 7: Live progress chip strip + jump-to-edit
+// ============================================================
+// APPEND this to the END of your productions.js file.
+// Also make Edits 1-6 described separately — this part changes
+// several existing functions, not just adds new ones.
+// ============================================================
+
+function renderProductionChipStrip() {
+  var html = '<div class="production-chip-strip">';
+
+  productionSession.studentList.forEach(function(s, i) {
+    var isCurrent = (i === productionSession.currentIndex);
+    var isDone = !!productionSession.entryMap[s.code];
+    var cssClass = 'production-chip';
+    if (isCurrent) cssClass += ' production-chip-current';
+    if (isDone) cssClass += ' production-chip-done';
+
+    var prefix = isDone ? '✓ ' : '';
+    html += '<span class="' + cssClass + '" onclick="jumpToProductionStudent(' + i + ')">';
+    html += prefix + displayName(s);
+    html += '</span> ';
+  });
+
+  html += '</div>';
+  return html;
+}
+
+function jumpToProductionStudent(index) {
+  productionSession.currentIndex = index;
+  productionSession.currentPhotoFile = null;
+  renderProductions();
+}
