@@ -246,6 +246,7 @@ var productionSession = {
   currentPhotoFile: null,  // File object from the camera input, or null
   savedCount: 0
 };
+var productionViewMode = 'setup'; // 'setup' | 'history'
 
 // ---- MAIN ENTRY POINT (called by app.js) ----
 
