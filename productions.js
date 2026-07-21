@@ -399,34 +399,75 @@ function handleProductionPhotoSelect(event) {
 function getSelectedProductionLevel() {
   var radios = document.getElementsByName('input-level');
   for (var i = 0; i < radios.length; i++) {
-    if (radios[i].checked) return radios[i].value || null;
+    if (radios[i].checked) return radios[i].value;
   }
-  return null;
+  return '';
 }
 
 function saveProductionEntry() {
   var student = productionSession.studentList[productionSession.currentIndex];
   var noteInput = document.getElementById('input-note');
-  var note = noteInput ? noteInput.value.trim() : '';
-  var level = getSelectedProductionLevel();
-  var photoBlobs = productionSession.currentPhotoFile ? [productionSession.currentPhotoFile] : [];
+  var newNoteText = noteInput ? noteInput.value.trim() : '';
+  var levelSelection = getSelectedProductionLevel();
+  var newPhotoFile = productionSession.currentPhotoFile;
+  var existing = productionSession.entryMap[student.code];
 
-  addProduction({
-    studentCode: student.code,
-    domain: productionSession.domain,
-    note: note,
-    level: level,
-    activityTag: productionSession.activityTag,
-    photoBlobs: photoBlobs
-  }).then(function() {
-    productionSession.savedCount++;
-    advanceProductionSession();
-  }).catch(function(err) {
-    alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
-    console.error(err);
-  });
+  if (existing) {
+    var mergedNote = newNoteText ? (existing.note ? existing.note + ' | ' + newNoteText : newNoteText) : existing.note;
+    var mergedLevel = (levelSelection === '__keep__') ? existing.level : (levelSelection || null);
+
+    var afterPhoto;
+    if (newPhotoFile) {
+      afterPhoto = saveProductionPhoto(existing.id, newPhotoFile).then(function(newPhotoId) {
+        return existing.photoIds.concat([newPhotoId]);
+      });
+    } else {
+      afterPhoto = Promise.resolve(existing.photoIds);
+    }
+
+    afterPhoto.then(function(mergedPhotoIds) {
+      return updateProduction(existing.id, {
+        note: mergedNote,
+        level: mergedLevel,
+        photoIds: mergedPhotoIds
+      }).then(function() {
+        productionSession.entryMap[student.code] = {
+          id: existing.id,
+          note: mergedNote,
+          level: mergedLevel,
+          photoIds: mergedPhotoIds
+        };
+        advanceProductionSession();
+      });
+    }).catch(function(err) {
+      alert('Erreur lors de la mise à jour. Veuillez réessayer.');
+      console.error(err);
+    });
+
+  } else {
+    var levelToSave = (levelSelection === '__keep__') ? null : (levelSelection || null);
+    addProduction({
+      studentCode: student.code,
+      domain: productionSession.domain,
+      note: newNoteText,
+      level: levelToSave,
+      activityTag: productionSession.activityTag,
+      photoBlobs: newPhotoFile ? [newPhotoFile] : []
+    }).then(function(record) {
+      productionSession.savedCount++;
+      productionSession.entryMap[student.code] = {
+        id: record.id,
+        note: record.note,
+        level: record.level,
+        photoIds: record.photoIds
+      };
+      advanceProductionSession();
+    }).catch(function(err) {
+      alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
+      console.error(err);
+    });
+  }
 }
-
 function skipProductionEntry() {
   advanceProductionSession();
 }
@@ -446,10 +487,12 @@ function endProductionSession() {
 
 function renderProductionSummaryScreen(container) {
   var html = '<h2>Productions</h2>';
+  html += renderProductionChipStrip();
   html += '<div id="production-summary">';
   html += '<h3>Séance terminée</h3>';
   html += '<p>Activité: <strong>' + productionSession.activityTag + '</strong></p>';
   html += '<p>' + productionSession.savedCount + ' entrée(s) enregistrée(s).</p>';
+  html += '<p><em>Touchez un nom ci-dessus pour ajouter des informations.</em></p>';
   html += '<button onclick="resetProductionSession()">Nouvelle séance</button>';
   html += '</div>';
 
