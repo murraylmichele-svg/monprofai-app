@@ -244,7 +244,8 @@ var productionSession = {
   studentList: [],   // active students only, snapshot at session start
   currentIndex: 0,
   currentPhotoFile: null,  // File object from the camera input, or null
-  savedCount: 0
+  savedCount: 0,
+  entryMap: {}        // studentCode -> {id, note, level, photoIds} for THIS session
 };
 var productionViewMode = 'setup'; // 'setup' | 'history'
 
@@ -316,6 +317,7 @@ function startProductionSession() {
   productionSession.currentIndex = 0;
   productionSession.currentPhotoFile = null;
   productionSession.savedCount = 0;
+  productionSession.entryMap = {};
 
   renderProductions();
 }
@@ -332,34 +334,52 @@ function renderProductionCaptureScreen(container) {
   }
 
   var student = productionSession.studentList[idx];
+  var existingEntry = productionSession.entryMap[student.code];
 
   var html = '<h2>Productions</h2>';
   html += '<p class="production-activity-label">Activité: <strong>' + productionSession.activityTag + '</strong>';
   html += ' &nbsp; | &nbsp; Domaine: <strong>' + productionSession.domain + '</strong>';
   html += ' &nbsp; | &nbsp; Élève ' + (idx + 1) + ' sur ' + total + '</p>';
 
+  html += renderProductionChipStrip();
+
   html += '<div id="production-capture">';
   html += '<h3>' + displayName(student) + '</h3>';
 
+  if (existingEntry) {
+    html += '<div class="production-existing-box">';
+    html += '<p><strong>Déjà enregistré pour cette activité:</strong></p>';
+    html += '<p>Note existante: ' + (existingEntry.note || '(vide)') + '</p>';
+    html += '<p>Niveau actuel: ' + getLevelLabel(existingEntry.level) + '</p>';
+    html += '<p>Photos existantes: ' + existingEntry.photoIds.length + '</p>';
+    html += '<p><em>Ce que vous ajoutez ci-dessous s\'ajoutera à cette entrée.</em></p>';
+    html += '</div>';
+  }
+
   html += '<div class="form-row">';
-  html += '<label>Photo (optionnelle):</label><br>';
+  html += '<label>' + (existingEntry ? 'Ajouter une photo' : 'Photo') + ' (optionnelle):</label><br>';
   html += '<input type="file" accept="image/*" capture="environment" id="input-photo" onchange="handleProductionPhotoSelect(event)">';
   html += '<span id="photo-status"></span>';
   html += '</div>';
 
   html += '<div class="form-row">';
-  html += '<textarea id="input-note" placeholder="Qu\'est-ce que cette production démontre?" rows="3" maxlength="500"></textarea>';
+  html += '<textarea id="input-note" placeholder="' + (existingEntry ? 'Ajouter à la note...' : 'Qu\'est-ce que cette production démontre?') + '" rows="3" maxlength="500"></textarea>';
   html += '</div>';
 
   html += '<div class="form-row">';
   html += '<label>Niveau interne (facultatif, jamais montré aux parents):</label><br>';
-  html += '<label><input type="radio" name="input-level" value=""> Pas de niveau</label> ';
+  if (existingEntry) {
+    html += '<label><input type="radio" name="input-level" value="__keep__" checked> Ne pas changer</label> ';
+    html += '<label><input type="radio" name="input-level" value=""> Aucun niveau</label> ';
+  } else {
+    html += '<label><input type="radio" name="input-level" value="" checked> Pas de niveau</label> ';
+  }
   html += '<label><input type="radio" name="input-level" value="emergent"> Émergent</label> ';
   html += '<label><input type="radio" name="input-level" value="developing"> En développement</label> ';
   html += '<label><input type="radio" name="input-level" value="confirmed"> Confirmé</label>';
   html += '</div>';
 
-  html += '<button onclick="saveProductionEntry()">Enregistrer et suivant</button> ';
+  html += '<button onclick="saveProductionEntry()">' + (existingEntry ? 'Ajouter et suivant' : 'Enregistrer et suivant') + '</button> ';
   html += '<button onclick="skipProductionEntry()">Passer cet élève</button> ';
   html += '<button onclick="endProductionSession()">Terminer la séance</button>';
   html += '</div>';
@@ -443,6 +463,7 @@ function resetProductionSession() {
   productionSession.currentIndex = 0;
   productionSession.currentPhotoFile = null;
   productionSession.savedCount = 0;
+  productionSession.entryMap = {};
   renderProductions();
 }
 // ============================================================
