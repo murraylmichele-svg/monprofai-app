@@ -254,10 +254,12 @@ function renderProductions() {
   var container = document.getElementById('module-productions');
   if (!container) return;
 
-  if (!productionSession.active) {
-    renderProductionSetupScreen(container);
-  } else {
+  if (productionSession.active) {
     renderProductionCaptureScreen(container);
+  } else if (productionViewMode === 'history') {
+    renderProductionHistoryScreen(container);
+  } else {
+    renderProductionSetupScreen(container);
   }
 }
 
@@ -279,7 +281,8 @@ function renderProductionSetupScreen(container) {
   html += '<option value="D">D - Appartenance et contribution</option>';
   html += '</select>';
   html += '</div>';
-  html += '<button onclick="startProductionSession()">Commencer la séance</button>';
+  html += '<button onclick="startProductionSession()">Commencer la séance</button> ';
+  html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button>';
   html += '</div>';
 
   container.innerHTML = html;
@@ -438,4 +441,147 @@ function resetProductionSession() {
   productionSession.currentPhotoFile = null;
   productionSession.savedCount = 0;
   renderProductions();
+}
+// ============================================================
+// productions.js — MonProf.ai
+// PART 3 of 4: Per-student timeline (history) view — READ ONLY
+// ============================================================
+// APPEND this to the END of your productions.js file, after
+// Part 1 and Part 2. Also make the 3 small edits described
+// separately (state variable, dispatcher, setup button).
+//
+// Depends on:
+//   - Part 1 functions: getProductionsByStudent(), getProductionPhoto()
+//   - roster.js: getRoster(), displayName()
+// ============================================================
+
+function getDomainLabel(domain) {
+  var labels = {
+    A: 'A - Langue et mathématiques fondamentales',
+    B: 'B - Résolution de problèmes et innovation',
+    C: 'C - Autorégulation et bien-être',
+    D: 'D - Appartenance et contribution'
+  };
+  return labels[domain] || domain;
+}
+
+function getLevelLabel(level) {
+  var labels = {
+    emergent: 'Émergent',
+    developing: 'En développement',
+    confirmed: 'Confirmé'
+  };
+  return level ? (labels[level] || level) : 'Pas de niveau';
+}
+
+function formatProductionDate(isoString) {
+  var d = new Date(isoString);
+  return d.toLocaleDateString('fr-CA') + ' ' + d.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' });
+}
+
+function switchToProductionHistory() {
+  productionViewMode = 'history';
+  renderProductions();
+}
+
+function switchToProductionSetup() {
+  productionViewMode = 'setup';
+  renderProductions();
+}
+
+// ---- HISTORY SCREEN ----
+
+function renderProductionHistoryScreen(container) {
+  var roster = getRoster();
+  var activeStudents = roster.filter(function(s) { return s.actif; });
+
+  var html = '<h2>Productions</h2>';
+  html += '<button onclick="switchToProductionSetup()">Retour</button>';
+  html += '<h3>Historique par élève</h3>';
+
+  if (activeStudents.length === 0) {
+    html += '<p>Aucun élève actif dans la liste de classe.</p>';
+    container.innerHTML = html;
+    return;
+  }
+
+  html += '<div class="form-row">';
+  html += '<label for="history-student-select">Choisir un élève: </label>';
+  html += '<select id="history-student-select" onchange="loadAndRenderStudentHistory(this.value)">';
+  html += '<option value="">-- Sélectionner --</option>';
+  activeStudents.forEach(function(s) {
+    html += '<option value="' + s.code + '">' + displayName(s) + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div id="production-history-results"></div>';
+
+  container.innerHTML = html;
+}
+
+async function loadAndRenderStudentHistory(code) {
+  var resultsContainer = document.getElementById('production-history-results');
+  if (!resultsContainer) return;
+
+  if (!code) {
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  resultsContainer.innerHTML = '<p>Chargement...</p>';
+
+  var entries = await getProductionsByStudent(code);
+
+  if (entries.length === 0) {
+    resultsContainer.innerHTML = '<p>Aucune production enregistrée pour cet élève.</p>';
+    return;
+  }
+
+  // Newest first for reading
+  entries = entries.slice().reverse();
+
+  var html = '<table class="production-history-table">';
+
+  for (var i = 0; i < entries.length; i++) {
+    var entry = entries[i];
+    html += '<tr class="production-entry">';
+    html += '<td class="production-entry-cell">';
+    html += '<p><strong>' + formatProductionDate(entry.createdAt) + '</strong></p>';
+    html += '<p>' + getDomainLabel(entry.domain) + '</p>';
+    if (entry.activityTag) {
+      html += '<p><em>' + entry.activityTag + '</em></p>';
+    }
+    if (entry.note) {
+      html += '<p>' + entry.note + '</p>';
+    }
+    html += '<p>Niveau interne: ' + getLevelLabel(entry.level) + '</p>';
+
+    if (entry.photoIds && entry.photoIds.length > 0) {
+      html += '<div class="production-photo-container" id="photo-container-' + entry.id + '"><em>Chargement de la photo...</em></div>';
+    }
+
+    html += '</td>';
+    html += '</tr>';
+  }
+
+  html += '</table>';
+  resultsContainer.innerHTML = html;
+
+  // Load photos after the HTML is in place, one at a time
+  for (var j = 0; j < entries.length; j++) {
+    var e = entries[j];
+    if (e.photoIds && e.photoIds.length > 0) {
+      loadProductionPhotoIntoContainer(e.id, e.photoIds[0]);
+    }
+  }
+}
+
+async function loadProductionPhotoIntoContainer(productionId, photoId) {
+  var mediaRecord = await getProductionPhoto(photoId);
+  var photoContainer = document.getElementById('photo-container-' + productionId);
+  if (!photoContainer || !mediaRecord || !mediaRecord.blob) return;
+
+  var objectUrl = URL.createObjectURL(mediaRecord.blob);
+  photoContainer.innerHTML = '<img src="' + objectUrl + '" class="production-photo-thumb" alt="Photo de production">';
 }
