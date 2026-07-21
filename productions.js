@@ -223,3 +223,218 @@ async function deleteProduction(productionId) {
     tx.onerror = () => reject(tx.error);
   });
 }
+// ============================================================
+// productions.js — MonProf.ai
+// PART 2 of 4: Capture UI (batch / activity mode)
+// ============================================================
+// APPEND this to the END of your existing productions.js.
+// Do NOT replace the file — Part 1 (data layer) must stay above this.
+//
+// Depends on:
+//   - Part 1 functions: addProduction()
+//   - roster.js: getRoster(), displayName()
+//   - app.js: calls renderProductions() when tab is clicked
+//   - HTML container: <div id="module-productions"></div>
+// ============================================================
+
+var productionSession = {
+  active: false,
+  activityTag: '',
+  domain: 'A',
+  studentList: [],   // active students only, snapshot at session start
+  currentIndex: 0,
+  currentPhotoFile: null,  // File object from the camera input, or null
+  savedCount: 0
+};
+
+// ---- MAIN ENTRY POINT (called by app.js) ----
+
+function renderProductions() {
+  var container = document.getElementById('module-productions');
+  if (!container) return;
+
+  if (!productionSession.active) {
+    renderProductionSetupScreen(container);
+  } else {
+    renderProductionCaptureScreen(container);
+  }
+}
+
+// ---- SCREEN 1: SETUP ----
+
+function renderProductionSetupScreen(container) {
+  var html = '<h2>Productions</h2>';
+  html += '<div id="production-setup">';
+  html += '<h3>Nouvelle séance</h3>';
+  html += '<div class="form-row">';
+  html += '<input type="text" id="input-activity-tag" placeholder="Nom de l\'activité (ex: Suites de couleurs)" maxlength="80">';
+  html += '</div>';
+  html += '<div class="form-row">';
+  html += '<label for="input-domain">Domaine: </label>';
+  html += '<select id="input-domain">';
+  html += '<option value="A">A - Langue et mathématiques fondamentales</option>';
+  html += '<option value="B">B - Résolution de problèmes et innovation</option>';
+  html += '<option value="C">C - Autorégulation et bien-être</option>';
+  html += '<option value="D">D - Appartenance et contribution</option>';
+  html += '</select>';
+  html += '</div>';
+  html += '<button onclick="startProductionSession()">Commencer la séance</button>';
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function startProductionSession() {
+  var tagInput = document.getElementById('input-activity-tag');
+  var domainInput = document.getElementById('input-domain');
+  var tag = tagInput.value.trim();
+
+  if (!tag) {
+    alert('Veuillez nommer l\'activité avant de commencer.');
+    return;
+  }
+
+  var roster = getRoster();
+  var activeStudents = roster.filter(function(s) { return s.actif; });
+
+  if (activeStudents.length === 0) {
+    alert('Aucun élève actif dans la liste de classe.');
+    return;
+  }
+
+  productionSession.active = true;
+  productionSession.activityTag = tag;
+  productionSession.domain = domainInput.value;
+  productionSession.studentList = activeStudents;
+  productionSession.currentIndex = 0;
+  productionSession.currentPhotoFile = null;
+  productionSession.savedCount = 0;
+
+  renderProductions();
+}
+
+// ---- SCREEN 2: CAPTURE LOOP ----
+
+function renderProductionCaptureScreen(container) {
+  var idx = productionSession.currentIndex;
+  var total = productionSession.studentList.length;
+
+  if (idx >= total) {
+    renderProductionSummaryScreen(container);
+    return;
+  }
+
+  var student = productionSession.studentList[idx];
+
+  var html = '<h2>Productions</h2>';
+  html += '<p class="production-activity-label">Activité: <strong>' + productionSession.activityTag + '</strong>';
+  html += ' &nbsp; | &nbsp; Domaine: <strong>' + productionSession.domain + '</strong>';
+  html += ' &nbsp; | &nbsp; Élève ' + (idx + 1) + ' sur ' + total + '</p>';
+
+  html += '<div id="production-capture">';
+  html += '<h3>' + displayName(student) + '</h3>';
+
+  html += '<div class="form-row">';
+  html += '<label>Photo (optionnelle):</label><br>';
+  html += '<input type="file" accept="image/*" capture="environment" id="input-photo" onchange="handleProductionPhotoSelect(event)">';
+  html += '<span id="photo-status"></span>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<textarea id="input-note" placeholder="Qu\'est-ce que cette production démontre?" rows="3" maxlength="500"></textarea>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Niveau interne (facultatif, jamais montré aux parents):</label><br>';
+  html += '<label><input type="radio" name="input-level" value=""> Pas de niveau</label> ';
+  html += '<label><input type="radio" name="input-level" value="emergent"> Émergent</label> ';
+  html += '<label><input type="radio" name="input-level" value="developing"> En développement</label> ';
+  html += '<label><input type="radio" name="input-level" value="confirmed"> Confirmé</label>';
+  html += '</div>';
+
+  html += '<button onclick="saveProductionEntry()">Enregistrer et suivant</button> ';
+  html += '<button onclick="skipProductionEntry()">Passer cet élève</button> ';
+  html += '<button onclick="endProductionSession()">Terminer la séance</button>';
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function handleProductionPhotoSelect(event) {
+  var file = event.target.files[0];
+  productionSession.currentPhotoFile = file || null;
+  var status = document.getElementById('photo-status');
+  if (status) {
+    status.textContent = file ? ' Photo sélectionnée.' : '';
+  }
+}
+
+function getSelectedProductionLevel() {
+  var radios = document.getElementsByName('input-level');
+  for (var i = 0; i < radios.length; i++) {
+    if (radios[i].checked) return radios[i].value || null;
+  }
+  return null;
+}
+
+function saveProductionEntry() {
+  var student = productionSession.studentList[productionSession.currentIndex];
+  var noteInput = document.getElementById('input-note');
+  var note = noteInput ? noteInput.value.trim() : '';
+  var level = getSelectedProductionLevel();
+  var photoBlobs = productionSession.currentPhotoFile ? [productionSession.currentPhotoFile] : [];
+
+  addProduction({
+    studentCode: student.code,
+    domain: productionSession.domain,
+    note: note,
+    level: level,
+    activityTag: productionSession.activityTag,
+    photoBlobs: photoBlobs
+  }).then(function() {
+    productionSession.savedCount++;
+    advanceProductionSession();
+  }).catch(function(err) {
+    alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
+    console.error(err);
+  });
+}
+
+function skipProductionEntry() {
+  advanceProductionSession();
+}
+
+function advanceProductionSession() {
+  productionSession.currentIndex++;
+  productionSession.currentPhotoFile = null;
+  renderProductions();
+}
+
+function endProductionSession() {
+  var container = document.getElementById('module-productions');
+  renderProductionSummaryScreen(container);
+}
+
+// ---- SCREEN 3: SUMMARY ----
+
+function renderProductionSummaryScreen(container) {
+  var html = '<h2>Productions</h2>';
+  html += '<div id="production-summary">';
+  html += '<h3>Séance terminée</h3>';
+  html += '<p>Activité: <strong>' + productionSession.activityTag + '</strong></p>';
+  html += '<p>' + productionSession.savedCount + ' entrée(s) enregistrée(s).</p>';
+  html += '<button onclick="resetProductionSession()">Nouvelle séance</button>';
+  html += '</div>';
+
+  container.innerHTML = html;
+}
+
+function resetProductionSession() {
+  productionSession.active = false;
+  productionSession.activityTag = '';
+  productionSession.studentList = [];
+  productionSession.currentIndex = 0;
+  productionSession.currentPhotoFile = null;
+  productionSession.savedCount = 0;
+  renderProductions();
+}
