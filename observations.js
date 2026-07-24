@@ -443,3 +443,52 @@ function renderObsAttentionView(container) {
 
   container.innerHTML = html;
 }
+// ============================================================
+// observations.js — MonProf.ai
+// PART O3: Domain coverage grid (who has 0 entries in A/B/C/D)
+// ============================================================
+// APPEND this to the END of your observations.js file, after
+// Part O2. Also make the 1 small edit described separately
+// (second nav button).
+//
+// Depends on:
+//   - getObservations(), getRoster(), displayName() — already in your files
+// ============================================================
+
+function switchToObsDomainView() {
+  var container = document.getElementById('module-observations');
+  if (!container) return;
+  renderObsDomainView(container);
+}
+
+function renderObsDomainView(container) {
+  var roster = getRoster().filter(function(s) { return s.actif; });
+  var allObs = getObservations();
+  var domains = ['A', 'B', 'C', 'D'];
+
+  var html = '<h2>Observations et conversations</h2>';
+  html += '<button onclick="switchToObsCapture()">Retour à la capture</button>';
+  html += '<h3>Couverture par domaine</h3>';
+  html += '<p>✓ indique au moins une entrée dans ce domaine pour cet élève.</p>';
+
+  html += '<table class="obs-domain-table">';
+  html += '<tr><th>Élève</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
+
+  roster.forEach(function(s) {
+    var studentObs = allObs.filter(function(o) { return o.studentCode === s.code; });
+    var coveredDomains = {};
+    studentObs.forEach(function(o) { coveredDomains[o.domaine] = true; });
+
+    html += '<tr>';
+    html += '<td>' + displayName(s) + '</td>';
+    domains.forEach(function(d) {
+      var hasEntry = !!coveredDomains[d];
+      html += '<td class="' + (hasEntry ? '' : 'obs-domain-missing') + '">' + (hasEntry ? '✓' : '') + '</td>';
+    });
+    html += '</tr>';
+  });
+
+  html += '</table>';
+
+  container.innerHTML = html;
+}
