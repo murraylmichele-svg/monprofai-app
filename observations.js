@@ -112,6 +112,12 @@ function renderObservations() {
   html += '</div>';
   html += '<input type="hidden" id="obs-domaine" value="A">';
 
+  // Activity tag (optional)
+  html += '<div class="form-row">';
+  html += '<label>Activité (facultatif)</label>';
+  html += '<input type="text" id="obs-activity" placeholder="ex: Cercle du matin" maxlength="80">';
+  html += '</div>';
+
   // Note + mic
   html += '<div class="form-row">';
   html += '<label>Note</label>';
