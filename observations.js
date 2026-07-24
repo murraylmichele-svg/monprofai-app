@@ -258,6 +258,7 @@ function submitObsForm() {
   var type = document.getElementById('obs-type').value;
   var domaine = document.getElementById('obs-domaine').value;
   var note = document.getElementById('obs-note').value.trim();
+  var activityTag = document.getElementById('obs-activity').value.trim();
 
   if (!studentCode) {
     alert('Veuillez sélectionner un élève.');
@@ -268,7 +269,7 @@ function submitObsForm() {
     return;
   }
 
-  addObservation(studentCode, type, domaine, note, false);
+  addObservation(studentCode, type, domaine, note, false, activityTag);
   document.getElementById('obs-note').value = '';
   document.getElementById('obs-student').value = '';
   document.getElementById('obs-history').innerHTML = renderObsHistory();
