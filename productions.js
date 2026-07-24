@@ -286,7 +286,7 @@ function renderProductionSetupScreen(container) {
   html += '</div>';
   html += '<button onclick="startProductionSession()">Commencer la séance</button> ';
   html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
-  html += '<button onclick="switchToProductionGrid()">Voir la couverture par activité</button>';
+  html += '<button onclick="switchToProductionGrid()">Suivi par activité</button>';
   html += '</div>';
 
   html += '<div id="production-recent-list"><p><em>Chargement...</em></p></div>';
