@@ -810,3 +810,76 @@ function jumpToProductionStudent(index) {
   productionSession.currentPhotoFile = null;
   renderProductions();
 }
+// ============================================================
+// productions.js — MonProf.ai
+// ADDITION: Recent entries list on the main Productions screen
+// ============================================================
+// APPEND this to the END of your productions.js file.
+// Also make the 1 edit described separately (setup screen).
+//
+// Depends on:
+//   - getAllProductions(), getProductionPhoto() — Part 1
+//   - formatProductionDate() — Part 3
+//   - getRoster(), displayName() — roster.js
+// ============================================================
+
+var PRODUCTION_RECENT_LIST_LIMIT = 15;
+
+async function loadAndRenderRecentProductions() {
+  var container = document.getElementById('production-recent-list');
+  if (!container) return;
+
+  var all = await getAllProductions();
+  if (!container) return; // guard again in case user navigated away during the await
+
+  if (all.length === 0) {
+    container.innerHTML = '<p><em>Aucune entrée pour le moment.</em></p>';
+    return;
+  }
+
+  var roster = getRoster();
+  all = all.slice().sort(function(a, b) { return b.createdAt.localeCompare(a.createdAt); });
+  var recent = all.slice(0, PRODUCTION_RECENT_LIST_LIMIT);
+
+  var html = '<h3>Entrées récentes (' + all.length + ')</h3>';
+  html += '<table class="production-recent-table">';
+  html += '<tr><th>Date</th><th>Élève</th><th>Dom.</th><th>Activité</th><th>Note</th><th>Photo</th></tr>';
+
+  recent.forEach(function(p) {
+    var student = roster.find(function(s) { return s.code === p.studentCode; });
+    var name = student ? displayName(student) : p.studentCode;
+
+    html += '<tr>';
+    html += '<td>' + formatProductionDate(p.createdAt) + '</td>';
+    html += '<td>' + name + '</td>';
+    html += '<td><strong>' + p.domain + '</strong></td>';
+    html += '<td>' + (p.activityTag || '') + '</td>';
+    html += '<td>' + (p.note || '') + '</td>';
+    if (p.photoIds && p.photoIds.length > 0) {
+      html += '<td><span id="recent-photo-' + p.id + '"><em>...</em></span></td>';
+    } else {
+      html += '<td></td>';
+    }
+    html += '</tr>';
+  });
+
+  html += '</table>';
+  container.innerHTML = html;
+
+  recent.forEach(function(p) {
+    if (p.photoIds && p.photoIds.length > 0) {
+      loadRecentProductionThumbnail(p.id, p.photoIds[0]);
+    }
+  });
+}
+
+async function loadRecentProductionThumbnail(productionId, photoId) {
+  var span = document.getElementById('recent-photo-' + productionId);
+  if (!span) return;
+
+  var mediaRecord = await getProductionPhoto(photoId);
+  if (!span || !mediaRecord || !mediaRecord.blob) return;
+
+  var objectUrl = URL.createObjectURL(mediaRecord.blob);
+  span.innerHTML = '<img src="' + objectUrl + '" alt="Photo" style="max-width:50px; max-height:50px; object-fit:cover; border-radius:4px; cursor:pointer;" onclick="window.open(\'' + objectUrl + '\', \'_blank\')">';
+}
