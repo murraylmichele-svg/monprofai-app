@@ -289,7 +289,10 @@ function renderProductionSetupScreen(container) {
   html += '<button onclick="switchToProductionGrid()">Voir la couverture par activité</button>';
   html += '</div>';
 
+  html += '<div id="production-recent-list"><p><em>Chargement...</em></p></div>';
+
   container.innerHTML = html;
+  loadAndRenderRecentProductions();
 }
 
 function startProductionSession() {
