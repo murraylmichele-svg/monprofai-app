@@ -307,7 +307,7 @@ function renderObsHistory() {
 
   var html = '<h3>Entrées récentes (' + obs.length + ')</h3>';
   html += '<table class="obs-table">';
-  html += '<tr><th>Date</th><th>Élève</th><th>Type</th><th>Dom.</th><th>Note</th><th></th></tr>';
+  html += '<tr><th>Date</th><th>Élève</th><th>Type</th><th>Dom.</th><th>Activité</th><th>Note</th><th></th></tr>';
 
   obs.forEach(function(o) {
     var student = roster.find(function(s) { return s.code === o.studentCode; });
@@ -322,6 +322,7 @@ function renderObsHistory() {
     html += '<td>' + name + '</td>';
     html += '<td>' + typeLabel + '</td>';
     html += '<td><strong>' + o.domaine + '</strong></td>';
+    html += '<td>' + (o.activityTag || '') + '</td>';
     html += '<td>' + noteDisplay + '</td>';
     html += '<td><button class="btn-delete" onclick="deleteObsEntry(' + o.id + ')">✕</button></td>';
     html += '</tr>';
