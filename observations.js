@@ -21,7 +21,7 @@ function saveObservations(obs) {
   }
 }
 
-function addObservation(studentCode, type, domaine, note, pending) {
+function addObservation(studentCode, type, domaine, note, pending, activityTag) {
   var obs = getObservations();
   var entry = {
     id: Date.now(),
@@ -30,6 +30,7 @@ function addObservation(studentCode, type, domaine, note, pending) {
     domaine: domaine,
     note: note || '',
     pending: pending || false,
+    activityTag: activityTag || '',
     date: new Date().toISOString().slice(0, 10),
     timestamp: Date.now()
   };
