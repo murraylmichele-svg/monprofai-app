@@ -69,6 +69,7 @@ function renderObservations() {
 
   var pendingCount = getPendingCount();
   var html = '<h2>Observations et conversations</h2>';
+  html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</button>';
 
   // Pending transcription banner
   if (pendingCount > 0) {
