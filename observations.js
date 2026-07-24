@@ -353,3 +353,92 @@ function deleteObsEntry(id) {
   deleteObservation(id);
   document.getElementById('obs-history').innerHTML = renderObsHistory();
 }
+// ============================================================
+// observations.js — MonProf.ai
+// PART O2: "Besoin d'attention" — time-based coverage view
+// ============================================================
+// APPEND this to the END of your observations.js file.
+// Also make the 1 small edit described separately (nav button).
+//
+// Depends on:
+//   - getObservations(), getRoster(), displayName() — already in your files
+// ============================================================
+
+var ATTENTION_THRESHOLD_SCHOOL_DAYS = 10;
+
+// Count school days (Mon-Fri) strictly between two dates (exclusive of the start date)
+function countSchoolDaysBetween(startDateStr, endDate) {
+  var start = new Date(startDateStr + 'T00:00:00');
+  var count = 0;
+  var cursor = new Date(start);
+  cursor.setDate(cursor.getDate() + 1);
+
+  while (cursor <= endDate) {
+    var day = cursor.getDay(); // 0 = Sunday, 6 = Saturday
+    if (day !== 0 && day !== 6) {
+      count++;
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return count;
+}
+
+function switchToObsAttentionView() {
+  var container = document.getElementById('module-observations');
+  if (!container) return;
+  renderObsAttentionView(container);
+}
+
+function switchToObsCapture() {
+  renderObservations();
+}
+
+function renderObsAttentionView(container) {
+  var roster = getRoster().filter(function(s) { return s.actif; });
+  var allObs = getObservations();
+  var today = new Date();
+
+  var rows = roster.map(function(s) {
+    var studentObs = allObs.filter(function(o) { return o.studentCode === s.code; });
+
+    if (studentObs.length === 0) {
+      return { student: s, lastDate: null, daysSince: Infinity };
+    }
+
+    var mostRecent = studentObs.reduce(function(latest, o) {
+      return (o.date > latest) ? o.date : latest;
+    }, studentObs[0].date);
+
+    var daysSince = countSchoolDaysBetween(mostRecent, today);
+    return { student: s, lastDate: mostRecent, daysSince: daysSince };
+  });
+
+  // Worst (longest gap) first
+  rows.sort(function(a, b) { return b.daysSince - a.daysSince; });
+
+  var html = '<h2>Observations et conversations</h2>';
+  html += '<button onclick="switchToObsCapture()">Retour à la capture</button>';
+  html += '<h3>Besoin d\'attention</h3>';
+  html += '<p>Élèves triés par nombre de jours d\'école depuis leur dernière entrée. ';
+  html += 'Seuil signalé: ' + ATTENTION_THRESHOLD_SCHOOL_DAYS + ' jours d\'école.</p>';
+
+  html += '<table class="obs-attention-table">';
+  html += '<tr><th>Élève</th><th>Dernière entrée</th><th>Jours d\'école écoulés</th></tr>';
+
+  rows.forEach(function(r) {
+    var flagged = (r.daysSince === Infinity) || (r.daysSince >= ATTENTION_THRESHOLD_SCHOOL_DAYS);
+    var rowClass = flagged ? 'obs-attention-flagged' : '';
+    var daysDisplay = (r.daysSince === Infinity) ? 'Aucune entrée' : r.daysSince;
+    var dateDisplay = r.lastDate || '—';
+
+    html += '<tr class="' + rowClass + '">';
+    html += '<td>' + (flagged ? '⚠️ ' : '') + displayName(r.student) + '</td>';
+    html += '<td>' + dateDisplay + '</td>';
+    html += '<td>' + daysDisplay + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</table>';
+
+  container.innerHTML = html;
+}
