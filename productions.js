@@ -739,37 +739,25 @@ async function loadAndRenderActivityGrid(activityTag) {
   var activeStudents = roster.filter(function(s) { return s.actif; });
   var entries = await getProductionsByActivity(activityTag);
 
-  // Build studentCode -> { count, lastDate } lookup
-  var coverage = {};
+  var lastDateByStudent = {};
   entries.forEach(function(e) {
-    if (!coverage[e.studentCode]) {
-      coverage[e.studentCode] = { count: 0, lastDate: e.createdAt };
-    }
-    coverage[e.studentCode].count++;
-    if (e.createdAt > coverage[e.studentCode].lastDate) {
-      coverage[e.studentCode].lastDate = e.createdAt;
+    if (!lastDateByStudent[e.studentCode] || e.createdAt > lastDateByStudent[e.studentCode]) {
+      lastDateByStudent[e.studentCode] = e.createdAt;
     }
   });
 
-  var coveredCount = activeStudents.filter(function(s) { return coverage[s.code]; }).length;
+  var coveredCount = activeStudents.filter(function(s) { return lastDateByStudent[s.code]; }).length;
 
-  var html = '<p><strong>' + coveredCount + ' sur ' + activeStudents.length + '</strong> élèves ont une entrée pour cette activité.</p>';
+  var html = '<p><strong>' + coveredCount + ' sur ' + activeStudents.length + '</strong> élèves complétés.</p>';
   html += '<table class="production-grid-table">';
-  html += '<tr><th>Élève</th><th>Statut</th><th>Entrées</th><th>Dernière</th></tr>';
+  html += '<tr><th>Élève</th><th></th><th>Date</th></tr>';
 
   activeStudents.forEach(function(s) {
-    var info = coverage[s.code];
+    var lastDate = lastDateByStudent[s.code];
     html += '<tr>';
     html += '<td>' + displayName(s) + '</td>';
-    if (info) {
-      html += '<td>✓</td>';
-      html += '<td>' + info.count + '</td>';
-      html += '<td>' + formatProductionDate(info.lastDate) + '</td>';
-    } else {
-      html += '<td class="production-grid-missing">✗ Manquant</td>';
-      html += '<td>0</td>';
-      html += '<td>—</td>';
-    }
+    html += '<td>' + (lastDate ? '✓' : '') + '</td>';
+    html += '<td>' + (lastDate ? formatProductionDate(lastDate) : '') + '</td>';
     html += '</tr>';
   });
 
