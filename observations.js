@@ -468,7 +468,7 @@ function renderObsDomainView(container) {
 
   var html = '<h2>Observations et conversations</h2>';
   html += '<button onclick="switchToObsCapture()">Retour à la capture</button>';
-  html += '<h3>Couverture par domaine</h3>';
+  html += '<h3>Répartition par domaine</h3>';
   html += '<p>Nombre d\'entrées par domaine pour chaque élève.</p>';
 
   html += '<table class="obs-domain-table">';
