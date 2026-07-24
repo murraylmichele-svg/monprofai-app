@@ -546,7 +546,7 @@ function getLevelLabel(level) {
 
 function formatProductionDate(isoString) {
   var d = new Date(isoString);
-  return d.toLocaleDateString('fr-CA') + ' ' + d.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleDateString('fr-CA');
 }
 
 function switchToProductionHistory() {
