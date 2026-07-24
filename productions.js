@@ -653,7 +653,7 @@ async function loadProductionPhotoIntoContainer(productionId, photoId) {
   if (!photoContainer || !mediaRecord || !mediaRecord.blob) return;
 
   var objectUrl = URL.createObjectURL(mediaRecord.blob);
-  photoContainer.innerHTML = '<img src="' + objectUrl + '" class="production-photo-thumb" alt="Photo de production">';
+  photoContainer.innerHTML = '<img src="' + objectUrl + '" alt="Photo de production" style="max-width:100px; max-height:100px; object-fit:cover; border-radius:4px; cursor:pointer;" onclick="window.open(\'' + objectUrl + '\', \'_blank\')">';
 }
 // ============================================================
 // productions.js — MonProf.ai
