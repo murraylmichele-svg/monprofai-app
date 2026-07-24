@@ -696,7 +696,7 @@ async function getDistinctActivityTags() {
 async function renderProductionGridScreen(container) {
   var html = '<h2>Productions</h2>';
   html += '<button onclick="switchToProductionSetup()">Retour</button>';
-  html += '<h3>Couverture par activité</h3>';
+  html += '<h3>Suivi par activité</h3>';
   html += '<div id="grid-select-area"><p>Chargement des activités...</p></div>';
   html += '<div id="production-grid-results"></div>';
 
