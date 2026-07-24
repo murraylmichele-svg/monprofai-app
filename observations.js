@@ -476,14 +476,16 @@ function renderObsDomainView(container) {
 
   roster.forEach(function(s) {
     var studentObs = allObs.filter(function(o) { return o.studentCode === s.code; });
-    var coveredDomains = {};
-    studentObs.forEach(function(o) { coveredDomains[o.domaine] = true; });
+    var domainCounts = { A: 0, B: 0, C: 0, D: 0 };
+    studentObs.forEach(function(o) {
+      if (domainCounts.hasOwnProperty(o.domaine)) domainCounts[o.domaine]++;
+    });
 
     html += '<tr>';
     html += '<td>' + displayName(s) + '</td>';
     domains.forEach(function(d) {
-      var hasEntry = !!coveredDomains[d];
-      html += '<td class="' + (hasEntry ? '' : 'obs-domain-missing') + '">' + (hasEntry ? '✓' : '') + '</td>';
+      var count = domainCounts[d];
+      html += '<td class="' + (count === 0 ? 'obs-domain-missing' : '') + '">' + count + '</td>';
     });
     html += '</tr>';
   });
