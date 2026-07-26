@@ -184,6 +184,12 @@ function renderRoster() {
     html += '</table>';
   }
 
+  html += '<div class="data-management-section">';
+  html += '<h3>Gestion des données</h3>';
+  html += '<p>Téléchargez une sauvegarde et effacez toutes les observations et productions pour repartir à zéro (ex: nouvelle année scolaire). La liste de classe n\'est pas touchée par cette action.</p>';
+  html += '<button class="btn-delete" onclick="resetAllYearData()">Effacer toutes les données (nouvelle année)</button>';
+  html += '</div>';
+
   container.innerHTML = html;
 }
 
