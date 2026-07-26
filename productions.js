@@ -390,12 +390,32 @@ function renderProductionCaptureScreen(container) {
   container.innerHTML = html;
 }
 
-function handleProductionPhotoSelect(event) {
+async function handleProductionPhotoSelect(event) {
   var file = event.target.files[0];
-  productionSession.currentPhotoFile = file || null;
   var status = document.getElementById('photo-status');
-  if (status) {
-    status.textContent = file ? ' Photo sélectionnée.' : '';
+
+  if (!file) {
+    productionSession.currentPhotoFile = null;
+    if (status) status.textContent = '';
+    return;
+  }
+
+  var isHeic = file.type === 'image/heic' || file.type === 'image/heif' || /\.(heic|heif)$/i.test(file.name);
+
+  if (isHeic && typeof heic2any === 'function') {
+    if (status) status.textContent = ' Conversion de la photo...';
+    try {
+      var converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+      productionSession.currentPhotoFile = Array.isArray(converted) ? converted[0] : converted;
+      if (status) status.textContent = ' Photo sélectionnée.';
+    } catch (err) {
+      console.error('Erreur de conversion HEIC:', err);
+      productionSession.currentPhotoFile = file;
+      if (status) status.textContent = ' Photo sélectionnée (non convertie).';
+    }
+  } else {
+    productionSession.currentPhotoFile = file;
+    if (status) status.textContent = ' Photo sélectionnée.';
   }
 }
 
