@@ -175,7 +175,10 @@ function renderRoster() {
       html += '<td>' + s.code + '</td>';
       html += '<td>' + displayName(s) + '</td>';
       html += '<td colspan="2"><em>inactif</em></td>';
-      html += '<td><button onclick="toggleStudentActif(\'' + s.code + '\'); renderRoster();">Réactiver</button></td>';
+      html += '<td>';
+      html += '<button onclick="toggleStudentActif(\'' + s.code + '\'); renderRoster();">Réactiver</button> ';
+      html += '<button class="btn-delete" onclick="removeStudentCompletely(\'' + s.code + '\')">Supprimer définitivement</button>';
+      html += '</td>';
       html += '</tr>';
     });
     html += '</table>';
