@@ -912,3 +912,33 @@ async function addNoteToHistoryEntry(productionId, studentCode) {
 
   loadAndRenderStudentHistory(studentCode);
 }
+// ============================================================
+// productions.js — MonProf.ai
+// ADDITION: Jump from recent-entries table to add-note in History
+// ============================================================
+// APPEND this to the END of your productions.js file.
+// Also make Edits 1-2 described separately.
+// ============================================================
+
+var productionHistoryPreselect = null; // {studentCode, entryId} or null
+
+function jumpToProductionEntryFromRecent(studentCode, entryId) {
+  productionHistoryPreselect = { studentCode: studentCode, entryId: entryId };
+  switchToProductionHistory();
+}
+
+function scrollToAndHighlightEntry(entryId) {
+  var input = document.getElementById('add-note-' + entryId);
+  if (!input) return;
+
+  input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  input.focus();
+
+  var row = input.closest('tr');
+  if (row) {
+    row.classList.add('production-entry-highlight');
+    setTimeout(function() {
+      row.classList.remove('production-entry-highlight');
+    }, 2000);
+  }
+}
