@@ -833,9 +833,9 @@ async function loadAndRenderRecentProductions() {
   all = all.slice().sort(function(a, b) { return b.createdAt.localeCompare(a.createdAt); });
   var recent = all.slice(0, PRODUCTION_RECENT_LIST_LIMIT);
 
-  var html = '<h3>Entrées récentes (' + all.length + ')</h3>';
+ var html = '<h3>Entrées récentes (' + all.length + ')</h3>';
   html += '<table class="production-recent-table">';
-  html += '<tr><th>Date</th><th>Élève</th><th>Dom.</th><th>Activité</th><th>Note</th><th>Photo</th></tr>';
+  html += '<tr><th>Date</th><th>Élève</th><th>Dom.</th><th>Activité</th><th>Note</th><th>Photo</th><th></th></tr>';
 
   recent.forEach(function(p) {
     var student = roster.find(function(s) { return s.code === p.studentCode; });
@@ -852,9 +852,9 @@ async function loadAndRenderRecentProductions() {
     } else {
       html += '<td></td>';
     }
+    html += '<td><button onclick="jumpToProductionEntryFromRecent(\'' + p.studentCode + '\', \'' + p.id + '\')">Ajouter une note</button></td>';
     html += '</tr>';
   });
-
   html += '</table>';
   container.innerHTML = html;
 
