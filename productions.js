@@ -875,3 +875,30 @@ async function loadRecentProductionThumbnail(productionId, photoId) {
   var objectUrl = URL.createObjectURL(mediaRecord.blob);
   span.innerHTML = '<img src="' + objectUrl + '" alt="Photo" style="max-width:50px; max-height:50px; object-fit:cover; border-radius:4px; cursor:pointer;" onclick="window.open(\'' + objectUrl + '\', \'_blank\')">';
 }
+// ============================================================
+// productions.js — MonProf.ai
+// PART 7: Add notes to existing entries from the History view
+// ============================================================
+// APPEND this to the END of your productions.js file.
+// Also make the 1 edit described separately (History loop).
+//
+// Depends on:
+//   - getProductionsByStudent(), updateProduction() — Part 1
+//   - loadAndRenderStudentHistory() — Part 3
+// ============================================================
+
+async function addNoteToHistoryEntry(productionId, studentCode) {
+  var input = document.getElementById('add-note-' + productionId);
+  var newText = input ? input.value.trim() : '';
+  if (!newText) return;
+
+  var entries = await getProductionsByStudent(studentCode);
+  var entry = entries.find(function(e) { return e.id === productionId; });
+  if (!entry) return;
+
+  var mergedNote = entry.note ? (entry.note + ' | ' + newText) : newText;
+
+  await updateProduction(productionId, { note: mergedNote });
+
+  loadAndRenderStudentHistory(studentCode);
+}
