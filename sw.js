@@ -2,7 +2,7 @@
 // SW.JS — Service Worker for offline support
 // ============================================================
 
-var CACHE_NAME = 'monprofai-v1';
+var CACHE_NAME = 'monprofai-v2';
 var BASE = '/monprofai-app/';
 var FILES_TO_CACHE = [
   BASE,
@@ -13,9 +13,9 @@ var FILES_TO_CACHE = [
   BASE + 'productions.js',
   BASE + 'bulletins.js',
   BASE + 'audio-queue.js',
-  BASE + 'styles.css'
+  BASE + 'styles.css',
+  BASE + 'heic2any.min.js'
 ];
-
 // Install: cache all app files
 self.addEventListener('install', function(e) {
   e.waitUntil(
