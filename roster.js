@@ -237,3 +237,137 @@ function cancelRosterForm() {
   document.getElementById('form-title').textContent = 'Ajouter un élève';
   document.getElementById('btn-cancel').style.display = 'none';
 }
+// ============================================================
+// roster.js — MonProf.ai
+// ADDITION: Data export, year-end reset, and student deletion
+// ============================================================
+// APPEND this to the END of your roster.js file.
+// Also make Edits 1-3 described separately.
+//
+// These functions are used from Roster now, and will also be
+// wired into Productions and Observations in a follow-up step.
+//
+// Depends on:
+//   - getObservations(), saveObservations() — observations.js
+//   - getAllProductions(), getProductionsByStudent(), deleteProduction() — productions.js
+//   - getRoster(), saveRoster(), displayName() — this file
+// ============================================================
+
+async function exportAllDataAsFile() {
+  var roster = getRoster();
+  var observations = getObservations();
+  var productions = await getAllProductions();
+
+  // Photos are NOT included in this backup — text data only
+  var productionsForExport = productions.map(function(p) {
+    return {
+      id: p.id,
+      studentCode: p.studentCode,
+      domain: p.domain,
+      activityTag: p.activityTag,
+      note: p.note,
+      level: p.level,
+      photoCount: (p.photoIds ? p.photoIds.length : 0),
+      createdAt: p.createdAt,
+      editedAt: p.editedAt
+    };
+  });
+
+  var exportData = {
+    exportedAt: new Date().toISOString(),
+    note: 'Cette sauvegarde contient les notes textuelles seulement. Les photos ne sont PAS incluses.',
+    roster: roster,
+    observations: observations,
+    productions: productionsForExport
+  };
+
+  var blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'monprofai_sauvegarde_' + dateStr + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function resetAllYearData() {
+  var confirmed = confirm(
+    'Ceci supprimera TOUTES les observations et productions pour TOUS les élèves. ' +
+    'La liste de classe ne sera pas touchée. ' +
+    'Une sauvegarde sera téléchargée avant la suppression. Voulez-vous continuer?'
+  );
+  if (!confirmed) return;
+
+  await exportAllDataAsFile();
+
+  // Give the browser a moment to actually start the download before wiping data
+  setTimeout(async function() {
+    saveObservations([]);
+
+    var allProductions = await getAllProductions();
+    for (var i = 0; i < allProductions.length; i++) {
+      await deleteProduction(allProductions[i].id);
+    }
+
+    alert('Toutes les données ont été effacées. La liste des élèves demeure intacte.');
+    location.reload();
+  }, 800);
+}
+
+async function clearStudentData(studentCode, studentName) {
+  var confirmed = confirm(
+    'Ceci supprimera toutes les observations et productions pour ' + studentName + '. ' +
+    'Une sauvegarde complète sera téléchargée avant la suppression. Voulez-vous continuer?'
+  );
+  if (!confirmed) return;
+
+  await exportAllDataAsFile();
+
+  setTimeout(async function() {
+    var obs = getObservations().filter(function(o) { return o.studentCode !== studentCode; });
+    saveObservations(obs);
+
+    var studentProductions = await getProductionsByStudent(studentCode);
+    for (var i = 0; i < studentProductions.length; i++) {
+      await deleteProduction(studentProductions[i].id);
+    }
+
+    alert('Les données de ' + studentName + ' ont été effacées.');
+    location.reload();
+  }, 800);
+}
+
+async function removeStudentCompletely(code) {
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === code; });
+  if (!student) return;
+
+  var name = displayName(student);
+  var confirmed = confirm(
+    'Ceci supprimera ' + name + ' de la liste de classe de façon PERMANENTE, ' +
+    'ainsi que toutes ses observations et productions. ' +
+    'Une sauvegarde complète sera téléchargée avant la suppression. Voulez-vous continuer?'
+  );
+  if (!confirmed) return;
+
+  await exportAllDataAsFile();
+
+  setTimeout(async function() {
+    var updatedRoster = getRoster().filter(function(s) { return s.code !== code; });
+    saveRoster(updatedRoster);
+
+    var obs = getObservations().filter(function(o) { return o.studentCode !== code; });
+    saveObservations(obs);
+
+    var studentProductions = await getProductionsByStudent(code);
+    for (var i = 0; i < studentProductions.length; i++) {
+      await deleteProduction(studentProductions[i].id);
+    }
+
+    alert(name + ' a été supprimé(e) de façon permanente.');
+    renderRoster();
+  }, 800);
+}
