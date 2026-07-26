@@ -281,3 +281,205 @@ label {
   margin-bottom: 24px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
+/* ============================================================
+   ADDITIONS — MonProf.ai
+   Append this to the END of your existing styles.css
+   ============================================================ */
+
+/* ---- BUG FIX: these rules were accidentally nested inside
+   #obs-form and got silently discarded by the browser. This
+   corrected version below takes over automatically since it
+   comes later in the file — nothing above needs to change. ---- */
+
+#obs-form {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.mic-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 12px 0;
+}
+
+.mic-btn {
+  background: #1a5276;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.mic-btn.recording {
+  background: #c0392b;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.mic-status {
+  font-size: 13px;
+  color: #666;
+}
+
+.voice-notice {
+  background: #fef9e7;
+  border: 1px solid #f39c12;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pending-banner {
+  background: #eaf4fb;
+  border: 1px solid #2980b9;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pending-note {
+  color: #999;
+}
+
+.editable-note {
+  cursor: pointer;
+  border-bottom: 1px dashed #aaa;
+}
+
+.editable-note:hover {
+  background: #f0f7f0;
+}
+
+/* ---- GENERIC TABLE STYLING ----
+   Applies borders/spacing to every table in the app, including
+   ones added later (obs-attention-table, obs-domain-table,
+   production-history-table, production-grid-table,
+   production-recent-table) without needing a rule per table. ---- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+table th,
+table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: top;
+}
+
+table th {
+  background: #e8f4ec;
+  color: #2d5a3d;
+  font-weight: 600;
+}
+
+table tr:hover {
+  background: #f9fdf9;
+}
+
+/* ---- Highlight rows/cells that need attention ---- */
+
+.obs-attention-flagged {
+  background: #fef5f5;
+}
+
+.obs-attention-flagged td {
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.obs-domain-missing {
+  color: #c0392b;
+}
+
+.production-grid-missing {
+  color: #c0392b;
+}
+
+/* ---- Productions: live progress chip strip ---- */
+
+.production-chip-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.production-chip {
+  background: white;
+  border: 2px solid #2d5a3d;
+  color: #2d5a3d;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.production-chip:hover {
+  background: #f0f7f0;
+}
+
+.production-chip-current {
+  border-color: #1a5276;
+  box-shadow: 0 0 0 2px rgba(26,82,118,0.25);
+}
+
+.production-chip-done {
+  background: #e8f4ec;
+  border-color: #2d5a3d;
+}
+
+/* ---- Productions: "already recorded" box shown when
+   editing/adding to an existing entry ---- */
+
+.production-existing-box {
+  background: #fef9e7;
+  border: 1px solid #f39c12;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.production-existing-box p {
+  margin: 4px 0;
+}
+
+/* ---- Productions: history entries, activity label ---- */
+
+.production-entry-cell {
+  padding: 14px 12px !important;
+}
+
+.production-photo-container {
+  margin-top: 8px;
+}
+
+.production-activity-label {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 8px;
+}
