@@ -631,10 +631,14 @@ async function loadAndRenderStudentHistory(code) {
       html += '<div class="production-photo-container" id="photo-container-' + entry.id + '"><em>Chargement de la photo...</em></div>';
     }
 
+    html += '<div class="production-add-note-row">';
+    html += '<input type="text" id="add-note-' + entry.id + '" placeholder="Ajouter une note...">';
+    html += ' <button onclick="addNoteToHistoryEntry(\'' + entry.id + '\', \'' + code + '\')">Ajouter</button>';
+    html += '</div>';
+
     html += '</td>';
     html += '</tr>';
   }
-
   html += '</table>';
   resultsContainer.innerHTML = html;
 
