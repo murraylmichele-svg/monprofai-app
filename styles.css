@@ -483,3 +483,7 @@ table tr:hover {
   color: #555;
   margin-bottom: 8px;
 }
+.production-entry-highlight {
+  background: #fef9e7 !important;
+  transition: background 0.5s ease;
+}
