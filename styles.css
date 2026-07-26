@@ -487,3 +487,15 @@ table tr:hover {
   background: #fef9e7 !important;
   transition: background 0.5s ease;
 }
+.data-management-section {
+  margin-top: 32px;
+  padding: 16px;
+  border: 1px solid #c0392b;
+  border-radius: 8px;
+  background: #fef5f5;
+}
+
+.data-management-section h3 {
+  margin-top: 0;
+  color: #c0392b;
+}
