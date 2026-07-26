@@ -588,6 +588,16 @@ function renderProductionHistoryScreen(container) {
   html += '<div id="production-history-results"></div>';
 
   container.innerHTML = html;
+
+  if (productionHistoryPreselect) {
+    var pre = productionHistoryPreselect;
+    productionHistoryPreselect = null;
+    var selectEl = document.getElementById('history-student-select');
+    if (selectEl) selectEl.value = pre.studentCode;
+    loadAndRenderStudentHistory(pre.studentCode).then(function() {
+      scrollToAndHighlightEntry(pre.entryId);
+    });
+  }
 }
 
 async function loadAndRenderStudentHistory(code) {
