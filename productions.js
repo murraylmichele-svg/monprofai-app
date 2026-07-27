@@ -546,6 +546,7 @@ function resetProductionSession() {
   productionSession.currentPhotoFile = null;
   productionSession.savedCount = 0;
   productionSession.entryMap = {};
+  clearStoredProductionSession();
   renderProductions();
 }
 // ============================================================
