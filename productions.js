@@ -336,6 +336,7 @@ function startProductionSession() {
   productionSession.savedCount = 0;
   productionSession.entryMap = {};
 
+  saveProductionSessionToStorage();
   renderProductions();
 }
 
