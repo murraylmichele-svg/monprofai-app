@@ -291,6 +291,20 @@ function renderProductionSetupScreen(container) {
 
   html += '<div id="production-recent-list"><p><em>Chargement...</em></p></div>';
 
+  html += '<div class="data-management-section">';
+  html += '<h3>Gestion des données</h3>';
+  html += '<div class="form-row">';
+  html += '<label for="clear-student-select">Effacer les données d\'un élève: </label>';
+  html += '<select id="clear-student-select">';
+  html += '<option value="">-- Sélectionner --</option>';
+  getRoster().filter(function(s) { return s.actif; }).forEach(function(s) {
+    html += '<option value="' + s.code + '">' + displayName(s) + '</option>';
+  });
+  html += '</select>';
+  html += ' <button class="btn-delete" onclick="handleClearStudentFromDropdown(\'clear-student-select\')">Effacer</button>';
+  html += '</div>';
+  html += '</div>';
+
   container.innerHTML = html;
   loadAndRenderRecentProductions();
 }
