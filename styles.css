@@ -499,3 +499,14 @@ table tr:hover {
   margin-top: 0;
   color: #c0392b;
 }
+.production-resume-banner {
+  background: #eaf4fb;
+  border: 1px solid #2980b9;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.production-resume-banner p {
+  margin: 0 0 8px 0;
+}
