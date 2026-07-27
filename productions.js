@@ -513,6 +513,7 @@ function skipProductionEntry() {
 function advanceProductionSession() {
   productionSession.currentIndex++;
   productionSession.currentPhotoFile = null;
+  saveProductionSessionToStorage();
   renderProductions();
 }
 
