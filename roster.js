@@ -371,3 +371,28 @@ async function removeStudentCompletely(code) {
     renderRoster();
   }, 800);
 }
+// ============================================================
+// roster.js — MonProf.ai
+// ADDITION: shared helper to clear a student's data from a dropdown
+// ============================================================
+// APPEND this to the END of your roster.js file, after the
+// data-management functions added previously.
+//
+// Depends on:
+//   - clearStudentData(), getRoster(), displayName() — already in this file
+// ============================================================
+
+function handleClearStudentFromDropdown(selectId) {
+  var select = document.getElementById(selectId);
+  var code = select ? select.value : '';
+  if (!code) {
+    alert('Veuillez sélectionner un élève.');
+    return;
+  }
+
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === code; });
+  if (!student) return;
+
+  clearStudentData(code, displayName(student));
+}
