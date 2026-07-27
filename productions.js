@@ -992,3 +992,66 @@ function scrollToAndHighlightEntry(entryId) {
     }, 2000);
   }
 }
+// ============================================================
+// productions.js — MonProf.ai
+// PART 6: Session persistence (survives a closed tab/app)
+// ============================================================
+// APPEND this to the END of your productions.js file.
+// Also make Edits 1-5 described separately.
+// ============================================================
+
+var PRODUCTION_SESSION_STORAGE_KEY = 'monprofai_production_session_backup';
+
+function saveProductionSessionToStorage() {
+  if (!productionSession.active) return;
+
+  var toStore = {
+    active: productionSession.active,
+    activityTag: productionSession.activityTag,
+    domain: productionSession.domain,
+    studentList: productionSession.studentList,
+    currentIndex: productionSession.currentIndex,
+    savedCount: productionSession.savedCount,
+    entryMap: productionSession.entryMap
+  };
+
+  try {
+    localStorage.setItem(PRODUCTION_SESSION_STORAGE_KEY, JSON.stringify(toStore));
+  } catch (e) {
+    console.error('Impossible de sauvegarder la séance en cours:', e);
+  }
+}
+
+function getStoredProductionSession() {
+  try {
+    var raw = localStorage.getItem(PRODUCTION_SESSION_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function clearStoredProductionSession() {
+  localStorage.removeItem(PRODUCTION_SESSION_STORAGE_KEY);
+}
+
+function resumeProductionSession() {
+  var stored = getStoredProductionSession();
+  if (!stored) return;
+
+  productionSession.active = true;
+  productionSession.activityTag = stored.activityTag;
+  productionSession.domain = stored.domain;
+  productionSession.studentList = stored.studentList;
+  productionSession.currentIndex = stored.currentIndex;
+  productionSession.savedCount = stored.savedCount;
+  productionSession.entryMap = stored.entryMap;
+  productionSession.currentPhotoFile = null;
+
+  renderProductions();
+}
+
+function discardStoredProductionSession() {
+  clearStoredProductionSession();
+  renderProductions();
+}
