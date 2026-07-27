@@ -269,7 +269,19 @@ function renderProductions() {
 // ---- SCREEN 1: SETUP ----
 
 function renderProductionSetupScreen(container) {
+  var storedSession = getStoredProductionSession();
+
   var html = '<h2>Productions</h2>';
+
+  if (storedSession) {
+    html += '<div class="production-resume-banner">';
+    html += '<p><strong>Séance interrompue trouvée:</strong> ' + storedSession.activityTag;
+    html += ' (élève ' + (storedSession.currentIndex + 1) + ' sur ' + storedSession.studentList.length + ')</p>';
+    html += '<button onclick="resumeProductionSession()">Reprendre la séance</button> ';
+    html += '<button onclick="discardStoredProductionSession()">Ignorer</button>';
+    html += '</div>';
+  }
+
   html += '<div id="production-setup">';
   html += '<h3>Nouvelle séance</h3>';
   html += '<div class="form-row">';
