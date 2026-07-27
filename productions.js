@@ -846,6 +846,7 @@ function renderProductionChipStrip() {
 function jumpToProductionStudent(index) {
   productionSession.currentIndex = index;
   productionSession.currentPhotoFile = null;
+  saveProductionSessionToStorage();
   renderProductions();
 }
 // ============================================================
