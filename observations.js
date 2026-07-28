@@ -509,3 +509,105 @@ function renderObsDomainView(container) {
 
   container.innerHTML = html;
 }
+// ============================================================
+// observations.js — MonProf.ai
+// PART O4: Per-activity coverage grid
+// ============================================================
+// APPEND this to the END of your observations.js file.
+// Also make the 1 edit described separately (nav button).
+//
+// Depends on:
+//   - getObservations(), getRoster(), displayName() — already in your files
+//   - switchToObsCapture() — Part O2
+// ============================================================
+
+function switchToObsActivityView() {
+  var container = document.getElementById('module-observations');
+  if (!container) return;
+  renderObsActivityView(container);
+}
+
+function getDistinctObsActivityTags() {
+  var all = getObservations();
+  var latestByTag = {};
+
+  all.forEach(function(o) {
+    if (!o.activityTag) return;
+    if (!latestByTag[o.activityTag] || o.date > latestByTag[o.activityTag]) {
+      latestByTag[o.activityTag] = o.date;
+    }
+  });
+
+  var tags = Object.keys(latestByTag);
+  tags.sort(function(a, b) {
+    return latestByTag[b].localeCompare(latestByTag[a]); // most recent activity first
+  });
+
+  return tags;
+}
+
+function renderObsActivityView(container) {
+  var tags = getDistinctObsActivityTags();
+
+  var html = '<h2>Observations et conversations</h2>';
+  html += '<button onclick="switchToObsCapture()">Retour à la capture</button>';
+  html += '<h3>Suivi par activité</h3>';
+
+  if (tags.length === 0) {
+    html += '<p>Aucune activité enregistrée pour le moment.</p>';
+    container.innerHTML = html;
+    return;
+  }
+
+  html += '<div class="form-row">';
+  html += '<label for="obs-activity-select">Choisir une activité: </label>';
+  html += '<select id="obs-activity-select" onchange="loadAndRenderObsActivityGrid(this.value)">';
+  html += '<option value="">-- Sélectionner --</option>';
+  tags.forEach(function(tag) {
+    html += '<option value="' + tag + '">' + tag + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div id="obs-activity-results"></div>';
+
+  container.innerHTML = html;
+}
+
+function loadAndRenderObsActivityGrid(activityTag) {
+  var resultsContainer = document.getElementById('obs-activity-results');
+  if (!resultsContainer) return;
+
+  if (!activityTag) {
+    resultsContainer.innerHTML = '';
+    return;
+  }
+
+  var roster = getRoster().filter(function(s) { return s.actif; });
+  var matchingObs = getObservations().filter(function(o) { return o.activityTag === activityTag; });
+
+  var lastDateByStudent = {};
+  matchingObs.forEach(function(o) {
+    if (!lastDateByStudent[o.studentCode] || o.date > lastDateByStudent[o.studentCode]) {
+      lastDateByStudent[o.studentCode] = o.date;
+    }
+  });
+
+  var coveredCount = roster.filter(function(s) { return lastDateByStudent[s.code]; }).length;
+
+  var html = '<p><strong>' + coveredCount + ' sur ' + roster.length + '</strong> élèves complétés.</p>';
+  html += '<table class="obs-activity-table">';
+  html += '<tr><th>Élève</th><th></th><th>Date</th></tr>';
+
+  roster.forEach(function(s) {
+    var lastDate = lastDateByStudent[s.code];
+    html += '<tr>';
+    html += '<td>' + displayName(s) + '</td>';
+    html += '<td>' + (lastDate ? '✓' : '') + '</td>';
+    html += '<td>' + (lastDate || '') + '</td>';
+    html += '</tr>';
+  });
+
+  html += '</table>';
+  resultsContainer.innerHTML = html;
+}
