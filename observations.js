@@ -144,9 +144,23 @@ html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</bu
   html += '<button onclick="submitObsForm()">Enregistrer</button>';
   html += '</div>';
 
-  // History
+ // History
   html += '<div id="obs-history">';
   html += renderObsHistory();
+  html += '</div>';
+
+  html += '<div class="data-management-section">';
+  html += '<h3>Gestion des données</h3>';
+  html += '<div class="form-row">';
+  html += '<label for="clear-student-select-obs">Effacer les données d\'un élève: </label>';
+  html += '<select id="clear-student-select-obs">';
+  html += '<option value="">-- Sélectionner --</option>';
+  roster.forEach(function(s) {
+    html += '<option value="' + s.code + '">' + displayName(s) + '</option>';
+  });
+  html += '</select>';
+  html += ' <button class="btn-delete" onclick="handleClearStudentFromDropdown(\'clear-student-select-obs\')">Effacer</button>';
+  html += '</div>';
   html += '</div>';
 
   container.innerHTML = html;
