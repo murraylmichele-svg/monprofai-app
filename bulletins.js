@@ -182,3 +182,111 @@ async function generateBulletinCommentForStudent(studentCode) {
   var finalComment = deanonymizeBulletinText(rawComment, studentCode);
   return finalComment;
 }
+// ============================================================
+// bulletins.js — MonProf.ai
+// PART B3: Reporting period selection
+// ============================================================
+// APPEND this to the END of your bulletins.js file, after Part B2.
+//
+// "observations_initiales" (first report) -> one combined comment,
+// same as generateBulletinCommentForStudent() from Part B2.
+//
+// "deuxieme" / "troisieme" -> four separate comments, one per
+// domain (A/B/C/D), each built only from that domain's evidence.
+//
+// Depends on:
+//   - getBulletinEvidenceForStudent(), buildBulletinPrompt(),
+//     callBulletinProxy(), deanonymizeBulletinText() — Parts B1/B2
+//   - getRoster() — roster.js
+// ============================================================
+
+var BULLETIN_PERIODS = {
+  observations_initiales: 'Première période (observations initiales) — un commentaire combiné pour tous les domaines',
+  deuxieme: 'Deuxième période — un commentaire distinct par domaine',
+  troisieme: 'Troisième période — un commentaire distinct par domaine'
+};
+
+var BULLETIN_DOMAIN_LABELS = {
+  A: 'Notions fondamentales de la langue et des mathématiques',
+  B: 'Résolution de problèmes et innovation',
+  C: 'Autorégulation et bien-être',
+  D: 'Appartenance et contribution'
+};
+
+function filterEvidenceByDomain(evidence, domain) {
+  return {
+    studentCode: evidence.studentCode,
+    observations: evidence.observations.filter(function(o) { return o.domaine === domain; }),
+    productions: evidence.productions.filter(function(p) { return p.domain === domain; })
+  };
+}
+
+function buildDomainBulletinPrompt(evidence, domain, pronom, periodLabel) {
+  var lines = [];
+
+  lines.push('Tu es une enseignante de maternelle/jardin d\'enfants en Ontario qui rédige un commentaire anecdotique pour le Relevé des apprentissages (' + periodLabel + ').');
+  lines.push('Ce commentaire porte UNIQUEMENT sur le Domaine ' + domain + ' — ' + BULLETIN_DOMAIN_LABELS[domain] + '.');
+  lines.push('');
+  lines.push('RÈGLES STRICTES À SUIVRE:');
+  lines.push('- Rédige UN SEUL paragraphe qui porte seulement sur ce domaine (ne mentionne pas les autres domaines).');
+  lines.push('- Utilise UNIQUEMENT le code de l\'élève fourni ci-dessous pour le désigner (jamais un prénom).');
+  lines.push('- Le pronom de l\'enfant est "' + pronom + '". Utilise UNIQUEMENT ce pronom partout — n\'écris jamais "il/elle" ensemble ni aucune hésitation.');
+  lines.push('- Base-toi seulement sur les preuves fournies ci-dessous. N\'invente aucun fait, aucune activité, aucun détail qui n\'y figure pas.');
+  lines.push('- Inclus à la fois un point fort ET au moins une prochaine étape, de façon équilibrée.');
+  lines.push('- Mentionne une activité précise si cela aide à personnaliser le commentaire.');
+  lines.push('- Langage simple, chaleureux, clair, destiné aux parents — évite le jargon pédagogique.');
+  lines.push('- Ton constructif et positif, mais JAMAIS exagéré: évite les superlatifs ("excellent", "extraordinaire", "parfait", "toujours", "jamais") et n\'implique jamais que l\'enfant est parfait ou sans défi.');
+  lines.push('- Si l\'enfant éprouve des difficultés, formule-le avec douceur et sans jugement (ex: "il commence à...", "elle pourrait...", "il devra...").');
+  lines.push('- N\'utilise JAMAIS de descripteurs de niveaux de rendement (émergent, en développement, confirmé, ou toute échelle de notation).');
+  lines.push('- Ne reprends pas mot pour mot les attentes du curriculum.');
+  lines.push('- Longueur cible: environ 3 à 5 phrases pour ce domaine seulement.');
+  lines.push('- Réponds UNIQUEMENT avec le texte du commentaire final, sans titre, sans préambule, sans guillemets.');
+  lines.push('');
+  lines.push('CODE DE L\'ÉLÈVE: ' + evidence.studentCode);
+  lines.push('');
+  lines.push('PREUVES D\'APPRENTISSAGE POUR CE DOMAINE:');
+
+  if (evidence.observations.length === 0 && evidence.productions.length === 0) {
+    lines.push('(Aucune preuve enregistrée pour ce domaine pour le moment.)');
+  }
+
+  evidence.observations.forEach(function(o) {
+    var typeLabel = o.type === 'conversation' ? 'Conversation' : 'Observation';
+    lines.push('- [' + o.date + '] ' + typeLabel + (o.activityTag ? ' — Activité: ' + o.activityTag : '') + ': ' + o.note);
+  });
+
+  evidence.productions.forEach(function(p) {
+    lines.push('- [' + p.date + '] Production' + (p.activityTag ? ' — Activité: ' + p.activityTag : '') + ': ' + p.note);
+  });
+
+  return lines.join('\n');
+}
+
+// period: 'observations_initiales' | 'deuxieme' | 'troisieme'
+async function generateBulletinForStudent(studentCode, period) {
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === studentCode; });
+  var pronom = student ? student.pronom : 'iel';
+
+  var fullEvidence = await getBulletinEvidenceForStudent(studentCode);
+
+  if (period === 'observations_initiales') {
+    var prompt = buildBulletinPrompt(fullEvidence, pronom);
+    var rawComment = await callBulletinProxy(prompt);
+    return { type: 'combined', text: deanonymizeBulletinText(rawComment, studentCode) };
+  }
+
+  var periodLabel = BULLETIN_PERIODS[period] || period;
+  var domains = ['A', 'B', 'C', 'D'];
+  var result = {};
+
+  for (var i = 0; i < domains.length; i++) {
+    var domain = domains[i];
+    var domainEvidence = filterEvidenceByDomain(fullEvidence, domain);
+    var domainPrompt = buildDomainBulletinPrompt(domainEvidence, domain, pronom, periodLabel);
+    var rawDomainComment = await callBulletinProxy(domainPrompt);
+    result[domain] = deanonymizeBulletinText(rawDomainComment, studentCode);
+  }
+
+  return { type: 'byDomain', domains: result };
+}
