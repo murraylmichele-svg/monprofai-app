@@ -69,8 +69,9 @@ function renderObservations() {
 
   var pendingCount = getPendingCount();
   var html = '<h2>Observations et conversations</h2>';
- html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</button> ';
-  html += '<button onclick="switchToObsDomainView()">Voir la répartition par domaine</button>';
+html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</button> ';
+  html += '<button onclick="switchToObsDomainView()">Voir la répartition par domaine</button> ';
+  html += '<button onclick="switchToObsActivityView()">Voir le suivi par activité</button>';
 
   html += '<div class="data-management-section">';
   html += '<h3>Gestion des données</h3>';
