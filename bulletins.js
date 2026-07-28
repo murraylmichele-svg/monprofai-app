@@ -162,10 +162,23 @@ async function callBulletinProxy(promptText) {
   return data.content[0].text.trim();
 }
 
+function deanonymizeBulletinText(text, studentCode) {
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === studentCode; });
+  if (student) {
+    text = text.split(student.code).join(student.prenom);
+  }
+  return text;
+}
+
 async function generateBulletinCommentForStudent(studentCode) {
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === studentCode; });
+  var pronom = student ? student.pronom : 'iel';
+
   var evidence = await getBulletinEvidenceForStudent(studentCode);
-  var prompt = buildBulletinPrompt(evidence);
+  var prompt = buildBulletinPrompt(evidence, pronom);
   var rawComment = await callBulletinProxy(prompt);
-  var finalComment = deanonymizeText(rawComment);
+  var finalComment = deanonymizeBulletinText(rawComment, studentCode);
   return finalComment;
 }
