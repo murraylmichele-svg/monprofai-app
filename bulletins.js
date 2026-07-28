@@ -91,7 +91,7 @@ function renderBulletins() {
 var BULLETIN_PROXY_URL = 'https://web-production-f1270.up.railway.app/api/claude';
 var BULLETIN_PROXY_SECRET = 'monprof-juin2026';
 
-function buildBulletinPrompt(evidence) {
+function buildBulletinPrompt(evidence, pronom) {
   var lines = [];
 
   lines.push('Tu es une enseignante de maternelle/jardin d\'enfants en Ontario qui rédige un commentaire anecdotique pour le "Relevé des apprentissages : observations initiales" (premier bulletin de l\'année).');
@@ -99,6 +99,7 @@ function buildBulletinPrompt(evidence) {
   lines.push('RÈGLES STRICTES À SUIVRE:');
   lines.push('- Rédige UN SEUL paragraphe qui couvre tous les domaines ensemble, de façon narrative (ne sépare pas par domaine, ne nomme pas les domaines A/B/C/D).');
   lines.push('- Utilise UNIQUEMENT le code de l\'élève fourni ci-dessous pour le désigner (jamais un prénom).');
+  lines.push('- Le pronom de l\'enfant est "' + pronom + '". Utilise UNIQUEMENT ce pronom partout dans le texte — n\'écris jamais "il/elle" ensemble ni aucune autre hésitation.');
   lines.push('- Base-toi seulement sur les preuves fournies ci-dessous. N\'invente aucun fait, aucune activité, aucun détail qui n\'y figure pas.');
   lines.push('- Inclus à la fois des points forts ET au moins une prochaine étape, de façon équilibrée.');
   lines.push('- Mentionne une activité précise si cela aide à personnaliser le commentaire (ex: "lors de l\'activité ...").');
