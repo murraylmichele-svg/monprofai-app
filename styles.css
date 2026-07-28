@@ -489,15 +489,24 @@ table tr:hover {
 }
 .data-management-section {
   margin-top: 32px;
-  padding: 16px;
-  border: 1px solid #c0392b;
-  border-radius: 8px;
-  background: #fef5f5;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
+  font-size: 12px;
 }
 
 .data-management-section h3 {
   margin-top: 0;
-  color: #c0392b;
+  margin-bottom: 6px;
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.data-management-section .btn-delete {
+  font-size: 11px;
+  padding: 4px 10px;
 }
 .production-resume-banner {
   background: #eaf4fb;
