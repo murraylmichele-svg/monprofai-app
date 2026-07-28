@@ -155,11 +155,17 @@ async function callBulletinProxy(promptText) {
     throw new Error(data.error.message || JSON.stringify(data.error));
   }
 
-  if (!data.content || !data.content[0] || !data.content[0].text) {
+  if (!data.content || !Array.isArray(data.content)) {
     throw new Error('Réponse inattendue de l\'API: ' + JSON.stringify(data));
   }
 
-  return data.content[0].text.trim();
+  var textBlock = data.content.find(function(block) { return block.type === 'text'; });
+
+  if (!textBlock || !textBlock.text) {
+    throw new Error('Aucun bloc de texte trouvé dans la réponse: ' + JSON.stringify(data));
+  }
+
+  return textBlock.text.trim();
 }
 
 function deanonymizeBulletinText(text, studentCode) {
