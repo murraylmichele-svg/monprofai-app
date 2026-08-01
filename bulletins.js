@@ -67,11 +67,227 @@ async function getBulletinEvidenceForAllActive() {
 // TEMPORARY PLACEHOLDER RENDER — replaced in a later part
 // ============================================================
 
+// ============================================================
+// bulletins.js — MonProf.ai
+// PART B4: UI — student/period picker, generate, editable review
+// ============================================================
+// APPEND this to the END of your bulletins.js file, after Parts
+// B1, B2, and B3. Also DELETE the placeholder renderBulletins()
+// function from Part B1 (described separately) — this file
+// defines the real one.
+//
+// Depends on:
+//   - generateBulletinForStudent() — Part B3
+//   - getRoster(), displayName() — roster.js
+// ============================================================
+
+var BULLETIN_DRAFTS_KEY = 'monprofai_bulletin_drafts';
+
+var bulletinUIState = {
+  selectedStudent: '',
+  selectedPeriod: 'observations_initiales'
+};
+
+// ---- DRAFT STORAGE ----
+
+function getBulletinDrafts() {
+  try {
+    var data = localStorage.getItem(BULLETIN_DRAFTS_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (e) {
+    return {};
+  }
+}
+
+function saveBulletinDrafts(drafts) {
+  try {
+    localStorage.setItem(BULLETIN_DRAFTS_KEY, JSON.stringify(drafts));
+  } catch (e) {
+    alert('Erreur: impossible de sauvegarder le brouillon.');
+  }
+}
+
+function saveBulletinDraft(studentCode, period, data) {
+  var drafts = getBulletinDrafts();
+  var key = studentCode + '_' + period;
+  drafts[key] = {
+    studentCode: studentCode,
+    period: period,
+    type: data.type,
+    text: data.text || null,
+    domains: data.domains || null,
+    generatedAt: new Date().toISOString()
+  };
+  saveBulletinDrafts(drafts);
+}
+
+function getBulletinDraft(studentCode, period) {
+  var drafts = getBulletinDrafts();
+  return drafts[studentCode + '_' + period] || null;
+}
+
+// ---- MAIN RENDER ----
+
 function renderBulletins() {
   var container = document.getElementById('module-bulletins');
   if (!container) return;
-  container.innerHTML = '<h2>Bulletins</h2><p><em>Module en construction.</em></p>';
+
+  var roster = getRoster().filter(function(s) { return s.actif; });
+
+  var html = '<h2>Bulletins</h2>';
+
+  if (roster.length === 0) {
+    html += '<p>Aucun élève actif dans la liste de classe.</p>';
+    container.innerHTML = html;
+    return;
+  }
+
+  html += '<div class="form-row">';
+  html += '<label for="bulletin-student-select">Élève: </label>';
+  html += '<select id="bulletin-student-select" onchange="handleBulletinSelectorChange()">';
+  html += '<option value="">-- Sélectionner --</option>';
+  roster.forEach(function(s) {
+    var selectedAttr = (s.code === bulletinUIState.selectedStudent) ? ' selected' : '';
+    html += '<option value="' + s.code + '"' + selectedAttr + '>' + displayName(s) + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label for="bulletin-period-select">Période: </label>';
+  html += '<select id="bulletin-period-select" onchange="handleBulletinSelectorChange()">';
+  html += '<option value="observations_initiales"' + (bulletinUIState.selectedPeriod === 'observations_initiales' ? ' selected' : '') + '>Première (observations initiales)</option>';
+  html += '<option value="deuxieme"' + (bulletinUIState.selectedPeriod === 'deuxieme' ? ' selected' : '') + '>Deuxième période</option>';
+  html += '<option value="troisieme"' + (bulletinUIState.selectedPeriod === 'troisieme' ? ' selected' : '') + '>Troisième période</option>';
+  html += '</select>';
+  html += '</div>';
+
+  html += '<button id="bulletin-generate-btn" onclick="handleGenerateBulletinClick()">Générer le commentaire</button>';
+  html += '<span id="bulletin-generate-status"></span>';
+
+  html += '<div id="bulletin-review-area"></div>';
+
+  container.innerHTML = html;
+
+  if (bulletinUIState.selectedStudent) {
+    renderExistingDraftIfAny();
+  }
 }
+
+function handleBulletinSelectorChange() {
+  var studentSelect = document.getElementById('bulletin-student-select');
+  var periodSelect = document.getElementById('bulletin-period-select');
+
+  bulletinUIState.selectedStudent = studentSelect.value;
+  bulletinUIState.selectedPeriod = periodSelect.value;
+
+  var reviewArea = document.getElementById('bulletin-review-area');
+  if (reviewArea) reviewArea.innerHTML = '';
+
+  if (bulletinUIState.selectedStudent) {
+    renderExistingDraftIfAny();
+  }
+}
+
+function renderExistingDraftIfAny() {
+  var draft = getBulletinDraft(bulletinUIState.selectedStudent, bulletinUIState.selectedPeriod);
+  if (draft) {
+    renderBulletinReview(draft);
+  }
+}
+
+// ---- GENERATE ----
+
+async function handleGenerateBulletinClick() {
+  var studentCode = bulletinUIState.selectedStudent;
+  var period = bulletinUIState.selectedPeriod;
+
+  if (!studentCode) {
+    alert('Veuillez sélectionner un élève.');
+    return;
+  }
+
+  var statusEl = document.getElementById('bulletin-generate-status');
+  var btn = document.getElementById('bulletin-generate-btn');
+  btn.disabled = true;
+  if (statusEl) statusEl.textContent = ' Génération en cours...';
+
+  try {
+    var result = await generateBulletinForStudent(studentCode, period);
+    saveBulletinDraft(studentCode, period, result);
+    if (statusEl) statusEl.textContent = '';
+    renderBulletinReview(getBulletinDraft(studentCode, period));
+  } catch (err) {
+    if (statusEl) statusEl.textContent = '';
+    alert('Erreur lors de la génération: ' + err.message);
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ---- REVIEW / EDIT ----
+
+function escapeHtmlForTextarea(text) {
+  var div = document.createElement('div');
+  div.textContent = text || '';
+  return div.innerHTML;
+}
+
+function renderBulletinReview(draft) {
+  var reviewArea = document.getElementById('bulletin-review-area');
+  if (!reviewArea) return;
+
+  var html = '<div class="bulletin-review-box">';
+  html += '<h3>Brouillon</h3>';
+
+  if (draft.type === 'combined') {
+    html += '<textarea id="bulletin-edit-combined" rows="8">' + escapeHtmlForTextarea(draft.text) + '</textarea>';
+  } else {
+    var domainLabels = { A: 'Domaine A', B: 'Domaine B', C: 'Domaine C', D: 'Domaine D' };
+    ['A', 'B', 'C', 'D'].forEach(function(d) {
+      html += '<h4>' + domainLabels[d] + '</h4>';
+      html += '<textarea id="bulletin-edit-domain-' + d + '" rows="5">' + escapeHtmlForTextarea((draft.domains && draft.domains[d]) || '') + '</textarea>';
+    });
+  }
+
+  html += '<button onclick="saveBulletinEdits()">Enregistrer les modifications</button>';
+  html += '<span id="bulletin-save-status"></span>';
+  html += '</div>';
+
+  reviewArea.innerHTML = html;
+}
+
+function saveBulletinEdits() {
+  var studentCode = bulletinUIState.selectedStudent;
+  var period = bulletinUIState.selectedPeriod;
+  var draft = getBulletinDraft(studentCode, period);
+  if (!draft) return;
+
+  if (draft.type === 'combined') {
+    var textarea = document.getElementById('bulletin-edit-combined');
+    if (textarea) draft.text = textarea.value;
+  } else {
+    ['A', 'B', 'C', 'D'].forEach(function(d) {
+      var domainTextarea = document.getElementById('bulletin-edit-domain-' + d);
+      if (domainTextarea) {
+        if (!draft.domains) draft.domains = {};
+        draft.domains[d] = domainTextarea.value;
+      }
+    });
+  }
+
+  var drafts = getBulletinDrafts();
+  drafts[studentCode + '_' + period] = draft;
+  saveBulletinDrafts(drafts);
+
+  var statusEl = document.getElementById('bulletin-save-status');
+  if (statusEl) {
+    statusEl.textContent = ' ✓ Enregistré';
+    setTimeout(function() { statusEl.textContent = ''; }, 2000);
+  }
+}
+
 // ============================================================
 // bulletins.js — MonProf.ai
 // PART B2: Prompt builder + single-student generation
