@@ -665,13 +665,13 @@ function copyOneBulletinRow(studentCode) {
   });
 }
 
-function copyAllBulletinsToClipboard() {
+async function copyAllBulletinsToClipboard() {
   var period = bulletinUIState.selectedPeriod;
   var roster = getRoster().filter(function(s) { return s.actif; });
   var drafts = getBulletinDrafts();
 
-  var rows = [];
-  rows.push('Élève\tCommentaire');
+  var tsvRows = ['Élève\tCommentaire'];
+  var htmlRows = '<tr><th>Élève</th><th>Commentaire</th></tr>';
 
   roster.forEach(function(s) {
     var draft = drafts[s.code + '_' + period];
@@ -687,17 +687,30 @@ function copyAllBulletinsToClipboard() {
       }
     }
 
-    // Strip tabs/newlines from the comment itself so the pasted table stays intact
-    text = text.replace(/\t/g, ' ').replace(/\n/g, ' ');
-    rows.push(displayName(s) + '\t' + text);
+    var plainText = text.replace(/\t/g, ' ').replace(/\n/g, ' ');
+    tsvRows.push(displayName(s) + '\t' + plainText);
+
+    var htmlText = escapeHtmlForTextarea(text).replace(/\n/g, '<br>');
+    htmlRows += '<tr><td>' + escapeHtmlForTextarea(displayName(s)) + '</td><td>' + htmlText + '</td></tr>';
   });
 
-  var tsv = rows.join('\n');
+  var tsv = tsvRows.join('\n');
+  var html = '<table border="1" cellpadding="6" style="border-collapse:collapse;">' + htmlRows + '</table>';
 
-  navigator.clipboard.writeText(tsv).then(function() {
-    alert('Tableau copié! Vous pouvez maintenant le coller dans Word, Excel ou Google Docs.');
-  }).catch(function(err) {
-    alert('Impossible de copier automatiquement.');
+  try {
+    var clipboardItem = new ClipboardItem({
+      'text/plain': new Blob([tsv], { type: 'text/plain' }),
+      'text/html': new Blob([html], { type: 'text/html' })
+    });
+    await navigator.clipboard.write([clipboardItem]);
+    alert('Tableau copié! Vous pouvez maintenant le coller dans Word, Excel ou Google Docs — il apparaîtra comme un vrai tableau.');
+  } catch (err) {
+    navigator.clipboard.writeText(tsv).then(function() {
+      alert('Tableau copié (texte simple). Dans Word, utilisez Insertion > Convertir le texte en tableau si besoin.');
+    }).catch(function(err2) {
+      alert('Impossible de copier automatiquement.');
+      console.error(err2);
+    });
     console.error(err);
-  });
+  }
 }
