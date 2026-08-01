@@ -162,7 +162,9 @@ function renderBulletins() {
   html += '</select>';
   html += '</div>';
 
-  html += '<button id="bulletin-generate-btn" onclick="handleGenerateBulletinClick()">Générer le commentaire</button>';
+ html += '<button id="bulletin-generate-btn" onclick="handleGenerateBulletinClick()">Générer le commentaire</button> ';
+  html += '<button id="bulletin-generate-all-btn" onclick="handleGenerateAllBulletinsClick()">Générer pour toute la classe</button> ';
+  html += '<button onclick="renderBulletinTableView()">Voir tous les brouillons (tableau)</button>';
   html += '<span id="bulletin-generate-status"></span>';
 
   html += '<div id="bulletin-review-area"></div>';
