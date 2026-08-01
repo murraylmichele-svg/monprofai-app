@@ -515,3 +515,189 @@ async function generateBulletinForStudent(studentCode, period) {
 
   return { type: 'byDomain', domains: result };
 }
+// ============================================================
+// bulletins.js — MonProf.ai
+// PART B5: Copy to clipboard, batch generate, summary table
+// ============================================================
+// APPEND this to the END of your bulletins.js file, after B1-B4.
+// Also make Edits 1-2 described separately.
+//
+// Depends on:
+//   - generateBulletinForStudent() — Part B3
+//   - getBulletinDrafts(), saveBulletinDraft(), getBulletinDraft() — Part B4
+//   - bulletinUIState — Part B4
+//   - getRoster(), displayName() — roster.js
+// ============================================================
+
+// ---- COPY SINGLE DRAFT (from the review/edit screen) ----
+
+function copyBulletinDraftToClipboard() {
+  var studentCode = bulletinUIState.selectedStudent;
+  var period = bulletinUIState.selectedPeriod;
+  var draft = getBulletinDraft(studentCode, period);
+  if (!draft) return;
+
+  var textToCopy = '';
+
+  if (draft.type === 'combined') {
+    var textarea = document.getElementById('bulletin-edit-combined');
+    textToCopy = textarea ? textarea.value : (draft.text || '');
+  } else {
+    var domainLabels = { A: 'Domaine A', B: 'Domaine B', C: 'Domaine C', D: 'Domaine D' };
+    ['A', 'B', 'C', 'D'].forEach(function(d) {
+      var domainTextarea = document.getElementById('bulletin-edit-domain-' + d);
+      var val = domainTextarea ? domainTextarea.value : ((draft.domains && draft.domains[d]) || '');
+      textToCopy += domainLabels[d] + ':\n' + val + '\n\n';
+    });
+    textToCopy = textToCopy.trim();
+  }
+
+  navigator.clipboard.writeText(textToCopy).then(function() {
+    var statusEl = document.getElementById('bulletin-save-status');
+    if (statusEl) {
+      statusEl.textContent = ' ✓ Copié';
+      setTimeout(function() { statusEl.textContent = ''; }, 2000);
+    }
+  }).catch(function(err) {
+    alert('Impossible de copier automatiquement. Veuillez sélectionner et copier le texte manuellement.');
+    console.error(err);
+  });
+}
+
+// ---- BATCH GENERATE FOR WHOLE CLASS ----
+
+async function handleGenerateAllBulletinsClick() {
+  var period = bulletinUIState.selectedPeriod;
+  var roster = getRoster().filter(function(s) { return s.actif; });
+
+  if (roster.length === 0) {
+    alert('Aucun élève actif.');
+    return;
+  }
+
+  var confirmed = confirm('Générer un commentaire pour les ' + roster.length + ' élèves actifs? Ceci peut prendre plusieurs minutes.');
+  if (!confirmed) return;
+
+  var statusEl = document.getElementById('bulletin-generate-status');
+  var btn = document.getElementById('bulletin-generate-all-btn');
+  if (btn) btn.disabled = true;
+
+  for (var i = 0; i < roster.length; i++) {
+    var student = roster[i];
+    if (statusEl) {
+      statusEl.textContent = ' Génération ' + (i + 1) + ' sur ' + roster.length + ' (' + displayName(student) + ')...';
+    }
+    try {
+      var result = await generateBulletinForStudent(student.code, period);
+      saveBulletinDraft(student.code, period, result);
+    } catch (err) {
+      console.error('Erreur pour ' + student.code + ':', err);
+    }
+  }
+
+  if (statusEl) statusEl.textContent = '';
+  if (btn) btn.disabled = false;
+
+  renderBulletinTableView();
+}
+
+// ---- SUMMARY TABLE VIEW ----
+
+function renderBulletinTableView() {
+  var reviewArea = document.getElementById('bulletin-review-area');
+  if (!reviewArea) return;
+
+  var period = bulletinUIState.selectedPeriod;
+  var roster = getRoster().filter(function(s) { return s.actif; });
+  var drafts = getBulletinDrafts();
+
+  var html = '<div class="bulletin-table-view">';
+  html += '<h3>Tous les brouillons — ' + (BULLETIN_PERIODS[period] || period) + '</h3>';
+  html += '<button onclick="copyAllBulletinsToClipboard()">Copier tout (tableau)</button>';
+  html += '<table class="bulletin-summary-table">';
+  html += '<tr><th>Élève</th><th>Commentaire</th><th></th></tr>';
+
+  roster.forEach(function(s) {
+    var draft = drafts[s.code + '_' + period];
+    var text = '';
+
+    if (draft) {
+      if (draft.type === 'combined') {
+        text = draft.text || '';
+      } else if (draft.domains) {
+        text = ['A', 'B', 'C', 'D'].map(function(d) {
+          return d + ': ' + (draft.domains[d] || '');
+        }).join(' | ');
+      }
+    }
+
+    html += '<tr>';
+    html += '<td>' + displayName(s) + '</td>';
+    html += '<td>' + (text || '<em>Pas encore généré</em>') + '</td>';
+    html += '<td><button onclick="copyOneBulletinRow(\'' + s.code + '\')">Copier</button></td>';
+    html += '</tr>';
+  });
+
+  html += '</table>';
+  html += '</div>';
+
+  reviewArea.innerHTML = html;
+}
+
+function copyOneBulletinRow(studentCode) {
+  var period = bulletinUIState.selectedPeriod;
+  var draft = getBulletinDraft(studentCode, period);
+  if (!draft) return;
+
+  var text = '';
+
+  if (draft.type === 'combined') {
+    text = draft.text || '';
+  } else if (draft.domains) {
+    text = ['A', 'B', 'C', 'D'].map(function(d) {
+      return 'Domaine ' + d + ':\n' + (draft.domains[d] || '');
+    }).join('\n\n');
+  }
+
+  navigator.clipboard.writeText(text).catch(function(err) {
+    alert('Impossible de copier automatiquement.');
+    console.error(err);
+  });
+}
+
+function copyAllBulletinsToClipboard() {
+  var period = bulletinUIState.selectedPeriod;
+  var roster = getRoster().filter(function(s) { return s.actif; });
+  var drafts = getBulletinDrafts();
+
+  var rows = [];
+  rows.push('Élève\tCommentaire');
+
+  roster.forEach(function(s) {
+    var draft = drafts[s.code + '_' + period];
+    var text = '';
+
+    if (draft) {
+      if (draft.type === 'combined') {
+        text = draft.text || '';
+      } else if (draft.domains) {
+        text = ['A', 'B', 'C', 'D'].map(function(d) {
+          return 'Domaine ' + d + ': ' + (draft.domains[d] || '');
+        }).join('  ');
+      }
+    }
+
+    // Strip tabs/newlines from the comment itself so the pasted table stays intact
+    text = text.replace(/\t/g, ' ').replace(/\n/g, ' ');
+    rows.push(displayName(s) + '\t' + text);
+  });
+
+  var tsv = rows.join('\n');
+
+  navigator.clipboard.writeText(tsv).then(function() {
+    alert('Tableau copié! Vous pouvez maintenant le coller dans Word, Excel ou Google Docs.');
+  }).catch(function(err) {
+    alert('Impossible de copier automatiquement.');
+    console.error(err);
+  });
+}
