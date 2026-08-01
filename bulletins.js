@@ -251,7 +251,8 @@ function renderBulletinReview(draft) {
     });
   }
 
-  html += '<button onclick="saveBulletinEdits()">Enregistrer les modifications</button>';
+  html += '<button onclick="saveBulletinEdits()">Enregistrer les modifications</button> ';
+  html += '<button onclick="copyBulletinDraftToClipboard()">Copier</button>';
   html += '<span id="bulletin-save-status"></span>';
   html += '</div>';
 
