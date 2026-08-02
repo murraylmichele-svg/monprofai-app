@@ -21,7 +21,8 @@ function saveObservations(obs) {
   }
 }
 
-function addObservation(studentCode, type, domaine, note, pending, activityTag) {
+function addObservation(studentCode, type, domaine, note, pending, activityTag, extra) {
+  extra = extra || {};
   var obs = getObservations();
   var entry = {
     id: Date.now(),
@@ -31,6 +32,11 @@ function addObservation(studentCode, type, domaine, note, pending, activityTag) 
     note: note || '',
     pending: pending || false,
     activityTag: activityTag || '',
+    linkType: extra.linkType || null,
+    hhCategory: extra.hhCategory || null,
+    subject: extra.subject || null,
+    strand: extra.strand || null,
+    achievementCategory: extra.achievementCategory || null,
     date: new Date().toISOString().slice(0, 10),
     timestamp: Date.now()
   };
