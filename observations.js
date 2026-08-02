@@ -101,7 +101,7 @@ html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</bu
   // Student selector
   html += '<div class="form-row">';
   html += '<label>Élève</label>';
-  html += '<select id="obs-student">';
+  html += '<select id="obs-student" onchange="handleObsStudentChange()">';
   html += '<option value="">-- Sélectionner un élève --</option>';
   roster.forEach(function(s) {
     html += '<option value="' + s.code + '">' + displayName(s) + '</option>';
