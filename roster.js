@@ -249,6 +249,8 @@ function editStudent(code) {
   document.getElementById('input-nom').value = s.nomInitial.replace('.', '');
   document.getElementById('input-pronom').value = s.pronom;
   document.getElementById('input-annee').value = s.annee;
+  document.getElementById('input-pei-hh').checked = !!s.peiHH;
+  document.getElementById('input-pei-academique').checked = !!s.peiAcademique;
   document.getElementById('form-title').textContent = 'Modifier un élève';
   document.getElementById('btn-cancel').style.display = 'inline';
   document.getElementById('roster-form').scrollIntoView({ behavior: 'smooth' });
