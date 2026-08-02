@@ -293,19 +293,10 @@ function renderProductionSetupScreen(container) {
 
   html += '<div id="production-setup">';
   html += '<h3>Nouvelle séance</h3>';
-  html += '<div class="form-row">';
-  html += '<input type="text" id="input-activity-tag" placeholder="Nom de l\'activité (ex: Suites de couleurs)" maxlength="80">';
+  html += '<div id="production-setup-dynamic-fields">';
+  html += renderProductionSetupFieldsHtml();
   html += '</div>';
-  html += '<div class="form-row">';
-  html += '<label for="input-domain">Domaine: </label>';
-  html += '<select id="input-domain">';
-  html += '<option value="A">A - Langue et mathématiques fondamentales</option>';
-  html += '<option value="B">B - Résolution de problèmes et innovation</option>';
-  html += '<option value="C">C - Autorégulation et bien-être</option>';
-  html += '<option value="D">D - Appartenance et contribution</option>';
-  html += '</select>';
-  html += '</div>';
-  html += '<button onclick="startProductionSession()">Commencer la séance</button> ';
+  html += '<button onclick="startProductionSession()">Commencer la séance</button> '
   html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
   html += '<button onclick="switchToProductionGrid()">Suivi par activité</button>';
   html += '</div>';
