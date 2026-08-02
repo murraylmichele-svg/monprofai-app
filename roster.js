@@ -396,3 +396,72 @@ function handleClearStudentFromDropdown(selectId) {
 
   clearStudentData(code, displayName(student));
 }
+// ============================================================
+// GRADES 1-6 — PART G1: Reference constants
+// ============================================================
+// APPEND this to the END of roster.js.
+// These are used by the UI in Parts G2/G3, and by isGrade1to6()
+// which Observations/Productions/Bulletins will all rely on to
+// decide which capture form to show.
+// ============================================================
+
+var HH_CATEGORIES = [
+  'Utilisation du français oral',
+  'Fiabilité',
+  'Sens de l\'organisation',
+  'Autonomie',
+  'Esprit de collaboration',
+  'Sens de l\'initiative',
+  'Autorégulation'
+];
+
+var ACHIEVEMENT_CATEGORIES = [
+  'Connaissance et compréhension',
+  'Habiletés de la pensée',
+  'Communication',
+  'Mise en application'
+];
+
+var GRADES_1_6_SUBJECTS = [
+  'Français',
+  'Mathématiques'
+];
+
+var SUBJECT_STRANDS = {
+  'Français': [
+    'B - Notions fondamentales de la langue',
+    'C - Compréhension : comprendre des textes et y réagir',
+    'D - Rédaction : expression d\'idées et création de textes'
+  ],
+  'Mathématiques': [
+    'B - Nombres',
+    'C - Algèbre',
+    'D - Données',
+    'E - Sens de l\'espace',
+    'F - Littératie financière'
+  ]
+};
+
+// Only used when Français + "B - Notions fondamentales de la langue"
+// is selected. Shown as a flat continuum, not filtered by grade level
+// (a grade 6 student can still be tagged with an earlier-continuum skill).
+var DOMAINE_B_FRANCAIS_CONTINUUM = [
+  'Conscience phonémique',
+  'Connaissance des lettres',
+  'Correspondances graphèmes-phonèmes',
+  'Lecture et orthographe au niveau des mots',
+  'Vocabulaire (incluant la morphologie)',
+  'Fluidité en lecture',
+  'Syntaxe et structure de phrases',
+  'Grammaire',
+  'Ponctuation et majuscules'
+];
+
+var NIVEAU_OPTIONS = ['Niveau 1', 'Niveau 2', 'Niveau 3', 'Niveau 4'];
+
+function isGrade1to6(studentCode) {
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === studentCode; });
+  if (!student) return false;
+  return ['1', '2', '3', '4', '5', '6'].indexOf(student.annee) !== -1;
+}
