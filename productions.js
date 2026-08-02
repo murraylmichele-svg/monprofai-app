@@ -609,6 +609,9 @@ function renderProductionSummaryScreen(container) {
 function resetProductionSession() {
   productionSession.active = false;
   productionSession.activityTag = '';
+  productionSession.subject = null;
+  productionSession.strand = null;
+  productionSession.achievementCategory = null;
   productionSession.studentList = [];
   productionSession.currentIndex = 0;
   productionSession.currentPhotoFile = null;
