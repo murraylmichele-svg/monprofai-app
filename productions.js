@@ -296,7 +296,7 @@ function renderProductionSetupScreen(container) {
   html += '<div id="production-setup-dynamic-fields">';
   html += renderProductionSetupFieldsHtml();
   html += '</div>';
-  html += '<button onclick="startProductionSession()">Commencer la séance</button> '
+  html += '<button onclick="startProductionSession()">Commencer la séance</button> ';
   html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
   html += '<button onclick="switchToProductionGrid()">Suivi par activité</button>';
   html += '</div>';
