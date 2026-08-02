@@ -23,10 +23,26 @@ function saveRoster(roster) {
   }
 }
 
-// Generate next available code
+var CODE_COUNTER_KEY = 'monprofai_next_code_counter';
+
+// Generate next available code — guaranteed unique even after deletions,
+// by tracking the highest number ever issued rather than the current
+// roster's length.
 function nextCode(roster) {
-  var n = roster.length + 1;
-  return 'EL_' + (n < 10 ? '0' + n : '' + n);
+  var maxExisting = 0;
+  roster.forEach(function(s) {
+    var match = /^EL_(\d+)$/.exec(s.code);
+    if (match) {
+      var num = parseInt(match[1], 10);
+      if (num > maxExisting) maxExisting = num;
+    }
+  });
+
+  var storedCounter = parseInt(localStorage.getItem(CODE_COUNTER_KEY) || '0', 10);
+  var nextNum = Math.max(maxExisting, storedCounter) + 1;
+
+  localStorage.setItem(CODE_COUNTER_KEY, String(nextNum));
+  return 'EL_' + (nextNum < 10 ? '0' + nextNum : '' + nextNum);
 }
 
 // Add a new student
