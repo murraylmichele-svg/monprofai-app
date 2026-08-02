@@ -495,3 +495,23 @@ function isGrade1to6(studentCode) {
   if (!student) return false;
   return ['1', '2', '3', '4', '5', '6'].indexOf(student.annee) !== -1;
 }
+// ============================================================
+// PEI reminder — helper used by Observations and Productions
+// ============================================================
+// APPEND this to the END of roster.js.
+// Purely a visual reminder — the actual IEP goals are never
+// stored or entered here, just a flag that one exists.
+// ============================================================
+
+function getPeiReminderHtml(studentCode) {
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === studentCode; });
+  if (!student || (!student.peiHH && !student.peiAcademique)) return '';
+
+  var parts = [];
+  if (student.peiHH) parts.push('HH');
+  if (student.peiAcademique) parts.push('Académique');
+
+  return '<div class="pei-reminder">⚠️ ' + displayName(student) + ' a un PEI (' +
+    parts.join(' et ') + ') — pensez à consulter le PEI pour les objectifs spécifiques.</div>';
+}
