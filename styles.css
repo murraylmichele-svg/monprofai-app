@@ -519,3 +519,12 @@ table tr:hover {
 .production-resume-banner p {
   margin: 0 0 8px 0;
 }
+.pei-reminder {
+  background: #fff3e0;
+  border: 1px solid #e67e22;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  font-size: 13px;
+  color: #a04000;
+}
