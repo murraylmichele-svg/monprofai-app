@@ -267,9 +267,7 @@ function toggleRecording() {
 function submitObsForm() {
   var studentCode = document.getElementById('obs-student').value;
   var type = document.getElementById('obs-type').value;
-  var domaine = document.getElementById('obs-domaine').value;
   var note = document.getElementById('obs-note').value.trim();
-  var activityTag = document.getElementById('obs-activity').value.trim();
 
   if (!studentCode) {
     alert('Veuillez sélectionner un élève.');
@@ -280,12 +278,43 @@ function submitObsForm() {
     return;
   }
 
-  addObservation(studentCode, type, domaine, note, false, activityTag);
+  var domaine = '';
+  var activityTag = '';
+  var extra = {};
+
+  if (isGrade1to6(studentCode)) {
+    var linkTypeInput = document.getElementById('obs-linktype');
+    var linkType = linkTypeInput ? linkTypeInput.value : 'hh';
+
+    if (linkType === 'hh') {
+      var hhSelect = document.getElementById('obs-hh-category');
+      extra.linkType = 'hh';
+      extra.hhCategory = hhSelect ? hhSelect.value : '';
+    } else {
+      var subjectSelect = document.getElementById('obs-subject');
+      var strandSelect = document.getElementById('obs-strand');
+      var achievementSelect = document.getElementById('obs-achievement');
+      var sousSujetEl = document.getElementById('obs-sous-sujet');
+
+      extra.linkType = 'expectation';
+      extra.subject = subjectSelect ? subjectSelect.value : '';
+      extra.strand = strandSelect ? strandSelect.value : '';
+      extra.achievementCategory = achievementSelect ? achievementSelect.value : '';
+      activityTag = sousSujetEl ? sousSujetEl.value.trim() : '';
+    }
+  } else {
+    var domaineInput = document.getElementById('obs-domaine');
+    domaine = domaineInput ? domaineInput.value : 'A';
+    var activityInput = document.getElementById('obs-activity');
+    activityTag = activityInput ? activityInput.value.trim() : '';
+  }
+
+  addObservation(studentCode, type, domaine, note, false, activityTag, extra);
   document.getElementById('obs-note').value = '';
   document.getElementById('obs-student').value = '';
+  document.getElementById('obs-link-section').innerHTML = renderObsLinkSectionHtml('');
   document.getElementById('obs-history').innerHTML = renderObsHistory();
 }
-
 function handleProcessQueue() {
   if (!navigator.onLine) {
     alert('Aucune connexion internet détectée. Veuillez réessayer à la maison.');
