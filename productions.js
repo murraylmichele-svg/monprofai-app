@@ -429,16 +429,29 @@ function renderProductionCaptureScreen(container) {
   html += '</div>';
 
   html += '<div class="form-row">';
-  html += '<label>Niveau interne (facultatif, jamais montré aux parents):</label><br>';
-  if (existingEntry) {
-    html += '<label><input type="radio" name="input-level" value="__keep__" checked> Ne pas changer</label> ';
-    html += '<label><input type="radio" name="input-level" value=""> Aucun niveau</label> ';
+  if (productionSession.subject) {
+    html += '<label>Niveau (officiel):</label><br>';
+    if (existingEntry) {
+      html += '<label><input type="radio" name="input-level" value="__keep__" checked> Ne pas changer</label> ';
+      html += '<label><input type="radio" name="input-level" value=""> Aucun niveau</label> ';
+    } else {
+      html += '<label><input type="radio" name="input-level" value="" checked> Pas de niveau</label> ';
+    }
+    NIVEAU_OPTIONS.forEach(function(niveau) {
+      html += '<label><input type="radio" name="input-level" value="' + niveau + '"> ' + niveau + '</label> ';
+    });
   } else {
-    html += '<label><input type="radio" name="input-level" value="" checked> Pas de niveau</label> ';
+    html += '<label>Niveau interne (facultatif, jamais montré aux parents):</label><br>';
+    if (existingEntry) {
+      html += '<label><input type="radio" name="input-level" value="__keep__" checked> Ne pas changer</label> ';
+      html += '<label><input type="radio" name="input-level" value=""> Aucun niveau</label> ';
+    } else {
+      html += '<label><input type="radio" name="input-level" value="" checked> Pas de niveau</label> ';
+    }
+    html += '<label><input type="radio" name="input-level" value="emergent"> Émergent</label> ';
+    html += '<label><input type="radio" name="input-level" value="developing"> En développement</label> ';
+    html += '<label><input type="radio" name="input-level" value="confirmed"> Confirmé</label>';
   }
-  html += '<label><input type="radio" name="input-level" value="emergent"> Émergent</label> ';
-  html += '<label><input type="radio" name="input-level" value="developing"> En développement</label> ';
-  html += '<label><input type="radio" name="input-level" value="confirmed"> Confirmé</label>';
   html += '</div>';
 
   html += '<button onclick="saveProductionEntry()">' + (existingEntry ? 'Ajouter et suivant' : 'Enregistrer et suivant') + '</button> ';
