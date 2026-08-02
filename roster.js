@@ -64,7 +64,7 @@ function addStudent(prenom, nomInitial, pronom, annee, peiHH, peiAcademique) {
 }
 
 // Update an existing student by code
-function updateStudent(code, prenom, nomInitial, pronom, annee) {
+function updateStudent(code, prenom, nomInitial, pronom, annee, peiHH, peiAcademique) {
   var roster = getRoster();
   roster = roster.map(function(s) {
     if (s.code === code) {
@@ -74,7 +74,9 @@ function updateStudent(code, prenom, nomInitial, pronom, annee) {
         nomInitial: nomInitial.trim().toUpperCase().replace('.', '') + '.',
         pronom: pronom,
         annee: annee,
-        actif: s.actif
+        actif: s.actif,
+        peiHH: !!peiHH,
+        peiAcademique: !!peiAcademique
       };
     }
     return s;
