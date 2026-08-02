@@ -109,22 +109,10 @@ html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</bu
   html += '</select>';
   html += '</div>';
 
-  // Domain selector
-  html += '<div class="form-row">';
-  html += '<label>Domaine</label>';
-  html += '<div class="domaine-btns">';
-  html += '<button class="domaine-btn active" id="domaine-A" onclick="setDomaine(\'A\')"><strong>A</strong> Langue & maths</button>';
-  html += '<button class="domaine-btn" id="domaine-B" onclick="setDomaine(\'B\')"><strong>B</strong> Résolution & innovation</button>';
-  html += '<button class="domaine-btn" id="domaine-C" onclick="setDomaine(\'C\')"><strong>C</strong> Autorégulation & bien-être</button>';
-  html += '<button class="domaine-btn" id="domaine-D" onclick="setDomaine(\'D\')"><strong>D</strong> Appartenance & contribution</button>';
-  html += '</div>';
-  html += '</div>';
-  html += '<input type="hidden" id="obs-domaine" value="A">';
-
-  // Activity tag (optional)
-  html += '<div class="form-row">';
-  html += '<label>Activité (facultatif)</label>';
-  html += '<input type="text" id="obs-activity" placeholder="ex: Cercle du matin" maxlength="80">';
+  // Curriculum-link section — rebuilt dynamically based on the
+  // selected student's grade level (see handleObsStudentChange)
+  html += '<div id="obs-link-section">';
+  html += renderObsLinkSectionHtml('');
   html += '</div>';
 
   // Note + mic
