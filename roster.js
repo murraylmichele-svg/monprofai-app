@@ -262,6 +262,8 @@ function cancelRosterForm() {
   document.getElementById('input-nom').value = '';
   document.getElementById('input-pronom').value = 'elle';
   document.getElementById('input-annee').value = 'Maternelle';
+  document.getElementById('input-pei-hh').checked = false;
+  document.getElementById('input-pei-academique').checked = false;
   document.getElementById('form-title').textContent = 'Ajouter un élève';
   document.getElementById('btn-cancel').style.display = 'none';
 }
