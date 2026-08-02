@@ -634,3 +634,157 @@ function loadAndRenderObsActivityGrid(activityTag) {
   html += '</table>';
   resultsContainer.innerHTML = html;
 }
+// ============================================================
+// GRADES 1-6 — PART G2: Dynamic Observations capture form
+// ============================================================
+// APPEND this to the END of observations.js.
+// Also make Edits 1-3 described separately.
+//
+// Depends on:
+//   - isGrade1to6(), HH_CATEGORIES, ACHIEVEMENT_CATEGORIES,
+//     GRADES_1_6_SUBJECTS, SUBJECT_STRANDS,
+//     DOMAINE_B_FRANCAIS_CONTINUUM — roster.js (Part G1)
+// ============================================================
+
+function handleObsStudentChange() {
+  var studentCode = document.getElementById('obs-student').value;
+  var linkSection = document.getElementById('obs-link-section');
+  if (linkSection) {
+    linkSection.innerHTML = renderObsLinkSectionHtml(studentCode);
+  }
+}
+
+function renderObsLinkSectionHtml(studentCode) {
+  if (!studentCode) {
+    return '<p><em>Sélectionnez un élève pour afficher les champs appropriés.</em></p>';
+  }
+
+  if (!isGrade1to6(studentCode)) {
+    // Maternelle/Jardin — unchanged domain buttons + activity field
+    var html = '<div class="form-row">';
+    html += '<label>Domaine</label>';
+    html += '<div class="domaine-btns">';
+    html += '<button class="domaine-btn active" id="domaine-A" onclick="setDomaine(\'A\')"><strong>A</strong> Langue & maths</button>';
+    html += '<button class="domaine-btn" id="domaine-B" onclick="setDomaine(\'B\')"><strong>B</strong> Résolution & innovation</button>';
+    html += '<button class="domaine-btn" id="domaine-C" onclick="setDomaine(\'C\')"><strong>C</strong> Autorégulation & bien-être</button>';
+    html += '<button class="domaine-btn" id="domaine-D" onclick="setDomaine(\'D\')"><strong>D</strong> Appartenance & contribution</button>';
+    html += '</div>';
+    html += '</div>';
+    html += '<input type="hidden" id="obs-domaine" value="A">';
+
+    html += '<div class="form-row">';
+    html += '<label>Activité (facultatif)</label>';
+    html += '<input type="text" id="obs-activity" placeholder="ex: Cercle du matin" maxlength="80">';
+    html += '</div>';
+
+    return html;
+  }
+
+  // Grades 1-6 — HH vs Attente du curriculum
+  var html2 = '<div class="obs-type-toggle">';
+  html2 += '<button id="btn-link-hh" class="type-btn active" onclick="setObsLinkType(\'hh\')">HH</button>';
+  html2 += '<button id="btn-link-expectation" class="type-btn" onclick="setObsLinkType(\'expectation\')">Attente du curriculum</button>';
+  html2 += '</div>';
+  html2 += '<input type="hidden" id="obs-linktype" value="hh">';
+
+  html2 += '<div id="obs-hh-fields">';
+  html2 += '<div class="form-row">';
+  html2 += '<label>Catégorie HH</label>';
+  html2 += '<select id="obs-hh-category">';
+  HH_CATEGORIES.forEach(function(cat) {
+    html2 += '<option value="' + cat + '">' + cat + '</option>';
+  });
+  html2 += '</select>';
+  html2 += '</div>';
+  html2 += '</div>';
+
+  html2 += '<div id="obs-expectation-fields" style="display:none;">';
+  html2 += buildObsExpectationFieldsHtml(GRADES_1_6_SUBJECTS[0], '');
+  html2 += '</div>';
+
+  return html2;
+}
+
+function setObsLinkType(type) {
+  document.getElementById('obs-linktype').value = type;
+  document.getElementById('btn-link-hh').className = 'type-btn' + (type === 'hh' ? ' active' : '');
+  document.getElementById('btn-link-expectation').className = 'type-btn' + (type === 'expectation' ? ' active' : '');
+
+  var hhFields = document.getElementById('obs-hh-fields');
+  var expectationFields = document.getElementById('obs-expectation-fields');
+  if (hhFields) hhFields.style.display = (type === 'hh') ? 'block' : 'none';
+  if (expectationFields) expectationFields.style.display = (type === 'expectation') ? 'block' : 'none';
+}
+
+function buildObsExpectationFieldsHtml(subject, strand) {
+  var strands = SUBJECT_STRANDS[subject] || [];
+  if (!strand) strand = strands[0] || '';
+
+  var html = '<div class="form-row">';
+  html += '<label>Matière</label>';
+  html += '<select id="obs-subject" onchange="handleObsSubjectChange()">';
+  GRADES_1_6_SUBJECTS.forEach(function(subj) {
+    html += '<option value="' + subj + '"' + (subj === subject ? ' selected' : '') + '>' + subj + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Domaine/Volet</label>';
+  html += '<select id="obs-strand" onchange="handleObsStrandChange()">';
+  strands.forEach(function(s) {
+    html += '<option value="' + s + '"' + (s === strand ? ' selected' : '') + '>' + s + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row" id="obs-sous-sujet-row">';
+  html += buildObsSousSujetFieldHtml(subject, strand);
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Compétence (grille d\'évaluation)</label>';
+  html += '<select id="obs-achievement">';
+  ACHIEVEMENT_CATEGORIES.forEach(function(cat) {
+    html += '<option value="' + cat + '">' + cat + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  return html;
+}
+
+function buildObsSousSujetFieldHtml(subject, strand) {
+  var isDomaineBFrancais = (subject === 'Français' && strand === 'B - Notions fondamentales de la langue');
+
+  if (isDomaineBFrancais) {
+    var html = '<label>Notion fondamentale</label>';
+    html += '<select id="obs-sous-sujet">';
+    DOMAINE_B_FRANCAIS_CONTINUUM.forEach(function(item) {
+      html += '<option value="' + item + '">' + item + '</option>';
+    });
+    html += '</select>';
+    return html;
+  }
+
+  var html2 = '<label>Sous-sujet (facultatif)</label>';
+  html2 += '<input type="text" id="obs-sous-sujet" placeholder="ex: multiplication, triangles..." maxlength="80">';
+  return html2;
+}
+
+function handleObsSubjectChange() {
+  var subject = document.getElementById('obs-subject').value;
+  var expectationFields = document.getElementById('obs-expectation-fields');
+  if (expectationFields) {
+    expectationFields.innerHTML = buildObsExpectationFieldsHtml(subject, '');
+  }
+}
+
+function handleObsStrandChange() {
+  var subject = document.getElementById('obs-subject').value;
+  var strand = document.getElementById('obs-strand').value;
+  var row = document.getElementById('obs-sous-sujet-row');
+  if (row) {
+    row.innerHTML = buildObsSousSujetFieldHtml(subject, strand);
+  }
+}
