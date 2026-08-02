@@ -1104,6 +1104,9 @@ function resumeProductionSession() {
   productionSession.active = true;
   productionSession.activityTag = stored.activityTag;
   productionSession.domain = stored.domain;
+  productionSession.subject = stored.subject || null;
+  productionSession.strand = stored.strand || null;
+  productionSession.achievementCategory = stored.achievementCategory || null;
   productionSession.studentList = stored.studentList;
   productionSession.currentIndex = stored.currentIndex;
   productionSession.savedCount = stored.savedCount;
