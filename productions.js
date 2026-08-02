@@ -506,10 +506,17 @@ function saveProductionEntry() {
   var levelSelection = getSelectedProductionLevel();
   var newPhotoFile = productionSession.currentPhotoFile;
   var existing = productionSession.entryMap[student.code];
+  var isG16 = !!productionSession.subject;
 
   if (existing) {
     var mergedNote = newNoteText ? (existing.note ? existing.note + ' | ' + newNoteText : newNoteText) : existing.note;
-    var mergedLevel = (levelSelection === '__keep__') ? existing.level : (levelSelection || null);
+    var changes = { note: mergedNote };
+
+    if (isG16) {
+      changes.grade = (levelSelection === '__keep__') ? existing.grade : (levelSelection || null);
+    } else {
+      changes.level = (levelSelection === '__keep__') ? existing.level : (levelSelection || null);
+    }
 
     var afterPhoto;
     if (newPhotoFile) {
@@ -521,15 +528,13 @@ function saveProductionEntry() {
     }
 
     afterPhoto.then(function(mergedPhotoIds) {
-      return updateProduction(existing.id, {
-        note: mergedNote,
-        level: mergedLevel,
-        photoIds: mergedPhotoIds
-      }).then(function() {
+      changes.photoIds = mergedPhotoIds;
+      return updateProduction(existing.id, changes).then(function() {
         productionSession.entryMap[student.code] = {
           id: existing.id,
           note: mergedNote,
-          level: mergedLevel,
+          level: isG16 ? existing.level : changes.level,
+          grade: isG16 ? changes.grade : existing.grade,
           photoIds: mergedPhotoIds
         };
         advanceProductionSession();
@@ -541,12 +546,17 @@ function saveProductionEntry() {
 
   } else {
     var levelToSave = (levelSelection === '__keep__') ? null : (levelSelection || null);
+
     addProduction({
       studentCode: student.code,
       domain: productionSession.domain,
       note: newNoteText,
-      level: levelToSave,
+      level: isG16 ? null : levelToSave,
+      grade: isG16 ? levelToSave : null,
       activityTag: productionSession.activityTag,
+      subject: productionSession.subject,
+      strand: productionSession.strand,
+      achievementCategory: productionSession.achievementCategory,
       photoBlobs: newPhotoFile ? [newPhotoFile] : []
     }).then(function(record) {
       productionSession.savedCount++;
@@ -554,6 +564,7 @@ function saveProductionEntry() {
         id: record.id,
         note: record.note,
         level: record.level,
+        grade: record.grade,
         photoIds: record.photoIds
       };
       advanceProductionSession();
