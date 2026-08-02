@@ -159,6 +159,10 @@ function renderRoster() {
   html += '<option value="6">6e année</option>';
   html += '</select>';
   html += '</div>';
+  html += '<div class="form-row">';
+  html += '<label><input type="checkbox" id="input-pei-hh"> PEI - HH</label> ';
+  html += '<label><input type="checkbox" id="input-pei-academique"> PEI - Académique</label>';
+  html += '</div>';
   html += '<button onclick="submitRosterForm()">Enregistrer</button>';
   html += '<button onclick="cancelRosterForm()" id="btn-cancel" style="display:none">Annuler</button>';
   html += '</div>';
