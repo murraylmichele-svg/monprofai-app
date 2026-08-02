@@ -46,7 +46,7 @@ function nextCode(roster) {
 }
 
 // Add a new student
-function addStudent(prenom, nomInitial, pronom, annee) {
+function addStudent(prenom, nomInitial, pronom, annee, peiHH, peiAcademique) {
   var roster = getRoster();
   var student = {
     code: nextCode(roster),
@@ -54,7 +54,9 @@ function addStudent(prenom, nomInitial, pronom, annee) {
     nomInitial: nomInitial.trim().toUpperCase().replace('.', '') + '.',
     pronom: pronom,
     annee: annee,
-    actif: true
+    actif: true,
+    peiHH: !!peiHH,
+    peiAcademique: !!peiAcademique
   };
   roster.push(student);
   saveRoster(roster);
