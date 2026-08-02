@@ -1119,3 +1119,106 @@ function discardStoredProductionSession() {
   clearStoredProductionSession();
   renderProductions();
 }
+// ============================================================
+// GRADES 1-6 — PART G3: Productions setup fields
+// ============================================================
+// APPEND this to the END of productions.js.
+// Also make Edits 1-10 described separately.
+//
+// Depends on:
+//   - isGrade1to6(), GRADES_1_6_SUBJECTS, SUBJECT_STRANDS,
+//     ACHIEVEMENT_CATEGORIES, DOMAINE_B_FRANCAIS_CONTINUUM,
+//     NIVEAU_OPTIONS — roster.js (Part G1)
+// ============================================================
+
+function isProductionSessionGrade1to6() {
+  var roster = getRoster().filter(function(s) { return s.actif; });
+  return roster.some(function(s) { return isGrade1to6(s.code); });
+}
+
+function renderProductionSetupFieldsHtml() {
+  if (!isProductionSessionGrade1to6()) {
+    var html = '<div class="form-row">';
+    html += '<input type="text" id="input-activity-tag" placeholder="Nom de l\'activité (ex: Suites de couleurs)" maxlength="80">';
+    html += '</div>';
+    html += '<div class="form-row">';
+    html += '<label for="input-domain">Domaine: </label>';
+    html += '<select id="input-domain">';
+    html += '<option value="A">A - Langue et mathématiques fondamentales</option>';
+    html += '<option value="B">B - Résolution de problèmes et innovation</option>';
+    html += '<option value="C">C - Autorégulation et bien-être</option>';
+    html += '<option value="D">D - Appartenance et contribution</option>';
+    html += '</select>';
+    html += '</div>';
+    return html;
+  }
+
+  return buildProductionExpectationSetupHtml(GRADES_1_6_SUBJECTS[0], '');
+}
+
+function buildProductionExpectationSetupHtml(subject, strand) {
+  var strands = SUBJECT_STRANDS[subject] || [];
+  if (!strand) strand = strands[0] || '';
+
+  var html = '<div class="form-row">';
+  html += '<label>Matière: </label>';
+  html += '<select id="input-subject" onchange="handleProductionSetupSubjectChange()">';
+  GRADES_1_6_SUBJECTS.forEach(function(subj) {
+    html += '<option value="' + subj + '"' + (subj === subject ? ' selected' : '') + '>' + subj + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Domaine/Volet: </label>';
+  html += '<select id="input-strand" onchange="handleProductionSetupStrandChange()">';
+  strands.forEach(function(s) {
+    html += '<option value="' + s + '"' + (s === strand ? ' selected' : '') + '>' + s + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row" id="production-setup-name-row">';
+  html += buildProductionSetupNameFieldHtml(subject, strand);
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Compétence (grille d\'évaluation): </label>';
+  html += '<select id="input-achievement">';
+  ACHIEVEMENT_CATEGORIES.forEach(function(cat) {
+    html += '<option value="' + cat + '">' + cat + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  return html;
+}
+
+function buildProductionSetupNameFieldHtml(subject, strand) {
+  var isDomaineBFrancais = (subject === 'Français' && strand === 'B - Notions fondamentales de la langue');
+
+  if (isDomaineBFrancais) {
+    var html = '<label>Notion fondamentale: </label>';
+    html += '<select id="input-activity-tag-select">';
+    DOMAINE_B_FRANCAIS_CONTINUUM.forEach(function(item) {
+      html += '<option value="' + item + '">' + item + '</option>';
+    });
+    html += '</select>';
+    return html;
+  }
+
+  return '<label>Nom de l\'évaluation: </label><input type="text" id="input-activity-tag" placeholder="ex: Test - fractions" maxlength="80">';
+}
+
+function handleProductionSetupSubjectChange() {
+  var subject = document.getElementById('input-subject').value;
+  var wrapper = document.getElementById('production-setup-dynamic-fields');
+  if (wrapper) wrapper.innerHTML = buildProductionExpectationSetupHtml(subject, '');
+}
+
+function handleProductionSetupStrandChange() {
+  var subject = document.getElementById('input-subject').value;
+  var strand = document.getElementById('input-strand').value;
+  var row = document.getElementById('production-setup-name-row');
+  if (row) row.innerHTML = buildProductionSetupNameFieldHtml(subject, strand);
+}
