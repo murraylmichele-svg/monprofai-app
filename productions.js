@@ -72,7 +72,7 @@ function generateMediaId() {
 // level: "emergent" | "developing" | "confirmed" | null
 // activityTag: string (can be empty string)
 // photoBlobs: array of Blob objects (can be empty array)
-async function addProduction({ studentCode, domain, note, level, activityTag, photoBlobs }) {
+async function addProduction({ studentCode, domain, note, level, activityTag, photoBlobs, linkType, hhCategory, subject, strand, achievementCategory, grade }) {
   const db = await openProductionsDB();
   const productionId = generateProductionId();
   const now = new Date().toISOString();
@@ -92,6 +92,12 @@ async function addProduction({ studentCode, domain, note, level, activityTag, ph
     activityTag: activityTag || "",
     note: note || "",
     level: level || null,
+    linkType: linkType || null,
+    hhCategory: hhCategory || null,
+    subject: subject || null,
+    strand: strand || null,
+    achievementCategory: achievementCategory || null,
+    grade: grade || null,
     photoIds: photoIds,
     audioNoteId: null,
     createdAt: now,
