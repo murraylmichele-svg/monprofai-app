@@ -408,7 +408,11 @@ function renderProductionCaptureScreen(container) {
     html += '<div class="production-existing-box">';
     html += '<p><strong>Déjà enregistré pour cette activité:</strong></p>';
     html += '<p>Note existante: ' + (existingEntry.note || '(vide)') + '</p>';
-    html += '<p>Niveau actuel: ' + getLevelLabel(existingEntry.level) + '</p>';
+    if (productionSession.subject) {
+      html += '<p>Niveau actuel: ' + (existingEntry.grade || 'Aucun') + '</p>';
+    } else {
+      html += '<p>Niveau actuel: ' + getLevelLabel(existingEntry.level) + '</p>';
+    }
     html += '<p>Photos existantes: ' + existingEntry.photoIds.length + '</p>';
     html += '<p><em>Ce que vous ajoutez ci-dessous s\'ajoutera à cette entrée.</em></p>';
     html += '</div>';
