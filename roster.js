@@ -223,6 +223,8 @@ function submitRosterForm() {
   var pronom = document.getElementById('input-pronom').value;
   var annee = document.getElementById('input-annee').value;
   var code = document.getElementById('edit-code').value;
+  var peiHH = document.getElementById('input-pei-hh').checked;
+  var peiAcademique = document.getElementById('input-pei-academique').checked;
 
   if (!prenom || !nom) {
     alert('Veuillez entrer le prénom et l\'initiale du nom.');
@@ -230,9 +232,9 @@ function submitRosterForm() {
   }
 
   if (code) {
-    updateStudent(code, prenom, nom, pronom, annee);
+    updateStudent(code, prenom, nom, pronom, annee, peiHH, peiAcademique);
   } else {
-    addStudent(prenom, nom, pronom, annee);
+    addStudent(prenom, nom, pronom, annee, peiHH, peiAcademique);
   }
   cancelRosterForm();
   renderRoster();
