@@ -359,15 +359,13 @@ function startProductionSession() {
   }
 
   productionSession.active = true;
-  productionSession.activityTag = stored.activityTag;
-  productionSession.domain = stored.domain;
-  productionSession.subject = stored.subject || null;
-  productionSession.strand = stored.strand || null;
-  productionSession.achievementCategory = stored.achievementCategory || null;
-  productionSession.studentList = stored.studentList;
-  productionSession.currentIndex = stored.currentIndex;
-  productionSession.savedCount = stored.savedCount;
-  productionSession.entryMap = stored.entryMap;
+  productionSession.activityTag = tag;
+  productionSession.domain = domain;
+  productionSession.subject = subject;
+  productionSession.strand = strand;
+  productionSession.achievementCategory = achievementCategory;
+  productionSession.studentList = activeStudents;
+  productionSession.currentIndex = 0;
   productionSession.currentPhotoFile = null;
   productionSession.savedCount = 0;
   productionSession.entryMap = {};
