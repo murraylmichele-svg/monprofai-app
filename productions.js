@@ -389,8 +389,13 @@ function renderProductionCaptureScreen(container) {
   var existingEntry = productionSession.entryMap[student.code];
 
   var html = '<h2>Productions</h2>';
-  html += '<p class="production-activity-label">Activité: <strong>' + productionSession.activityTag + '</strong>';
-  html += ' &nbsp; | &nbsp; Domaine: <strong>' + productionSession.domain + '</strong>';
+  html += '<p class="production-activity-label">Activité/Évaluation: <strong>' + productionSession.activityTag + '</strong>';
+  if (productionSession.subject) {
+    html += ' &nbsp; | &nbsp; Matière: <strong>' + productionSession.subject + '</strong>';
+    html += ' &nbsp; | &nbsp; ' + productionSession.strand;
+  } else {
+    html += ' &nbsp; | &nbsp; Domaine: <strong>' + productionSession.domain + '</strong>';
+  }
   html += ' &nbsp; | &nbsp; Élève ' + (idx + 1) + ' sur ' + total + '</p>';
 
   html += renderProductionChipStrip();
