@@ -381,6 +381,7 @@ function renderProductionCaptureScreen(container) {
 
   html += '<div id="production-capture">';
   html += '<h3>' + displayName(student) + '</h3>';
+  html += getPeiReminderHtml(student.code);
 
   if (existingEntry) {
     html += '<div class="production-existing-box">';
