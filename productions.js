@@ -247,11 +247,14 @@ var productionSession = {
   active: false,
   activityTag: '',
   domain: 'A',
+  subject: null,
+  strand: null,
+  achievementCategory: null,
   studentList: [],   // active students only, snapshot at session start
   currentIndex: 0,
   currentPhotoFile: null,  // File object from the camera input, or null
   savedCount: 0,
-  entryMap: {}        // studentCode -> {id, note, level, photoIds} for THIS session
+  entryMap: {}        // studentCode -> {id, note, level, grade, photoIds} for THIS session
 };
 var productionViewMode = 'setup'; // 'setup' | 'history'
 
