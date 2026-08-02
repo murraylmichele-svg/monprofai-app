@@ -322,12 +322,31 @@ function renderProductionSetupScreen(container) {
 }
 
 function startProductionSession() {
-  var tagInput = document.getElementById('input-activity-tag');
-  var domainInput = document.getElementById('input-domain');
-  var tag = tagInput.value.trim();
+  var grade1to6Mode = isProductionSessionGrade1to6();
+  var tag = '';
+  var domain = 'A';
+  var subject = null, strand = null, achievementCategory = null;
+
+  if (grade1to6Mode) {
+    var subjectSelect = document.getElementById('input-subject');
+    var strandSelect = document.getElementById('input-strand');
+    var achievementSelect = document.getElementById('input-achievement');
+    var nameSelect = document.getElementById('input-activity-tag-select');
+    var nameInput = document.getElementById('input-activity-tag');
+
+    subject = subjectSelect ? subjectSelect.value : '';
+    strand = strandSelect ? strandSelect.value : '';
+    achievementCategory = achievementSelect ? achievementSelect.value : '';
+    tag = nameSelect ? nameSelect.value : (nameInput ? nameInput.value.trim() : '');
+  } else {
+    var tagInput = document.getElementById('input-activity-tag');
+    var domainInput = document.getElementById('input-domain');
+    tag = tagInput.value.trim();
+    domain = domainInput.value;
+  }
 
   if (!tag) {
-    alert('Veuillez nommer l\'activité avant de commencer.');
+    alert('Veuillez nommer l\'activité/évaluation avant de commencer.');
     return;
   }
 
@@ -341,7 +360,10 @@ function startProductionSession() {
 
   productionSession.active = true;
   productionSession.activityTag = tag;
-  productionSession.domain = domainInput.value;
+  productionSession.domain = domain;
+  productionSession.subject = subject;
+  productionSession.strand = strand;
+  productionSession.achievementCategory = achievementCategory;
   productionSession.studentList = activeStudents;
   productionSession.currentIndex = 0;
   productionSession.currentPhotoFile = null;
