@@ -659,8 +659,9 @@ function renderObsLinkSectionHtml(studentCode) {
     return '<p><em>Sélectionnez un élève pour afficher les champs appropriés.</em></p>';
   }
 
+  var peiReminder = getPeiReminderHtml(studentCode);
+
   if (!isGrade1to6(studentCode)) {
-    // Maternelle/Jardin — unchanged domain buttons + activity field
     var html = '<div class="form-row">';
     html += '<label>Domaine</label>';
     html += '<div class="domaine-btns">';
@@ -677,10 +678,9 @@ function renderObsLinkSectionHtml(studentCode) {
     html += '<input type="text" id="obs-activity" placeholder="ex: Cercle du matin" maxlength="80">';
     html += '</div>';
 
-    return html;
+    return peiReminder + html;
   }
 
-  // Grades 1-6 — HH vs Attente du curriculum
   var html2 = '<div class="obs-type-toggle">';
   html2 += '<button id="btn-link-hh" class="type-btn active" onclick="setObsLinkType(\'hh\')">HH</button>';
   html2 += '<button id="btn-link-expectation" class="type-btn" onclick="setObsLinkType(\'expectation\')">Attente du curriculum</button>';
@@ -702,7 +702,7 @@ function renderObsLinkSectionHtml(studentCode) {
   html2 += buildObsExpectationFieldsHtml(GRADES_1_6_SUBJECTS[0], '');
   html2 += '</div>';
 
-  return html2;
+  return peiReminder + html2;
 }
 
 function setObsLinkType(type) {
