@@ -328,6 +328,7 @@ function startProductionSession() {
   var subject = null, strand = null, achievementCategory = null;
 
   if (grade1to6Mode) {
+    domain = '';
     var subjectSelect = document.getElementById('input-subject');
     var strandSelect = document.getElementById('input-strand');
     var achievementSelect = document.getElementById('input-achievement');
