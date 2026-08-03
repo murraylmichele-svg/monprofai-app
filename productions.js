@@ -737,14 +737,25 @@ async function loadAndRenderStudentHistory(code) {
     html += '<tr class="production-entry">';
     html += '<td class="production-entry-cell">';
     html += '<p><strong>' + formatProductionDate(entry.createdAt) + '</strong></p>';
-    html += '<p>' + getDomainLabel(entry.domain) + '</p>';
+    if (entry.subject) {
+      html += '<p>' + entry.subject + ' — ' + entry.strand + '</p>';
+      if (entry.achievementCategory) {
+        html += '<p><em>Compétence: ' + entry.achievementCategory + '</em></p>';
+      }
+    } else {
+      html += '<p>' + getDomainLabel(entry.domain) + '</p>';
+    }
     if (entry.activityTag) {
       html += '<p><em>' + entry.activityTag + '</em></p>';
     }
     if (entry.note) {
       html += '<p>' + entry.note + '</p>';
     }
-    html += '<p>Niveau interne: ' + getLevelLabel(entry.level) + '</p>';
+    if (entry.subject) {
+      html += '<p>Niveau: ' + (entry.grade || 'Aucun') + '</p>';
+    } else {
+      html += '<p>Niveau interne: ' + getLevelLabel(entry.level) + '</p>';
+    }
 
     if (entry.photoIds && entry.photoIds.length > 0) {
       html += '<div class="production-photo-container" id="photo-container-' + entry.id + '"><em>Chargement de la photo...</em></div>';
