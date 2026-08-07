@@ -329,7 +329,7 @@ function buildBulletinPrompt(evidence, pronom) {
   lines.push('- Inclus à la fois des points forts ET au moins une prochaine étape, de façon équilibrée.');
   lines.push('- Mentionne une activité précise si cela aide à personnaliser le commentaire (ex: "lors de l\'activité ...").');
   lines.push('- Utilise un langage simple, chaleureux et clair, destiné aux parents — évite le jargon pédagogique.');
-  lines.push('- Ton constructif et positif, mais JAMAIS exagéré: évite les superlatifs ("excellent", "extraordinaire", "parfait", "toujours", "jamais") et n\'implique jamais que l\'enfant est parfait ou sans défi.');
+   lines.push('- Ton constructif et positif, mais JAMAIS exagéré: évite des mots comme "exemplaire", "remarquable", "irréprochable", "exceptionnel", "excellent", "extraordinaire", "parfait(e)", "toujours" et "jamais". N\'implique jamais que l\'enfant est parfait(e) ou sans défi.');
   lines.push('- Si l\'enfant éprouve des difficultés dans un aspect, formule-le avec douceur et sans jugement (ex: "il commence à...", "elle pourrait...", "il devra...") — jamais de langage dur ou négatif.');
   lines.push('- N\'utilise JAMAIS de descripteurs de niveaux de rendement (comme "émergent", "en développement", "confirmé", ou toute échelle de notation).');
   lines.push('- Ne reprends pas mot pour mot les attentes du curriculum.');
