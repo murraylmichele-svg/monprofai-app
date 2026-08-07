@@ -523,3 +523,234 @@ function getPeiReminderHtml(studentCode) {
   return '<div class="pei-reminder">⚠️ ' + displayName(student) + ' a un PEI (' +
     parts.join(' et ') + ') — pensez à consulter le PEI pour les objectifs spécifiques.</div>';
 }
+// ============================================================
+// roster.js — MonProf.ai
+// ADDITION: Gradebook-style Excel export (.xlsx, one tab per
+// subject/domaine, students as rows, entries as columns)
+// ============================================================
+// APPEND this to the END of roster.js.
+// Also make Steps 1-4 described separately.
+//
+// Depends on:
+//   - XLSX global (loaded via xlsx.full.min.js) — SheetJS library
+//   - getObservations() — observations.js
+//   - getAllProductions(), formatProductionDate(), getLevelLabel() — productions.js
+//   - getRoster(), displayName() — this file
+// ============================================================
+
+async function exportGradebookXLSX() {
+  if (typeof XLSX === 'undefined') {
+    alert('La bibliothèque Excel (xlsx.full.min.js) n\'est pas chargée. Vérifiez que le fichier est bien ajouté et référencé dans index.html.');
+    return;
+  }
+
+  var roster = getRoster().filter(function(s) { return s.actif; });
+  var obs = getObservations();
+  var prods = await getAllProductions();
+
+  var sheets = {};
+
+  function ensureSheet(name) {
+    if (!sheets[name]) sheets[name] = { columnSet: {}, data: {} };
+    return sheets[name];
+  }
+
+  function colKey(dateStr, activityTag) {
+    return activityTag ? (dateStr + ' — ' + activityTag) : dateStr;
+  }
+
+  function addEntry(sheetName, studentCode, dateStr, activityTag, cellText) {
+    var sheet = ensureSheet(sheetName);
+    var key = colKey(dateStr, activityTag);
+    sheet.columnSet[key] = true;
+    if (!sheet.data[studentCode]) sheet.data[studentCode] = {};
+    if (sheet.data[studentCode][key]) {
+      sheet.data[studentCode][key] += ' | ' + cellText;
+    } else {
+      sheet.data[studentCode][key] = cellText;
+    }
+  }
+
+  obs.forEach(function(o) {
+    var sheetName;
+    if (o.linkType === 'hh') {
+      sheetName = 'HH';
+    } else if (o.linkType === 'expectation' && o.subject) {
+      sheetName = o.subject;
+    } else {
+      sheetName = 'Domaine ' + (o.domaine || '?');
+    }
+    addEntry(sheetName, o.studentCode, o.date, o.activityTag, o.note || '');
+  });
+
+  prods.forEach(function(p) {
+    var sheetName;
+    var cellText;
+
+    if (p.subject) {
+      sheetName = p.subject;
+      cellText = (p.grade ? p.grade + ' — ' : '') + (p.note || '');
+    } else {
+      sheetName = 'Domaine ' + (p.domain || '?');
+      cellText = (p.level ? getLevelLabel(p.level) + ' — ' : '') + (p.note || '');
+    }
+
+    addEntry(sheetName, p.studentCode, formatProductionDate(p.createdAt), p.activityTag, cellText);
+  });
+
+  if (Object.keys(sheets).length === 0) {
+    alert('Aucune donnée à exporter pour le moment.');
+    return;
+  }
+
+  var wb = XLSX.utils.book_new();
+
+  Object.keys(sheets).sort().forEach(function(sheetName) {
+    var sheet = sheets[sheetName];
+    var columns = Object.keys(sheet.columnSet).sort();
+
+    var rows = [['Élève'].concat(columns)];
+
+    roster.forEach(function(s) {
+      var name = displayName(s);
+      var rowData = sheet.data[s.code] || {};
+      var row = [name];
+      columns.forEach(function(col) {
+        row.push(rowData[col] || '');
+      });
+      rows.push(row);
+    });
+
+    var ws = XLSX.utils.aoa_to_sheet(rows);
+    var safeName = sheetName.substring(0, 31); // Excel sheet-name length limit
+    XLSX.utils.book_append_sheet(wb, ws, safeName);
+  });
+
+  var dateStr = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, 'monprofai_carnet_' + dateStr + '.xlsx');
+}
+// ============================================================
+// roster.js — MonProf.ai
+// ADDITION: CSV export of all Observations/Conversations/Productions
+// ============================================================
+// APPEND this to the END of roster.js.
+// Also make the 1 edit described separately.
+//
+// Real student names (not codes) — this is an internal document
+// for the principal, not something sent to the AI.
+//
+// Depends on:
+//   - getObservations() — observations.js
+//   - getAllProductions(), formatProductionDate() — productions.js
+//   - getLevelLabel() — productions.js Part 3
+//   - getRoster(), displayName() — this file
+// ============================================================
+
+function csvEscape(value) {
+  var str = (value === null || value === undefined) ? '' : String(value);
+  if (str.indexOf(',') !== -1 || str.indexOf('"') !== -1 || str.indexOf('\n') !== -1) {
+    str = '"' + str.split('"').join('""') + '"';
+  }
+  return str;
+}
+
+async function exportMarksSpreadsheet() {
+  var roster = getRoster();
+  var obs = getObservations();
+  var prods = await getAllProductions();
+
+  var allRows = [];
+
+  obs.forEach(function(o) {
+    var student = roster.find(function(s) { return s.code === o.studentCode; });
+    var name = student ? displayName(student) : o.studentCode;
+    var annee = student ? student.annee : '';
+    var type = o.type === 'conversation' ? 'Conversation' : 'Observation';
+
+    var domaineMatiere = '';
+    var voletCompetence = '';
+    var hhCat = '';
+
+    if (o.linkType === 'hh') {
+      hhCat = o.hhCategory || '';
+    } else if (o.linkType === 'expectation') {
+      domaineMatiere = o.subject || '';
+      voletCompetence = (o.strand || '') + (o.achievementCategory ? ' | ' + o.achievementCategory : '');
+    } else {
+      domaineMatiere = o.domaine || '';
+    }
+
+    allRows.push({
+      date: o.date,
+      eleve: name,
+      annee: annee,
+      type: type,
+      domaineMatiere: domaineMatiere,
+      voletCompetence: voletCompetence,
+      activite: o.activityTag || '',
+      note: o.note || '',
+      niveauCote: '',
+      hhCat: hhCat
+    });
+  });
+
+  prods.forEach(function(p) {
+    var student = roster.find(function(s) { return s.code === p.studentCode; });
+    var name = student ? displayName(student) : p.studentCode;
+    var annee = student ? student.annee : '';
+
+    var domaineMatiere = '';
+    var voletCompetence = '';
+    var niveauCote = '';
+
+    if (p.subject) {
+      domaineMatiere = p.subject;
+      voletCompetence = (p.strand || '') + (p.achievementCategory ? ' | ' + p.achievementCategory : '');
+      niveauCote = p.grade || '';
+    } else {
+      domaineMatiere = p.domain || '';
+      niveauCote = p.level ? getLevelLabel(p.level) : '';
+    }
+
+    allRows.push({
+      date: formatProductionDate(p.createdAt),
+      eleve: name,
+      annee: annee,
+      type: 'Production',
+      domaineMatiere: domaineMatiere,
+      voletCompetence: voletCompetence,
+      activite: p.activityTag || '',
+      note: p.note || '',
+      niveauCote: niveauCote,
+      hhCat: ''
+    });
+  });
+
+  if (allRows.length === 0) {
+    alert('Aucune donnée à exporter pour le moment.');
+    return;
+  }
+
+  allRows.sort(function(a, b) { return a.date.localeCompare(b.date); });
+
+  var lines = [];
+  lines.push(['Date', 'Élève', 'Année', 'Type', 'Domaine/Matière', 'Volet/Compétence', 'Activité', 'Note', 'Niveau/Cote', 'Catégorie HH'].map(csvEscape).join(','));
+
+  allRows.forEach(function(r) {
+    lines.push([r.date, r.eleve, r.annee, r.type, r.domaineMatiere, r.voletCompetence, r.activite, r.note, r.niveauCote, r.hhCat].map(csvEscape).join(','));
+  });
+
+  var csvContent = lines.join('\r\n');
+
+  // BOM prefix so Excel reads accented French characters correctly
+  var blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'monprofai_donnees_' + dateStr + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
