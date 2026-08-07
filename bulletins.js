@@ -1139,3 +1139,66 @@ function copyGrade16DraftToClipboard() {
     console.error(err);
   });
 }
+// ============================================================
+// GRADES 1-6 — ADDITION: Progress table view
+// ============================================================
+// APPEND this to the END of bulletins.js.
+// Also make the 1 edit described separately (add table button).
+//
+// Shows, for the currently selected subject + period, every
+// active grades 1-6 student and whether a draft already exists —
+// useful for resuming after an interruption.
+// ============================================================
+
+function renderGrade16TableView() {
+  var subjectSelect = document.getElementById('g16-subject-select');
+  var periodSelect = document.getElementById('g16-period-select');
+  var subject = subjectSelect ? subjectSelect.value : grade16BulletinState.selectedSubject;
+  var period = periodSelect ? periodSelect.value : grade16BulletinState.selectedPeriod;
+
+  grade16BulletinState.selectedSubject = subject;
+  grade16BulletinState.selectedPeriod = period;
+
+  var reviewArea = document.getElementById('g16-review-area');
+  if (reviewArea) reviewArea.innerHTML = '';
+
+  var roster = getRoster().filter(function(s) { return s.actif && isGrade1to6(s.code); });
+  var drafts = getGrade16Drafts();
+
+  var periodLabels = {
+    progres: 'Bulletin de progrès (automne)',
+    scolaire1: 'Bulletin scolaire (janvier)',
+    scolaire2: 'Bulletin scolaire (juin)'
+  };
+
+  var html = '<h4>Tous les brouillons — ' + subject + ' — ' + (periodLabels[period] || period) + '</h4>';
+  html += '<table class="bulletin-summary-table">';
+  html += '<tr><th>Élève</th><th>Statut</th><th>Cote/Formule</th><th></th></tr>';
+
+  roster.forEach(function(s) {
+    var draft = drafts[s.code + '_' + subject + '_' + period];
+    html += '<tr>';
+    html += '<td>' + displayName(s) + '</td>';
+    if (draft) {
+      html += '<td>✓ Généré</td>';
+      html += '<td>' + (draft.cote || '—') + '</td>';
+      html += '<td><button onclick="loadGrade16StudentIntoView(\'' + s.code + '\')">Voir/Modifier</button></td>';
+    } else {
+      html += '<td class="production-grid-missing">Pas encore généré</td>';
+      html += '<td>—</td>';
+      html += '<td><button onclick="loadGrade16StudentIntoView(\'' + s.code + '\')">Commencer</button></td>';
+    }
+    html += '</tr>';
+  });
+
+  html += '</table>';
+
+  var entriesArea = document.getElementById('g16-entries-area');
+  if (entriesArea) entriesArea.innerHTML = html;
+}
+
+function loadGrade16StudentIntoView(studentCode) {
+  var studentSelect = document.getElementById('g16-student-select');
+  if (studentSelect) studentSelect.value = studentCode;
+  handleGrade16SelectorChange();
+}
