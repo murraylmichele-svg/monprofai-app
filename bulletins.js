@@ -720,3 +720,412 @@ async function copyAllBulletinsToClipboard() {
     console.error(err);
   }
 }
+// ============================================================
+// GRADES 1-6 — PART G4: Academic (Français/Mathématiques) comments
+// ============================================================
+// APPEND this to the END of bulletins.js.
+// Also make the 1 edit described separately (renderBulletins).
+//
+// Workflow: pick student + subject + period -> checklist of that
+// student's curriculum-linked Observations/Productions for that
+// subject -> teacher checks which to include -> generate.
+//
+// Cote/progress-formula is ALWAYS a manual pick, never AI-suggested,
+// per the "jugement professionnel" principle in the Guide d'appui.
+//
+// Depends on:
+//   - getObservationsForStudent(), getProductionsByStudent() — obs/prod files
+//   - formatProductionDate() — productions.js Part 3
+//   - anonymizeText(), deanonymizeBulletinText(), getRoster(), displayName() — roster.js/bulletins.js
+//   - callBulletinProxy() — bulletins.js Part B2
+//   - isGrade1to6(), GRADES_1_6_SUBJECTS — roster.js Part G1
+//   - escapeHtmlForTextarea() — bulletins.js Part B4
+// ============================================================
+
+var GRADE16_DRAFTS_KEY = 'monprofai_grade16_bulletin_drafts';
+
+var COTE_OPTIONS = ['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-'];
+var PROGRES_OPTIONS = ['Progresse avec difficulté', 'Progresse bien', 'Progresse très bien'];
+
+var grade16BulletinState = {
+  selectedStudent: '',
+  selectedSubject: 'Français',
+  selectedPeriod: 'progres',
+  entries: [],
+  selectedEntryIds: []
+};
+
+// ---- DATA ----
+
+async function getGrade16SubjectEntries(studentCode, subject) {
+  var obs = getObservationsForStudent(studentCode).filter(function(o) {
+    return o.linkType === 'expectation' && o.subject === subject;
+  });
+  var prod = await getProductionsByStudent(studentCode);
+  prod = prod.filter(function(p) { return p.subject === subject; });
+
+  var combined = [];
+
+  obs.forEach(function(o) {
+    combined.push({
+      id: 'obs_' + o.id,
+      date: o.date,
+      strand: o.strand,
+      achievementCategory: o.achievementCategory,
+      activityTag: o.activityTag,
+      note: o.note,
+      grade: null
+    });
+  });
+
+  prod.forEach(function(p) {
+    combined.push({
+      id: 'prod_' + p.id,
+      date: formatProductionDate(p.createdAt),
+      strand: p.strand,
+      achievementCategory: p.achievementCategory,
+      activityTag: p.activityTag,
+      note: p.note,
+      grade: p.grade
+    });
+  });
+
+  combined.sort(function(a, b) { return a.date.localeCompare(b.date); });
+  return combined;
+}
+
+// ---- DRAFT STORAGE ----
+
+function getGrade16Drafts() {
+  try {
+    var data = localStorage.getItem(GRADE16_DRAFTS_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (e) { return {}; }
+}
+
+function saveGrade16Drafts(drafts) {
+  try {
+    localStorage.setItem(GRADE16_DRAFTS_KEY, JSON.stringify(drafts));
+  } catch (e) {
+    alert('Erreur: impossible de sauvegarder le brouillon.');
+  }
+}
+
+function saveGrade16Draft(studentCode, subject, period, text, cote, selectedEntryIds) {
+  var drafts = getGrade16Drafts();
+  var key = studentCode + '_' + subject + '_' + period;
+  drafts[key] = {
+    studentCode: studentCode,
+    subject: subject,
+    period: period,
+    text: text,
+    cote: cote || null,
+    selectedEntryIds: selectedEntryIds,
+    generatedAt: new Date().toISOString()
+  };
+  saveGrade16Drafts(drafts);
+}
+
+function getGrade16Draft(studentCode, subject, period) {
+  var drafts = getGrade16Drafts();
+  return drafts[studentCode + '_' + subject + '_' + period] || null;
+}
+
+// ---- PROMPT + GENERATION ----
+
+function buildGrade16SubjectPrompt(period, subject, pronom, selectedEntries) {
+  var lines = [];
+  var periodLabel = period === 'progres'
+    ? 'le bulletin de progrès scolaire (première communication, automne)'
+    : (period === 'scolaire1' ? 'le bulletin scolaire (deuxième communication, janvier)' : 'le bulletin scolaire (troisième communication, juin)');
+
+  lines.push('Tu es une enseignante en Ontario qui rédige un commentaire de ' + subject + ' pour ' + periodLabel + '.');
+  lines.push('');
+  lines.push('RÈGLES STRICTES:');
+  lines.push('- Rédige un commentaire pour la matière ' + subject + ' seulement.');
+  lines.push('- Utilise UNIQUEMENT le code de l\'élève pour le désigner (jamais un prénom).');
+  lines.push('- Le pronom de l\'enfant est "' + pronom + '". Utilise UNIQUEMENT ce pronom, jamais "il/elle" ensemble.');
+  lines.push('- Base-toi seulement sur les preuves fournies ci-dessous. N\'invente rien.');
+  lines.push('- Inclus un point fort ET au moins une prochaine étape, de façon équilibrée.');
+  lines.push('- Langage simple et clair, destiné aux parents — évite le jargon pédagogique.');
+  lines.push('- Ton constructif et positif, mais JAMAIS exagéré: évite les superlatifs et n\'implique jamais la perfection.');
+  lines.push('- Si l\'élève éprouve des difficultés, formule-le avec douceur (ex: "devra", "pourrait", "commence à").');
+  lines.push('- N\'utilise JAMAIS de cote (lettre) ni de pourcentage dans le texte — la cote est assignée séparément par l\'enseignante.');
+  lines.push('- Ne reprends pas mot pour mot les attentes du curriculum.');
+
+  if (period === 'progres') {
+    lines.push('- Ce commentaire accompagnera une formule de progrès ("progresse avec difficulté/bien/très bien") choisie séparément par l\'enseignante — ne répète pas cette formule dans le texte.');
+    lines.push('- Longueur cible: 3 à 5 phrases.');
+  } else {
+    lines.push('- Longueur cible: un paragraphe solide d\'environ 5 à 7 phrases.');
+  }
+
+  lines.push('- Réponds UNIQUEMENT avec le texte final, sans titre ni préambule.');
+  lines.push('');
+  lines.push('PREUVES SÉLECTIONNÉES:');
+
+  if (selectedEntries.length === 0) {
+    lines.push('(Aucune preuve sélectionnée.)');
+  }
+
+  selectedEntries.forEach(function(e) {
+    var gradeInfo = e.grade ? (' [Niveau: ' + e.grade + ']') : '';
+    lines.push('- [' + e.date + '] ' + (e.strand || '') +
+      (e.achievementCategory ? ' — ' + e.achievementCategory : '') +
+      (e.activityTag ? ' — ' + e.activityTag : '') + gradeInfo + ': ' + anonymizeText(e.note));
+  });
+
+  return lines.join('\n');
+}
+
+async function generateGrade16SubjectComment(studentCode, subject, period, selectedEntryIds, allEntries) {
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === studentCode; });
+  var pronom = student ? student.pronom : 'iel';
+
+  var selectedEntries = allEntries.filter(function(e) { return selectedEntryIds.indexOf(e.id) !== -1; });
+
+  var prompt = buildGrade16SubjectPrompt(period, subject, pronom, selectedEntries);
+  var rawComment = await callBulletinProxy(prompt);
+  return deanonymizeBulletinText(rawComment, studentCode);
+}
+
+// ---- UI ----
+
+function renderGrade16BulletinSectionHtml() {
+  var roster = getRoster().filter(function(s) { return s.actif && isGrade1to6(s.code); });
+
+  if (roster.length === 0) {
+    return '<p>Aucun élève de la 1re à la 6e année dans la liste de classe active.</p>';
+  }
+
+  var html = '<div class="form-row">';
+  html += '<label for="g16-student-select">Élève: </label>';
+  html += '<select id="g16-student-select" onchange="handleGrade16SelectorChange()">';
+  html += '<option value="">-- Sélectionner --</option>';
+  roster.forEach(function(s) {
+    var sel = (s.code === grade16BulletinState.selectedStudent) ? ' selected' : '';
+    html += '<option value="' + s.code + '"' + sel + '>' + displayName(s) + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label for="g16-subject-select">Matière: </label>';
+  html += '<select id="g16-subject-select" onchange="handleGrade16SelectorChange()">';
+  GRADES_1_6_SUBJECTS.forEach(function(subj) {
+    var sel = (subj === grade16BulletinState.selectedSubject) ? ' selected' : '';
+    html += '<option value="' + subj + '"' + sel + '>' + subj + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label for="g16-period-select">Période: </label>';
+  html += '<select id="g16-period-select" onchange="handleGrade16SelectorChange()">';
+  html += '<option value="progres"' + (grade16BulletinState.selectedPeriod === 'progres' ? ' selected' : '') + '>Bulletin de progrès (automne)</option>';
+  html += '<option value="scolaire1"' + (grade16BulletinState.selectedPeriod === 'scolaire1' ? ' selected' : '') + '>Bulletin scolaire (janvier)</option>';
+  html += '<option value="scolaire2"' + (grade16BulletinState.selectedPeriod === 'scolaire2' ? ' selected' : '') + '>Bulletin scolaire (juin)</option>';
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div id="g16-entries-area"><p><em>Sélectionnez un élève et une matière pour voir les preuves disponibles.</em></p></div>';
+  html += '<div id="g16-review-area"></div>';
+
+  return html;
+}
+
+async function handleGrade16SelectorChange() {
+  var studentSelect = document.getElementById('g16-student-select');
+  var subjectSelect = document.getElementById('g16-subject-select');
+  var periodSelect = document.getElementById('g16-period-select');
+
+  grade16BulletinState.selectedStudent = studentSelect.value;
+  grade16BulletinState.selectedSubject = subjectSelect.value;
+  grade16BulletinState.selectedPeriod = periodSelect.value;
+
+  var reviewArea = document.getElementById('g16-review-area');
+  if (reviewArea) reviewArea.innerHTML = '';
+
+  var entriesArea = document.getElementById('g16-entries-area');
+
+  if (!grade16BulletinState.selectedStudent) {
+    if (entriesArea) entriesArea.innerHTML = '<p><em>Sélectionnez un élève et une matière pour voir les preuves disponibles.</em></p>';
+    return;
+  }
+
+  if (entriesArea) entriesArea.innerHTML = '<p>Chargement des preuves...</p>';
+
+  var entries = await getGrade16SubjectEntries(grade16BulletinState.selectedStudent, grade16BulletinState.selectedSubject);
+  grade16BulletinState.entries = entries;
+
+  var existingDraft = getGrade16Draft(grade16BulletinState.selectedStudent, grade16BulletinState.selectedSubject, grade16BulletinState.selectedPeriod);
+  grade16BulletinState.selectedEntryIds = existingDraft ? existingDraft.selectedEntryIds : entries.map(function(e) { return e.id; });
+
+  renderGrade16EntriesChecklist();
+
+  if (existingDraft) {
+    renderGrade16Review(existingDraft);
+  }
+}
+
+function renderGrade16EntriesChecklist() {
+  var entriesArea = document.getElementById('g16-entries-area');
+  if (!entriesArea) return;
+
+  var entries = grade16BulletinState.entries;
+
+  if (entries.length === 0) {
+    entriesArea.innerHTML = '<p>Aucune preuve enregistrée pour cette matière.</p>';
+    return;
+  }
+
+  var html = '<h4>Preuves disponibles (cochez celles à inclure)</h4>';
+  html += '<div class="g16-entries-list">';
+
+  entries.forEach(function(e) {
+    var checked = grade16BulletinState.selectedEntryIds.indexOf(e.id) !== -1 ? ' checked' : '';
+    var gradeInfo = e.grade ? (' — Niveau: ' + e.grade) : '';
+    html += '<label class="g16-entry-item">';
+    html += '<input type="checkbox" value="' + e.id + '" onchange="toggleGrade16Entry(\'' + e.id + '\', this.checked)"' + checked + '> ';
+    html += '<strong>' + e.date + '</strong> — ' + (e.strand || '') +
+      (e.achievementCategory ? ' (' + e.achievementCategory + ')' : '') +
+      (e.activityTag ? ' — ' + e.activityTag : '') + gradeInfo + '<br>';
+    html += '<span class="g16-entry-note">' + (e.note || '') + '</span>';
+    html += '</label>';
+  });
+
+  html += '</div>';
+  html += '<button onclick="handleGenerateGrade16Click()">Générer le commentaire</button>';
+  html += '<span id="g16-generate-status"></span>';
+
+  entriesArea.innerHTML = html;
+}
+
+function toggleGrade16Entry(entryId, isChecked) {
+  var idx = grade16BulletinState.selectedEntryIds.indexOf(entryId);
+  if (isChecked && idx === -1) {
+    grade16BulletinState.selectedEntryIds.push(entryId);
+  } else if (!isChecked && idx !== -1) {
+    grade16BulletinState.selectedEntryIds.splice(idx, 1);
+  }
+}
+
+async function handleGenerateGrade16Click() {
+  var statusEl = document.getElementById('g16-generate-status');
+  if (statusEl) statusEl.textContent = ' Génération en cours...';
+
+  try {
+    var text = await generateGrade16SubjectComment(
+      grade16BulletinState.selectedStudent,
+      grade16BulletinState.selectedSubject,
+      grade16BulletinState.selectedPeriod,
+      grade16BulletinState.selectedEntryIds,
+      grade16BulletinState.entries
+    );
+
+    saveGrade16Draft(
+      grade16BulletinState.selectedStudent,
+      grade16BulletinState.selectedSubject,
+      grade16BulletinState.selectedPeriod,
+      text,
+      null,
+      grade16BulletinState.selectedEntryIds
+    );
+
+    if (statusEl) statusEl.textContent = '';
+    renderGrade16Review(getGrade16Draft(
+      grade16BulletinState.selectedStudent,
+      grade16BulletinState.selectedSubject,
+      grade16BulletinState.selectedPeriod
+    ));
+  } catch (err) {
+    if (statusEl) statusEl.textContent = '';
+    alert('Erreur lors de la génération: ' + err.message);
+    console.error(err);
+  }
+}
+
+function renderGrade16Review(draft) {
+  var reviewArea = document.getElementById('g16-review-area');
+  if (!reviewArea) return;
+
+  var html = '<div class="bulletin-review-box">';
+  html += '<h4>Brouillon</h4>';
+  html += '<textarea id="g16-edit-text" rows="6">' + escapeHtmlForTextarea(draft.text) + '</textarea>';
+
+  if (draft.period === 'progres') {
+    html += '<div class="form-row">';
+    html += '<label>Formule de progrès: </label>';
+    html += '<select id="g16-progres-select">';
+    html += '<option value="">-- Sélectionner --</option>';
+    PROGRES_OPTIONS.forEach(function(opt) {
+      html += '<option value="' + opt + '"' + (draft.cote === opt ? ' selected' : '') + '>' + opt + '</option>';
+    });
+    html += '</select>';
+    html += '</div>';
+  } else {
+    html += '<div class="form-row">';
+    html += '<label>Cote: </label>';
+    html += '<select id="g16-cote-select">';
+    html += '<option value="">-- Sélectionner --</option>';
+    COTE_OPTIONS.forEach(function(c) {
+      html += '<option value="' + c + '"' + (draft.cote === c ? ' selected' : '') + '>' + c + '</option>';
+    });
+    html += '</select>';
+    html += '</div>';
+  }
+
+  html += '<button onclick="saveGrade16Edits()">Enregistrer</button> ';
+  html += '<button onclick="copyGrade16DraftToClipboard()">Copier</button>';
+  html += '<span id="g16-save-status"></span>';
+  html += '</div>';
+
+  reviewArea.innerHTML = html;
+}
+
+function saveGrade16Edits() {
+  var textarea = document.getElementById('g16-edit-text');
+  var cote = null;
+  var progresSelect = document.getElementById('g16-progres-select');
+  var coteSelect = document.getElementById('g16-cote-select');
+  if (progresSelect) cote = progresSelect.value || null;
+  if (coteSelect) cote = coteSelect.value || null;
+
+  saveGrade16Draft(
+    grade16BulletinState.selectedStudent,
+    grade16BulletinState.selectedSubject,
+    grade16BulletinState.selectedPeriod,
+    textarea.value,
+    cote,
+    grade16BulletinState.selectedEntryIds
+  );
+
+  var statusEl = document.getElementById('g16-save-status');
+  if (statusEl) {
+    statusEl.textContent = ' ✓ Enregistré';
+    setTimeout(function() { statusEl.textContent = ''; }, 2000);
+  }
+}
+
+function copyGrade16DraftToClipboard() {
+  var textarea = document.getElementById('g16-edit-text');
+  var progresSelect = document.getElementById('g16-progres-select');
+  var coteSelect = document.getElementById('g16-cote-select');
+  var extra = '';
+  if (progresSelect && progresSelect.value) extra = '\n\n' + progresSelect.value;
+  if (coteSelect && coteSelect.value) extra = '\n\nCote: ' + coteSelect.value;
+
+  var text = (textarea ? textarea.value : '') + extra;
+
+  navigator.clipboard.writeText(text).then(function() {
+    var statusEl = document.getElementById('g16-save-status');
+    if (statusEl) {
+      statusEl.textContent = ' ✓ Copié';
+      setTimeout(function() { statusEl.textContent = ''; }, 2000);
+    }
+  }).catch(function(err) {
+    alert('Impossible de copier automatiquement.');
+    console.error(err);
+  });
+}
