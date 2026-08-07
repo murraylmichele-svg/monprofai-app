@@ -1776,6 +1776,10 @@ function assembleHHComment() {
     parts.push(periodPhrase);
   }
 
+  if (hhState.peiSentenceIncluded && hhState.peiSentenceText && hhState.peiSentenceText.trim()) {
+    parts.push(hhState.peiSentenceText.trim());
+  }
+
   var comment = parts.join(' ').trim();
 
   if (pronom === 'elle') {
