@@ -487,7 +487,12 @@ var DOMAINE_B_FRANCAIS_CONTINUUM = [
   'Ponctuation et majuscules'
 ];
 
-var NIVEAU_OPTIONS = ['Niveau 1', 'Niveau 2', 'Niveau 3', 'Niveau 4'];
+var NIVEAU_OPTIONS = [
+  '4+', '4', '4-',
+  '3+', '3', '3-',
+  '2+', '2', '2-',
+  '1+', '1', '1-'
+];
 
 function isGrade1to6(studentCode) {
   var roster = getRoster();
