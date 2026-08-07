@@ -142,10 +142,10 @@ function renderBulletins() {
   var mjRoster = allActive.filter(function(s) { return !isGrade1to6(s.code); });
   var g16Roster = allActive.filter(function(s) { return isGrade1to6(s.code); });
 
-  var html = '<h2>Bulletins</h2>';
+ var html = '';
 
   if (mjRoster.length > 0) {
-    html += '<h3>Maternelle / Jardin</h3>';
+    html += '<h2>Bulletin M-J</h2>';
     html += '<div class="form-row">';
     html += '<label for="bulletin-student-select">Élève: </label>';
     html += '<select id="bulletin-student-select" onchange="handleBulletinSelectorChange()">';
