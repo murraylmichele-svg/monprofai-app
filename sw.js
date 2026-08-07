@@ -14,7 +14,8 @@ var FILES_TO_CACHE = [
   BASE + 'bulletins.js',
   BASE + 'audio-queue.js',
   BASE + 'styles.css',
-  BASE + 'heic2any.min.js'
+  BASE + 'heic2any.min.js',
+  BASE + 'xlsx.full.min.js'
 ];
 // Install: cache all app files
 self.addEventListener('install', function(e) {
