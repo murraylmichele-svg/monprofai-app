@@ -1612,7 +1612,20 @@ function renderHHDynamicArea() {
   var dynamicArea = document.getElementById('hh-dynamic-area');
   if (!dynamicArea) return;
 
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === hhState.selectedStudent; });
+
   var html = getPeiReminderHtml(hhState.selectedStudent);
+
+  if (student && student.peiHH) {
+    html += '<div class="hh-pei-box">';
+    html += '<label><input type="checkbox" id="hh-pei-include"' + (hhState.peiSentenceIncluded ? ' checked' : '') +
+      ' onchange="toggleHHPeiInclude(this.checked)"> Inclure l\'énoncé PEI dans ce commentaire</label>';
+    html += '<textarea id="hh-pei-text" rows="2" placeholder="Collez ici l\'énoncé fourni par la SERT..." oninput="updateHHPeiText(this.value)">' +
+      escapeHtmlForTextarea(hhState.peiSentenceText) + '</textarea>';
+    html += '<button onclick="saveHHPeiTemplate()">Enregistrer comme modèle par défaut</button>';
+    html += '</div>';
+  }
 
   html += '<div class="hh-categories">';
   HH_CATEGORY_KEYS.forEach(function(cat) {
