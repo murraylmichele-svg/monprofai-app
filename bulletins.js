@@ -1524,6 +1524,8 @@ function saveHHDraft(studentCode, period, data) {
     cotes: data.cotes,
     selectedForces: data.selectedForces,
     selectedProchaines: data.selectedProchaines,
+    peiSentenceIncluded: data.peiSentenceIncluded || false,
+    peiSentenceText: data.peiSentenceText || '',
     text: data.text,
     generatedAt: new Date().toISOString()
   };
