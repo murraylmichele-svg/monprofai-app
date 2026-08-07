@@ -528,3 +528,26 @@ table tr:hover {
   font-size: 13px;
   color: #a04000;
 }
+.g16-entries-list {
+  margin: 12px 0;
+}
+
+.g16-entry-item {
+  display: block;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.g16-entry-item:hover {
+  background: #f9fdf9;
+}
+
+.g16-entry-note {
+  color: #555;
+  font-style: italic;
+}
