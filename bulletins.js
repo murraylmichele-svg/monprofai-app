@@ -887,7 +887,7 @@ async function generateGrade16SubjectComment(studentCode, subject, period, selec
 
   var selectedEntries = allEntries.filter(function(e) { return selectedEntryIds.indexOf(e.id) !== -1; });
 
-  var prompt = buildGrade16SubjectPrompt(period, subject, pronom, selectedEntries);
+  var prompt = buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selectedEntries);
   var rawComment = await callBulletinProxy(prompt);
   return deanonymizeBulletinText(rawComment, studentCode);
 }
