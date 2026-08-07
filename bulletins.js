@@ -942,6 +942,12 @@ function renderGrade16BulletinSectionHtml() {
   html += '<div id="g16-entries-area"><p><em>Sélectionnez un élève et une matière pour voir les preuves disponibles.</em></p></div>';
   html += '<div id="g16-review-area"></div>';
 
+  html += '<hr>';
+  html += '<h3>Habiletés d\'apprentissage et habitudes de travail (HH)</h3>';
+  html += '<div id="hh-section">';
+  html += renderHHSectionHtml();
+  html += '</div>';
+
   return html;
 }
 
