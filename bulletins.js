@@ -848,7 +848,7 @@ function buildGrade16SubjectPrompt(period, subject, pronom, selectedEntries) {
   lines.push('- Base-toi seulement sur les preuves fournies ci-dessous. N\'invente rien.');
   lines.push('- Inclus un point fort ET au moins une prochaine étape, de façon équilibrée.');
   lines.push('- Langage simple et clair, destiné aux parents — évite le jargon pédagogique.');
-  lines.push('- Ton constructif et positif, mais JAMAIS exagéré: évite les superlatifs et n\'implique jamais la perfection.');
+  lines.push('- Ton constructif et positif, mais JAMAIS exagéré: évite des mots comme "exemplaire", "remarquable", "irréprochable", "exceptionnel", "excellent", "parfait(e)", "toujours" et "jamais". N\'implique jamais que l\'élève est parfait(e) ou sans défi.');
   lines.push('- Si l\'élève éprouve des difficultés, formule-le avec douceur (ex: "devra", "pourrait", "commence à").');
   lines.push('- N\'utilise JAMAIS de cote (lettre) ni de pourcentage dans le texte — la cote est assignée séparément par l\'enseignante.');
   lines.push('- Ne reprends pas mot pour mot les attentes du curriculum.');
