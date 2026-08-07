@@ -551,3 +551,69 @@ table tr:hover {
   color: #555;
   font-style: italic;
 }
+.hh-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.hh-category-block {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 12px;
+  flex: 1 1 200px;
+}
+
+.hh-category-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2d5a3d;
+  margin-bottom: 6px;
+}
+
+.hh-cote-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.hh-cote-btn {
+  flex: 1;
+  padding: 6px 0;
+  border: 1px solid #2d5a3d;
+  background: white;
+  color: #2d5a3d;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.hh-cote-btn.active {
+  background: #2d5a3d;
+  color: white;
+}
+
+.hh-phrase-block {
+  background: #fafaf8;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.hh-phrase-block-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2d5a3d;
+  margin-bottom: 6px;
+}
+
+.hh-phrase-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
