@@ -132,52 +132,59 @@ function renderBulletins() {
   var container = document.getElementById('module-bulletins');
   if (!container) return;
 
-  var roster = getRoster().filter(function(s) { return s.actif; });
+  var allActive = getRoster().filter(function(s) { return s.actif; });
 
-  var html = '<h2>Bulletins</h2>';
-
-  if (roster.length === 0) {
-    html += '<p>Aucun élève actif dans la liste de classe.</p>';
-    container.innerHTML = html;
+  if (allActive.length === 0) {
+    container.innerHTML = '<h2>Bulletins</h2><p>Aucun élève actif dans la liste de classe.</p>';
     return;
   }
 
-  html += '<div class="form-row">';
-  html += '<label for="bulletin-student-select">Élève: </label>';
-  html += '<select id="bulletin-student-select" onchange="handleBulletinSelectorChange()">';
-  html += '<option value="">-- Sélectionner --</option>';
-  roster.forEach(function(s) {
-    var selectedAttr = (s.code === bulletinUIState.selectedStudent) ? ' selected' : '';
-    html += '<option value="' + s.code + '"' + selectedAttr + '>' + displayName(s) + '</option>';
-  });
-  html += '</select>';
-  html += '</div>';
+  var mjRoster = allActive.filter(function(s) { return !isGrade1to6(s.code); });
+  var g16Roster = allActive.filter(function(s) { return isGrade1to6(s.code); });
 
-  html += '<div class="form-row">';
-  html += '<label for="bulletin-period-select">Période: </label>';
-  html += '<select id="bulletin-period-select" onchange="handleBulletinSelectorChange()">';
-  html += '<option value="observations_initiales"' + (bulletinUIState.selectedPeriod === 'observations_initiales' ? ' selected' : '') + '>Première (observations initiales)</option>';
-  html += '<option value="deuxieme"' + (bulletinUIState.selectedPeriod === 'deuxieme' ? ' selected' : '') + '>Deuxième période</option>';
-  html += '<option value="troisieme"' + (bulletinUIState.selectedPeriod === 'troisieme' ? ' selected' : '') + '>Troisième période</option>';
-  html += '</select>';
-  html += '</div>';
+  var html = '<h2>Bulletins</h2>';
 
- html += '<button id="bulletin-generate-btn" onclick="handleGenerateBulletinClick()">Générer le commentaire</button> ';
-  html += '<button id="bulletin-generate-all-btn" onclick="handleGenerateAllBulletinsClick()">Générer pour toute la classe</button> ';
-  html += '<button onclick="renderBulletinTableView()">Voir tous les brouillons (tableau)</button>';
-  html += '<span id="bulletin-generate-status"></span>';
+  if (mjRoster.length > 0) {
+    html += '<h3>Maternelle / Jardin</h3>';
+    html += '<div class="form-row">';
+    html += '<label for="bulletin-student-select">Élève: </label>';
+    html += '<select id="bulletin-student-select" onchange="handleBulletinSelectorChange()">';
+    html += '<option value="">-- Sélectionner --</option>';
+    mjRoster.forEach(function(s) {
+      var selectedAttr = (s.code === bulletinUIState.selectedStudent) ? ' selected' : '';
+      html += '<option value="' + s.code + '"' + selectedAttr + '>' + displayName(s) + '</option>';
+    });
+    html += '</select>';
+    html += '</div>';
 
-  html += '<div id="bulletin-review-area"></div>';
+    html += '<div class="form-row">';
+    html += '<label for="bulletin-period-select">Période: </label>';
+    html += '<select id="bulletin-period-select" onchange="handleBulletinSelectorChange()">';
+    html += '<option value="observations_initiales"' + (bulletinUIState.selectedPeriod === 'observations_initiales' ? ' selected' : '') + '>Première (observations initiales)</option>';
+    html += '<option value="deuxieme"' + (bulletinUIState.selectedPeriod === 'deuxieme' ? ' selected' : '') + '>Deuxième période</option>';
+    html += '<option value="troisieme"' + (bulletinUIState.selectedPeriod === 'troisieme' ? ' selected' : '') + '>Troisième période</option>';
+    html += '</select>';
+    html += '</div>';
 
-  html += '<hr>';
-  html += '<h2>Bulletins — 1re à 6e année</h2>';
-  html += '<div id="grade16-bulletin-section">';
-  html += renderGrade16BulletinSectionHtml();
-  html += '</div>';
+    html += '<button id="bulletin-generate-btn" onclick="handleGenerateBulletinClick()">Générer le commentaire</button> ';
+    html += '<button id="bulletin-generate-all-btn" onclick="handleGenerateAllBulletinsClick()">Générer pour toute la classe</button> ';
+    html += '<button onclick="renderBulletinTableView()">Voir tous les brouillons (tableau)</button>';
+    html += '<span id="bulletin-generate-status"></span>';
+
+    html += '<div id="bulletin-review-area"></div>';
+  }
+
+  if (g16Roster.length > 0) {
+    if (mjRoster.length > 0) html += '<hr>';
+    html += '<h2>Bulletins — 1re à 6e année</h2>';
+    html += '<div id="grade16-bulletin-section">';
+    html += renderGrade16BulletinSectionHtml();
+    html += '</div>';
+  }
 
   container.innerHTML = html;
 
-  if (bulletinUIState.selectedStudent) {
+  if (mjRoster.length > 0 && bulletinUIState.selectedStudent) {
     renderExistingDraftIfAny();
   }
 }
