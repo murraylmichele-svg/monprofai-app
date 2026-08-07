@@ -938,6 +938,7 @@ function renderGrade16BulletinSectionHtml() {
   html += '</select>';
   html += '</div>';
 
+  html += '<button onclick="renderGrade16TableView()">Voir tous les brouillons (tableau)</button>';
   html += '<div id="g16-entries-area"><p><em>Sélectionnez un élève et une matière pour voir les preuves disponibles.</em></p></div>';
   html += '<div id="g16-review-area"></div>';
 
