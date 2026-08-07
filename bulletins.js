@@ -1588,19 +1588,26 @@ function handleHHSelectorChange() {
   }
 
   var existingDraft = getHHDraft(hhState.selectedStudent, hhState.selectedPeriod);
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === hhState.selectedStudent; });
+  var hasPeiHH = student && student.peiHH;
+
   if (existingDraft) {
     hhState.cotes = existingDraft.cotes || {};
     hhState.selectedForces = existingDraft.selectedForces || {};
     hhState.selectedProchaines = existingDraft.selectedProchaines || {};
+    hhState.peiSentenceIncluded = existingDraft.peiSentenceIncluded || false;
+    hhState.peiSentenceText = existingDraft.peiSentenceText || getPeiSentenceTemplate();
   } else {
     hhState.cotes = {};
     hhState.selectedForces = {};
     hhState.selectedProchaines = {};
+    hhState.peiSentenceIncluded = !!hasPeiHH;
+    hhState.peiSentenceText = getPeiSentenceTemplate();
   }
 
   renderHHDynamicArea();
 }
-
 function renderHHDynamicArea() {
   var dynamicArea = document.getElementById('hh-dynamic-area');
   if (!dynamicArea) return;
