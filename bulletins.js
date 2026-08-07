@@ -169,6 +169,12 @@ function renderBulletins() {
 
   html += '<div id="bulletin-review-area"></div>';
 
+  html += '<hr>';
+  html += '<h2>Bulletins — 1re à 6e année</h2>';
+  html += '<div id="grade16-bulletin-section">';
+  html += renderGrade16BulletinSectionHtml();
+  html += '</div>';
+
   container.innerHTML = html;
 
   if (bulletinUIState.selectedStudent) {
