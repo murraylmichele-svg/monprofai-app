@@ -1822,6 +1822,8 @@ function saveHHDraftFromUI() {
     cotes: hhState.cotes,
     selectedForces: hhState.selectedForces,
     selectedProchaines: hhState.selectedProchaines,
+    peiSentenceIncluded: hhState.peiSentenceIncluded,
+    peiSentenceText: hhState.peiSentenceText,
     text: text
   });
 
