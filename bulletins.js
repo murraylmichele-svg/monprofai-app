@@ -176,7 +176,7 @@ function renderBulletins() {
 
   if (g16Roster.length > 0) {
     if (mjRoster.length > 0) html += '<hr>';
-    html += '<h2>Bulletins — 1re à 6e année</h2>';
+    html += '<h2>Bulletin 1re - 6e année</h2>';
     html += '<div id="grade16-bulletin-section">';
     html += renderGrade16BulletinSectionHtml();
     html += '</div>';
