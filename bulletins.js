@@ -862,6 +862,8 @@ function buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selecte
 
   lines.push('- Réponds UNIQUEMENT avec le texte final, sans titre ni préambule.');
   lines.push('');
+  lines.push('CODE DE L\'ÉLÈVE: ' + studentCode);
+  lines.push('');
   lines.push('PREUVES SÉLECTIONNÉES:');
 
   if (selectedEntries.length === 0) {
