@@ -1892,3 +1892,24 @@ function loadHHStudentIntoView(studentCode) {
   if (studentSelect) studentSelect.value = studentCode;
   handleHHSelectorChange();
 }
+// ============================================================
+// GRADES 1-6 — ADDITION: Editable PEI sentence for HH
+// ============================================================
+// APPEND this to the END of bulletins.js.
+// Also make Edits A-E described separately.
+// ============================================================
+
+function toggleHHPeiInclude(checked) {
+  hhState.peiSentenceIncluded = checked;
+  updateHHAssembledText();
+}
+
+function updateHHPeiText(text) {
+  hhState.peiSentenceText = text;
+  updateHHAssembledText();
+}
+
+function saveHHPeiTemplate() {
+  savePeiSentenceTemplate(hhState.peiSentenceText);
+  alert('Modèle d\'énoncé PEI enregistré. Il sera proposé par défaut pour les prochains élèves.');
+}
