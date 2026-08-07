@@ -617,3 +617,17 @@ table tr:hover {
   margin-bottom: 6px;
   cursor: pointer;
 }
+.hh-pei-box {
+  background: #fff3e0;
+  border: 1px solid #e67e22;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 10px 0;
+}
+
+.hh-pei-box textarea {
+  width: 100%;
+  margin: 6px 0;
+  font-size: 13px;
+}
+
