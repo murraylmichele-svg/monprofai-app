@@ -833,7 +833,7 @@ function getGrade16Draft(studentCode, subject, period) {
 
 // ---- PROMPT + GENERATION ----
 
-function buildGrade16SubjectPrompt(period, subject, pronom, selectedEntries) {
+function buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selectedEntries) {
   var lines = [];
   var periodLabel = period === 'progres'
     ? 'le bulletin de progrès scolaire (première communication, automne)'
