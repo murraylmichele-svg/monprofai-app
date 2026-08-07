@@ -975,7 +975,7 @@ async function loadAndRenderRecentProductions() {
     html += '<tr>';
     html += '<td>' + formatProductionDate(p.createdAt) + '</td>';
     html += '<td>' + name + '</td>';
-    html += '<td><strong>' + p.domain + '</strong></td>';
+    html += '<td><strong>' + (p.subject || p.domain) + '</strong></td>';
     html += '<td>' + (p.activityTag || '') + '</td>';
     html += '<td>' + (p.note || '') + '</td>';
     if (p.photoIds && p.photoIds.length > 0) {
