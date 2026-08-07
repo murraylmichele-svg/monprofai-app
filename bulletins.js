@@ -1475,8 +1475,28 @@ var hhState = {
   selectedPeriod: 'progres',
   cotes: {},
   selectedForces: {},
-  selectedProchaines: {}
+  selectedProchaines: {},
+  peiSentenceIncluded: false,
+  peiSentenceText: ''
 };
+
+var PEI_SENTENCE_TEMPLATE_KEY = 'monprofai_pei_sentence_template';
+
+function getPeiSentenceTemplate() {
+  try {
+    return localStorage.getItem(PEI_SENTENCE_TEMPLATE_KEY) || '';
+  } catch (e) {
+    return '';
+  }
+}
+
+function savePeiSentenceTemplate(text) {
+  try {
+    localStorage.setItem(PEI_SENTENCE_TEMPLATE_KEY, text || '');
+  } catch (e) {
+    alert('Erreur: impossible de sauvegarder le modèle d\'énoncé PEI.');
+  }
+}
 
 // ---- DRAFT STORAGE ----
 
