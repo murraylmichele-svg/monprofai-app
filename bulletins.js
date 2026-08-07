@@ -1208,3 +1208,639 @@ function loadGrade16StudentIntoView(studentCode) {
   if (studentSelect) studentSelect.value = studentCode;
   handleGrade16SelectorChange();
 }
+// ============================================================
+// GRADES 1-6 — HH (Habiletés d'apprentissage et habitudes de
+// travail) sentence-picker
+// ============================================================
+// APPEND this to the END of bulletins.js.
+// Also make the 1 edit described separately.
+//
+// Rebuilds the old tool's HH tab: E/T/S/N cote picker per
+// category, radio-selected Forces/Prochaines étapes phrases,
+// auto-assembled comment, editable, char-count vs 2560 limit.
+//
+// All phrase content below has been retoned from the original —
+// superlative language ("exemplaire", "remarquable",
+// "irréprochable", etc.) removed, approved category by category.
+//
+// Depends on:
+//   - getRoster(), displayName(), isGrade1to6(), getPeiReminderHtml() — roster.js
+//   - escapeHtmlForTextarea() — bulletins.js Part B4
+// ============================================================
+
+var HH_DRAFTS_KEY = 'monprofai_hh_bulletin_drafts';
+
+var HH_CATEGORY_KEYS = [
+  { key: 'oral', label: 'Utilisation du français oral' },
+  { key: 'fiabilite', label: 'Fiabilité' },
+  { key: 'organisation', label: 'Sens de l\'organisation' },
+  { key: 'autonomie', label: 'Autonomie' },
+  { key: 'collaboration', label: 'Esprit de collaboration' },
+  { key: 'initiative', label: 'Sens de l\'initiative' },
+  { key: 'autoregulation', label: 'Autorégulation' }
+];
+
+var HH_FORCES_PHRASES = {
+  oral: {
+    E: [
+      "s'exprime avec aisance et assurance en français dans la plupart des situations.",
+      "communique ses idées clairement et enrichit les discussions par ses interventions de qualité.",
+      "utilise un vocabulaire riche et varié et s'exprime avec fluidité en français.",
+      "prend la parole avec confiance et articule ses pensées de façon précise et organisée."
+    ],
+    T: [
+      "s'exprime généralement bien en français et contribue positivement aux échanges.",
+      "participe activement aux discussions et utilise le français avec confiance.",
+      "communique ses idées de façon claire et respecte les règles de la communication orale.",
+      "s'exprime avec aisance dans la plupart des contextes et enrichit les échanges de la classe."
+    ],
+    S: [
+      "fait des efforts constants pour communiquer en français lors des activités de classe.",
+      "utilise le français en classe et continue à développer sa fluidité à l'oral.",
+      "participe aux échanges et fait des progrès dans l'utilisation du français oral.",
+      "s'améliore dans sa capacité à exprimer ses idées en français lors des activités."
+    ],
+    N: [
+      "est encouragé(e) à prendre davantage d'initiatives pour communiquer en français.",
+      "travaille à renforcer son utilisation du français dans les contextes scolaires.",
+      "est invité(e) à s'exprimer plus régulièrement en français lors des discussions et des activités.",
+      "bénéficierait de pratiquer davantage la communication orale en français au quotidien."
+    ]
+  },
+  fiabilite: {
+    E: [
+      "remet généralement ses travaux dans les délais et assume ses responsabilités avec soin.",
+      "fait preuve d'une bonne fiabilité : les tâches sont généralement complètes, soignées et remises à temps.",
+      "respecte la grande majorité des échéances et produit un travail de qualité constante.",
+      "démontre un bon sens des responsabilités et fait preuve de constance dans son travail."
+    ],
+    T: [
+      "est généralement fiable et remet la plupart de ses travaux à temps.",
+      "assume ses responsabilités scolaires avec sérieux et constance.",
+      "fait preuve de fiabilité dans la majorité des situations et respecte les consignes données.",
+      "remet ses travaux dans les délais et démontre un bon sens des responsabilités."
+    ],
+    S: [
+      "remet habituellement ses travaux, bien que des rappels soient parfois nécessaires.",
+      "fait des efforts pour respecter les attentes en matière de fiabilité.",
+      "progresse dans le respect des délais et des responsabilités scolaires.",
+      "s'améliore dans la remise de ses travaux et dans le suivi des consignes."
+    ],
+    N: [
+      "est invité(e) à développer de meilleures habitudes pour remettre ses travaux à temps.",
+      "travaille à améliorer sa constance dans le respect des délais et des consignes.",
+      "gagnerait à développer des stratégies pour mieux gérer ses responsabilités scolaires.",
+      "est encouragé(e) à prendre ses engagements scolaires plus au sérieux et de façon constante."
+    ]
+  },
+  organisation: {
+    E: [
+      "gère son matériel et son temps de façon efficace, ce qui favorise sa réussite.",
+      "fait preuve d'un bon sens de l'organisation : son espace de travail et son agenda sont généralement en ordre.",
+      "planifie son travail avec méthode et utilise efficacement les outils organisationnels à sa disposition.",
+      "démontre une bonne organisation qui lui permet d'aborder les tâches avec sérénité et efficacité."
+    ],
+    T: [
+      "s'organise bien et gère efficacement son matériel scolaire.",
+      "démontre un bon sens de l'organisation dans la gestion de ses tâches et de son matériel.",
+      "utilise des stratégies organisationnelles efficaces pour gérer son travail et ses responsabilités.",
+      "maintient un espace de travail ordonné et gère son temps de façon satisfaisante."
+    ],
+    S: [
+      "fait des progrès dans l'organisation de son travail et de son matériel.",
+      "s'améliore dans la gestion de son temps et de ses responsabilités scolaires.",
+      "développe des stratégies pour mieux s'organiser et gérer ses tâches quotidiennes.",
+      "fait des efforts pour maintenir son matériel en ordre et respecter les échéances."
+    ],
+    N: [
+      "est encouragé(e) à développer des stratégies d'organisation plus efficaces.",
+      "bénéficierait de soutien pour améliorer l'organisation de son travail et de son matériel.",
+      "gagnerait à utiliser des outils de planification pour mieux gérer son temps et ses responsabilités.",
+      "est invité(e) à développer de meilleures habitudes organisationnelles pour favoriser sa réussite."
+    ]
+  },
+  autonomie: {
+    E: [
+      "travaille de façon autonome et sait trouver des ressources pour surmonter les défis.",
+      "fait preuve d'une bonne autonomie : elle/il prend des initiatives et cherche à résoudre les problèmes de façon indépendante.",
+      "aborde les tâches avec confiance et persévère de façon autonome face aux difficultés.",
+      "démontre une bonne autonomie : elle/il gère son travail de façon indépendante et efficace."
+    ],
+    T: [
+      "travaille généralement de façon autonome et cherche de l'aide au bon moment.",
+      "démontre une bonne autonomie dans la réalisation de ses tâches scolaires.",
+      "complète la plupart de ses tâches de façon indépendante et sait quand demander de l'aide.",
+      "fait preuve d'une bonne capacité à travailler seul(e) et à gérer son apprentissage."
+    ],
+    S: [
+      "développe son autonomie et fait des progrès dans sa capacité à travailler de façon indépendante.",
+      "s'efforce de compléter ses tâches de façon plus autonome.",
+      "fait des efforts pour travailler de façon plus indépendante et recourir moins souvent à l'aide.",
+      "progresse dans son autonomie et développe sa confiance lors des tâches individuelles."
+    ],
+    N: [
+      "est encouragé(e) à tenter de résoudre les problèmes avant de demander de l'aide.",
+      "travaille à développer sa confiance et son autonomie dans les tâches scolaires.",
+      "gagnerait à développer des stratégies pour travailler de façon plus indépendante.",
+      "est invité(e) à persévérer davantage avant de chercher l'aide de l'enseignant(e)."
+    ]
+  },
+  collaboration: {
+    E: [
+      "collabore bien avec ses pairs : elle/il écoute les autres, partage ses idées et contribue positivement au travail d'équipe.",
+      "est un(e) coéquipier(ère) fiable, toujours prêt(e) à soutenir ses pairs et à travailler dans un esprit d'équipe.",
+      "démontre de bonnes habiletés de collaboration : elle/il valorise les idées des autres et contribue avec enthousiasme.",
+      "joue un rôle positif dans les travaux d'équipe et encourage ses coéquipiers avec bienveillance."
+    ],
+    T: [
+      "collabore bien avec ses pairs et contribue positivement aux travaux d'équipe.",
+      "démontre un bon esprit de collaboration et respecte les idées des autres.",
+      "participe activement aux activités de groupe et fait preuve d'écoute envers ses pairs.",
+      "travaille bien en équipe et s'assure que chacun peut contribuer au projet commun."
+    ],
+    S: [
+      "fait des efforts pour collaborer avec ses pairs lors des travaux d'équipe.",
+      "développe ses habiletés de collaboration et participe aux activités de groupe.",
+      "progresse dans sa capacité à travailler en équipe et à respecter les idées des autres.",
+      "s'améliore dans son rôle de coéquipier(ère) et fait des efforts pour contribuer au groupe."
+    ],
+    N: [
+      "est invité(e) à développer davantage son esprit de collaboration lors des travaux en équipe.",
+      "travaille à améliorer sa façon d'interagir et de contribuer lors des activités collaboratives.",
+      "gagnerait à pratiquer l'écoute active et le partage des responsabilités dans les travaux de groupe.",
+      "est encouragé(e) à s'engager plus activement dans les projets d'équipe et à respecter les rôles de chacun."
+    ]
+  },
+  initiative: {
+    E: [
+      "fait preuve d'un bon sens de l'initiative : elle/il cherche régulièrement à approfondir ses apprentissages et propose des idées nouvelles.",
+      "prend des initiatives de façon proactive et enrichit les apprentissages par sa curiosité.",
+      "s'engage avec enthousiasme dans des projets qui stimulent sa créativité.",
+      "propose régulièrement des idées originales qui enrichissent la classe."
+    ],
+    T: [
+      "prend souvent des initiatives et cherche à approfondir ses apprentissages.",
+      "démontre un bon sens de l'initiative et participe activement à la vie de la classe.",
+      "s'engage avec enthousiasme dans les projets et propose régulièrement des idées pertinentes.",
+      "fait preuve d'initiative dans son travail et cherche souvent à en apprendre davantage."
+    ],
+    S: [
+      "commence à prendre davantage d'initiatives dans son apprentissage.",
+      "fait des efforts pour s'impliquer de façon plus proactive dans les activités de classe.",
+      "progresse dans sa capacité à prendre des initiatives et à s'engager dans son apprentissage.",
+      "développe son sens de l'initiative et commence à proposer ses idées avec plus de confiance."
+    ],
+    N: [
+      "est encouragé(e) à prendre plus d'initiatives et à s'impliquer davantage dans ses apprentissages.",
+      "bénéficierait de s'engager plus activement dans les activités et de proposer ses idées.",
+      "gagnerait à se fixer des défis personnels et à chercher à dépasser les attentes minimales.",
+      "est invité(e) à s'impliquer davantage dans les projets et à prendre davantage d'initiatives."
+    ]
+  },
+  autoregulation: {
+    E: [
+      "gère ses émotions et ses comportements de façon appropriée, même dans des situations difficiles.",
+      "fait preuve d'une bonne autorégulation : elle/il reconnaît ses besoins et utilise des stratégies efficaces.",
+      "démontre une bonne maturité dans la gestion de ses émotions et de ses réactions.",
+      "utilise des stratégies d'autorégulation variées et efficaces qui lui permettent de maintenir un comportement positif."
+    ],
+    T: [
+      "gère généralement bien ses émotions et ses comportements en classe.",
+      "utilise des stratégies d'autorégulation efficaces et maintient un comportement positif.",
+      "reconnaît ses besoins émotionnels et utilise des stratégies appropriées pour y répondre.",
+      "démontre une bonne capacité à gérer ses réactions et à maintenir un environnement de travail positif."
+    ],
+    S: [
+      "développe des stratégies pour mieux gérer ses émotions et ses comportements.",
+      "fait des progrès dans sa capacité à s'autoréguler en situation de défi.",
+      "s'améliore dans la gestion de ses émotions et fait des efforts pour maintenir un comportement approprié.",
+      "apprend à utiliser des stratégies d'autorégulation et progresse dans ce domaine."
+    ],
+    N: [
+      "est soutenu(e) dans le développement de stratégies d'autorégulation plus efficaces.",
+      "travaille à développer des outils pour mieux gérer ses émotions et ses réactions.",
+      "bénéficierait d'un soutien pour développer des stratégies adaptées à la gestion de ses émotions.",
+      "est encouragé(e) à pratiquer les stratégies d'autorégulation apprises pour mieux gérer les situations difficiles."
+    ]
+  }
+};
+
+var HH_PROCHAINES_PHRASES = {
+  oral: [
+    "continuer à utiliser le français dans tous les contextes, y compris lors des échanges informels",
+    "enrichir son vocabulaire et prendre des risques linguistiques en français",
+    "s'exercer à structurer ses interventions orales de façon plus claire et organisée",
+    "participer plus régulièrement aux discussions en classe et oser s'exprimer en français"
+  ],
+  fiabilite: [
+    "développer des stratégies pour respecter les délais de façon plus constante",
+    "renforcer sa routine de vérification avant de remettre ses travaux",
+    "utiliser un agenda ou une liste de tâches pour mieux suivre ses responsabilités",
+    "s'engager à remettre ses travaux de façon complète et dans les délais établis"
+  ],
+  organisation: [
+    "développer un système personnel d'organisation de son agenda et de son matériel",
+    "utiliser des outils de planification pour mieux gérer son temps",
+    "prendre l'habitude de préparer son matériel à l'avance et de vérifier son espace de travail",
+    "utiliser un cahier de planification ou un organisateur pour structurer ses tâches quotidiennes"
+  ],
+  autonomie: [
+    "pratiquer des stratégies de résolution de problèmes avant de demander de l'aide",
+    "développer sa confiance en ses propres capacités lors des tâches individuelles",
+    "s'exercer à relire les consignes attentivement avant de demander une explication",
+    "développer des stratégies pour aborder les tâches difficiles de façon plus indépendante"
+  ],
+  collaboration: [
+    "pratiquer l'écoute active et le partage des responsabilités lors des travaux en équipe",
+    "développer des stratégies pour contribuer positivement aux discussions de groupe",
+    "apprendre à valoriser les idées des autres et à chercher des compromis lors des désaccords",
+    "s'exercer à prendre un rôle actif et à respecter les contributions de chaque membre de l'équipe"
+  ],
+  initiative: [
+    "se fixer des objectifs personnels et chercher à les dépasser",
+    "s'impliquer de façon proactive dans les projets de classe et proposer des idées",
+    "chercher des occasions d'approfondir ses apprentissages au-delà des attentes minimales",
+    "développer sa curiosité intellectuelle en posant des questions et en explorant de nouveaux sujets"
+  ],
+  autoregulation: [
+    "identifier et pratiquer des stratégies d'autorégulation efficaces en situation de stress",
+    "reconnaître ses déclencheurs émotionnels et utiliser des stratégies de gestion apprises",
+    "s'exercer à utiliser des techniques de gestion des émotions lors des moments difficiles",
+    "développer un répertoire de stratégies personnelles pour maintenir un comportement positif en classe"
+  ]
+};
+
+var hhState = {
+  selectedStudent: '',
+  selectedPeriod: 'progres',
+  cotes: {},
+  selectedForces: {},
+  selectedProchaines: {}
+};
+
+// ---- DRAFT STORAGE ----
+
+function getHHDrafts() {
+  try {
+    var data = localStorage.getItem(HH_DRAFTS_KEY);
+    return data ? JSON.parse(data) : {};
+  } catch (e) { return {}; }
+}
+
+function saveHHDrafts(drafts) {
+  try {
+    localStorage.setItem(HH_DRAFTS_KEY, JSON.stringify(drafts));
+  } catch (e) {
+    alert('Erreur: impossible de sauvegarder le brouillon HH.');
+  }
+}
+
+function saveHHDraft(studentCode, period, data) {
+  var drafts = getHHDrafts();
+  var key = studentCode + '_' + period;
+  drafts[key] = {
+    studentCode: studentCode,
+    period: period,
+    cotes: data.cotes,
+    selectedForces: data.selectedForces,
+    selectedProchaines: data.selectedProchaines,
+    text: data.text,
+    generatedAt: new Date().toISOString()
+  };
+  saveHHDrafts(drafts);
+}
+
+function getHHDraft(studentCode, period) {
+  var drafts = getHHDrafts();
+  return drafts[studentCode + '_' + period] || null;
+}
+
+// ---- UI ----
+
+function renderHHSectionHtml() {
+  var roster = getRoster().filter(function(s) { return s.actif && isGrade1to6(s.code); });
+
+  if (roster.length === 0) {
+    return '<p>Aucun élève de la 1re à la 6e année dans la liste de classe active.</p>';
+  }
+
+  var html = '<div class="form-row">';
+  html += '<label for="hh-student-select">Élève: </label>';
+  html += '<select id="hh-student-select" onchange="handleHHSelectorChange()">';
+  html += '<option value="">-- Sélectionner --</option>';
+  roster.forEach(function(s) {
+    var sel = (s.code === hhState.selectedStudent) ? ' selected' : '';
+    html += '<option value="' + s.code + '"' + sel + '>' + displayName(s) + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label for="hh-period-select">Période: </label>';
+  html += '<select id="hh-period-select" onchange="handleHHSelectorChange()">';
+  html += '<option value="progres"' + (hhState.selectedPeriod === 'progres' ? ' selected' : '') + '>Bulletin de progrès (automne)</option>';
+  html += '<option value="scolaire1"' + (hhState.selectedPeriod === 'scolaire1' ? ' selected' : '') + '>Bulletin scolaire (janvier)</option>';
+  html += '<option value="scolaire2"' + (hhState.selectedPeriod === 'scolaire2' ? ' selected' : '') + '>Bulletin scolaire (juin)</option>';
+  html += '</select>';
+  html += '</div>';
+
+  html += '<button onclick="renderHHTableView()">Voir tous les brouillons (tableau)</button>';
+  html += '<div id="hh-dynamic-area"><p><em>Sélectionnez un élève pour commencer.</em></p></div>';
+
+  return html;
+}
+
+function handleHHSelectorChange() {
+  var studentSelect = document.getElementById('hh-student-select');
+  var periodSelect = document.getElementById('hh-period-select');
+
+  hhState.selectedStudent = studentSelect.value;
+  hhState.selectedPeriod = periodSelect.value;
+
+  var dynamicArea = document.getElementById('hh-dynamic-area');
+
+  if (!hhState.selectedStudent) {
+    hhState.cotes = {};
+    hhState.selectedForces = {};
+    hhState.selectedProchaines = {};
+    if (dynamicArea) dynamicArea.innerHTML = '<p><em>Sélectionnez un élève pour commencer.</em></p>';
+    return;
+  }
+
+  var existingDraft = getHHDraft(hhState.selectedStudent, hhState.selectedPeriod);
+  if (existingDraft) {
+    hhState.cotes = existingDraft.cotes || {};
+    hhState.selectedForces = existingDraft.selectedForces || {};
+    hhState.selectedProchaines = existingDraft.selectedProchaines || {};
+  } else {
+    hhState.cotes = {};
+    hhState.selectedForces = {};
+    hhState.selectedProchaines = {};
+  }
+
+  renderHHDynamicArea();
+}
+
+function renderHHDynamicArea() {
+  var dynamicArea = document.getElementById('hh-dynamic-area');
+  if (!dynamicArea) return;
+
+  var html = getPeiReminderHtml(hhState.selectedStudent);
+
+  html += '<div class="hh-categories">';
+  HH_CATEGORY_KEYS.forEach(function(cat) {
+    var currentCote = hhState.cotes[cat.key];
+    html += '<div class="hh-category-block">';
+    html += '<div class="hh-category-label">' + cat.label + '</div>';
+    html += '<div class="hh-cote-btns">';
+    ['E', 'T', 'S', 'N'].forEach(function(c) {
+      var activeClass = (currentCote === c) ? ' active' : '';
+      html += '<button class="hh-cote-btn' + activeClass + '" onclick="selectHHCote(\'' + cat.key + '\', \'' + c + '\')">' + c + '</button>';
+    });
+    html += '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  var withCotes = HH_CATEGORY_KEYS.filter(function(cat) { return hhState.cotes[cat.key]; });
+
+  html += '<h4>Points forts</h4>';
+  html += '<div id="hh-forces-container">';
+  if (withCotes.length === 0) {
+    html += '<p><em>Sélectionnez d\'abord les cotes ci-dessus.</em></p>';
+  } else {
+    withCotes.forEach(function(cat) {
+      var cote = hhState.cotes[cat.key];
+      var phrases = (HH_FORCES_PHRASES[cat.key] && HH_FORCES_PHRASES[cat.key][cote]) || [];
+      html += '<div class="hh-phrase-block">';
+      html += '<div class="hh-phrase-block-label">' + cat.label + ' — ' + cote + '</div>';
+      phrases.forEach(function(phrase, idx) {
+        var checked = (hhState.selectedForces[cat.key] === phrase) ? ' checked' : '';
+        html += '<label class="hh-phrase-item">';
+        html += '<input type="radio" name="hh-force-' + cat.key + '"' + checked +
+          ' onclick="toggleHHForce(\'' + cat.key + '\', ' + idx + ', this)"> ';
+        html += '<span>' + phrase + '</span>';
+        html += '</label>';
+      });
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+
+  html += '<h4>Prochaines étapes</h4>';
+  html += '<div id="hh-prochaines-container">';
+  if (withCotes.length === 0) {
+    html += '<p><em>Sélectionnez d\'abord les cotes ci-dessus.</em></p>';
+  } else {
+    withCotes.forEach(function(cat) {
+      var phrases = HH_PROCHAINES_PHRASES[cat.key] || [];
+      html += '<div class="hh-phrase-block">';
+      html += '<div class="hh-phrase-block-label">' + cat.label + '</div>';
+      phrases.forEach(function(phrase, idx) {
+        var checked = (hhState.selectedProchaines[cat.key] === phrase) ? ' checked' : '';
+        html += '<label class="hh-phrase-item">';
+        html += '<input type="radio" name="hh-prochaine-' + cat.key + '"' + checked +
+          ' onclick="toggleHHProchaine(\'' + cat.key + '\', ' + idx + ', this)"> ';
+        html += '<span>' + phrase + '</span>';
+        html += '</label>';
+      });
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+
+  html += '<h4>Commentaire assemblé</h4>';
+  html += '<textarea id="hh-assembled-text" rows="6" oninput="updateHHCharCount()">' +
+    escapeHtmlForTextarea(assembleHHComment()) + '</textarea>';
+  html += '<div id="hh-char-count"></div>';
+
+  html += '<button onclick="saveHHDraftFromUI()">Enregistrer</button> ';
+  html += '<button onclick="copyHHDraftToClipboard()">Copier</button>';
+  html += '<span id="hh-save-status"></span>';
+
+  dynamicArea.innerHTML = html;
+  updateHHCharCount();
+}
+
+function selectHHCote(key, cote) {
+  hhState.cotes[key] = cote;
+  hhState.selectedForces[key] = null;
+  renderHHDynamicArea();
+}
+
+function toggleHHForce(key, idx, radioEl) {
+  if (radioEl.dataset.wasChecked === 'true') {
+    radioEl.checked = false;
+    radioEl.dataset.wasChecked = 'false';
+    hhState.selectedForces[key] = null;
+  } else {
+    var radios = document.getElementsByName('hh-force-' + key);
+    for (var i = 0; i < radios.length; i++) radios[i].dataset.wasChecked = 'false';
+    radioEl.dataset.wasChecked = 'true';
+    var cote = hhState.cotes[key];
+    var phrases = (HH_FORCES_PHRASES[key] && HH_FORCES_PHRASES[key][cote]) || [];
+    hhState.selectedForces[key] = phrases[idx] || null;
+  }
+  updateHHAssembledText();
+}
+
+function toggleHHProchaine(key, idx, radioEl) {
+  if (radioEl.dataset.wasChecked === 'true') {
+    radioEl.checked = false;
+    radioEl.dataset.wasChecked = 'false';
+    hhState.selectedProchaines[key] = null;
+  } else {
+    var radios = document.getElementsByName('hh-prochaine-' + key);
+    for (var i = 0; i < radios.length; i++) radios[i].dataset.wasChecked = 'false';
+    radioEl.dataset.wasChecked = 'true';
+    var phrases = HH_PROCHAINES_PHRASES[key] || [];
+    hhState.selectedProchaines[key] = phrases[idx] || null;
+  }
+  updateHHAssembledText();
+}
+
+function assembleHHComment() {
+  var roster = getRoster();
+  var student = roster.find(function(s) { return s.code === hhState.selectedStudent; });
+  var prenom = student ? student.prenom : '[Prénom]';
+  var pronom = student ? student.pronom : 'elle';
+  var pronSujet = pronom === 'elle' ? 'Elle' : (pronom === 'il' ? 'Il' : 'Iel');
+  var pronObj = pronom === 'elle' ? 'elle' : (pronom === 'il' ? 'il' : 'iel');
+
+  var forcePhrases = [];
+  HH_CATEGORY_KEYS.forEach(function(cat) {
+    var phrase = hhState.selectedForces[cat.key];
+    if (phrase) forcePhrases.push(phrase);
+  });
+
+  var prochainePhrases = [];
+  HH_CATEGORY_KEYS.forEach(function(cat) {
+    var phrase = hhState.selectedProchaines[cat.key];
+    if (phrase) prochainePhrases.push(phrase);
+  });
+
+  var parts = [];
+
+  if (forcePhrases.length > 0) {
+    var joined = forcePhrases.map(function(phrase, idx) {
+      if (idx === 0) return prenom + ' ' + phrase;
+      return pronSujet + ' ' + phrase;
+    }).join(' ');
+    parts.push(joined);
+  }
+
+  if (prochainePhrases.length > 0) {
+    var periodPhrase = hhState.selectedPeriod === 'progres'
+      ? ('Pour la prochaine étape, ' + pronObj + ' est invité(e) à ' + prochainePhrases.join(' et à ') + '.')
+      : ('Pour continuer à progresser, ' + pronObj + ' est encouragé(e) à ' + prochainePhrases.join(' et à ') + '.');
+    parts.push(periodPhrase);
+  }
+
+  var comment = parts.join(' ').trim();
+
+  if (pronom === 'elle') {
+    comment = comment.split('elle/il').join('elle').split('encouragé(e)').join('encouragée')
+      .split('invité(e)').join('invitée').split('soutenu(e)').join('soutenue');
+  } else if (pronom === 'il') {
+    comment = comment.split('elle/il').join('il').split('encouragé(e)').join('encouragé')
+      .split('invité(e)').join('invité').split('soutenu(e)').join('soutenu');
+  } else {
+    comment = comment.split('elle/il').join('iel').split('encouragé(e)').join('encouragé·e')
+      .split('invité(e)').join('invité·e').split('soutenu(e)').join('soutenu·e');
+  }
+
+  return comment;
+}
+
+function updateHHAssembledText() {
+  var textarea = document.getElementById('hh-assembled-text');
+  if (textarea) textarea.value = assembleHHComment();
+  updateHHCharCount();
+}
+
+function updateHHCharCount() {
+  var textarea = document.getElementById('hh-assembled-text');
+  var countEl = document.getElementById('hh-char-count');
+  if (!textarea || !countEl) return;
+  var count = textarea.value.length;
+  var limit = 2560;
+  countEl.textContent = count + ' / ' + limit + ' caractères';
+  countEl.style.color = count > limit ? '#c0392b' : '#666';
+}
+
+function saveHHDraftFromUI() {
+  var textarea = document.getElementById('hh-assembled-text');
+  var text = textarea ? textarea.value : '';
+
+  saveHHDraft(hhState.selectedStudent, hhState.selectedPeriod, {
+    cotes: hhState.cotes,
+    selectedForces: hhState.selectedForces,
+    selectedProchaines: hhState.selectedProchaines,
+    text: text
+  });
+
+  var statusEl = document.getElementById('hh-save-status');
+  if (statusEl) {
+    statusEl.textContent = ' ✓ Enregistré';
+    setTimeout(function() { statusEl.textContent = ''; }, 2000);
+  }
+}
+
+function copyHHDraftToClipboard() {
+  var textarea = document.getElementById('hh-assembled-text');
+  var text = textarea ? textarea.value : '';
+  navigator.clipboard.writeText(text).then(function() {
+    var statusEl = document.getElementById('hh-save-status');
+    if (statusEl) {
+      statusEl.textContent = ' ✓ Copié';
+      setTimeout(function() { statusEl.textContent = ''; }, 2000);
+    }
+  }).catch(function(err) {
+    alert('Impossible de copier automatiquement.');
+    console.error(err);
+  });
+}
+
+function renderHHTableView() {
+  var periodSelect = document.getElementById('hh-period-select');
+  var period = periodSelect ? periodSelect.value : hhState.selectedPeriod;
+  hhState.selectedPeriod = period;
+
+  var roster = getRoster().filter(function(s) { return s.actif && isGrade1to6(s.code); });
+  var drafts = getHHDrafts();
+
+  var periodLabels = {
+    progres: 'Bulletin de progrès (automne)',
+    scolaire1: 'Bulletin scolaire (janvier)',
+    scolaire2: 'Bulletin scolaire (juin)'
+  };
+
+  var html = '<h4>Tous les brouillons HH — ' + (periodLabels[period] || period) + '</h4>';
+  html += '<table class="bulletin-summary-table">';
+  html += '<tr><th>Élève</th><th>Statut</th><th></th></tr>';
+
+  roster.forEach(function(s) {
+    var draft = drafts[s.code + '_' + period];
+    html += '<tr>';
+    html += '<td>' + displayName(s) + '</td>';
+    if (draft) {
+      html += '<td>✓ Complété</td>';
+      html += '<td><button onclick="loadHHStudentIntoView(\'' + s.code + '\')">Voir/Modifier</button></td>';
+    } else {
+      html += '<td class="production-grid-missing">Pas encore commencé</td>';
+      html += '<td><button onclick="loadHHStudentIntoView(\'' + s.code + '\')">Commencer</button></td>';
+    }
+    html += '</tr>';
+  });
+
+  html += '</table>';
+
+  var dynamicArea = document.getElementById('hh-dynamic-area');
+  if (dynamicArea) dynamicArea.innerHTML = html;
+}
+
+function loadHHStudentIntoView(studentCode) {
+  var studentSelect = document.getElementById('hh-student-select');
+  if (studentSelect) studentSelect.value = studentCode;
+  handleHHSelectorChange();
+}
