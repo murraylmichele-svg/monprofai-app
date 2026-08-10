@@ -741,8 +741,28 @@ async function exportMarksSpreadsheet() {
   allRows.forEach(function(r) {
     lines.push([r.date, r.eleve, r.annee, r.type, r.domaineMatiere, r.voletCompetence, r.activite, r.note, r.niveauCote, r.hhCat].map(csvEscape).join(','));
   });
+
+  var csvContent = lines.join('\r\n');
+
+  // BOM prefix so Excel reads accented French characters correctly
+  var blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'monprofai_donnees_' + dateStr + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 // ============================================================
 // GRADES 1-6 — PART G4: Sciences et technologie / Études sociales strands
+// ============================================================
+// Adds two new subjects to SUBJECT_STRANDS. Unlike Français/Mathématiques
+// (flat arrays — the strand list is the same regardless of grade), these
+// two are objects keyed by année, because the actual curriculum topic
+// under each domain changes every year.
 // ============================================================
 
 SUBJECT_STRANDS['Sciences et technologie'] = {
@@ -811,6 +831,11 @@ SUBJECT_STRANDS['Études sociales'] = {
   ]
 };
 
+// Reads the strand list for a subject, handling both shapes that now
+// exist in SUBJECT_STRANDS:
+//  - flat array (Français, Mathématiques): same list regardless of grade
+//  - object keyed by année (Sciences et technologie, Études sociales):
+//    grade-specific list
 function getStrandsForSubject(subject, annee) {
   var entry = SUBJECT_STRANDS[subject];
   if (!entry) return [];
@@ -818,6 +843,10 @@ function getStrandsForSubject(subject, annee) {
   return entry[annee] || [];
 }
 
+// Determines which année to use for a whole Productions batch session.
+// Same "the class is homogeneous" assumption Productions already relies
+// on elsewhere — reads it straight off the roster. Uses the FIRST
+// active grade 1-6 student found.
 function getSessionAnnee() {
   var roster = getRoster().filter(function(s) { return s.actif; });
   var g16 = roster.find(function(s) { return isGrade1to6(s.code); });
