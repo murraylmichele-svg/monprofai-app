@@ -739,27 +739,11 @@ async function exportMarksSpreadsheet() {
   allRows.forEach(function(r) {
     lines.push([r.date, r.eleve, r.annee, r.type, r.domaineMatiere, r.voletCompetence, r.activite, r.note, r.niveauCote, r.hhCat].map(csvEscape).join(','));
   });
-
-  var csvContent = lines.join('\r\n');
-
-  // BOM prefix so Excel reads accented French characters correctly
-  var blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  var dateStr = new Date().toISOString().slice(0, 10);
-  a.href = url;
-  a.download = 'monprofai_donnees_' + dateStr + '.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
 // ============================================================
 // GRADES 1-6 — PART G4: Sciences et technologie / Études sociales strands
 // ============================================================
 // APPEND this to the END of roster.js, after Part G1.
 // This piece only adds data + two helper functions — no UI wiring yet.
-// That comes in a separate piece once this is confirmed working.
 //
 // Depends on:
 //   - SUBJECT_STRANDS, GRADES_1_6_SUBJECTS, isGrade1to6(), getRoster() — Part G1 (this file)
@@ -773,32 +757,25 @@ async function exportMarksSpreadsheet() {
 //   'Études sociales'
 // ];
 
-// EDIT 2: SUBJECT_STRANDS stays exactly as-is for Français/Mathématiques
-// (flat arrays — those strands don't change by grade). These two new
-// subjects are added as OBJECTS keyed by année instead, because the
-// actual curriculum topic under each domain changes every year.
-// Add these two keys to the existing SUBJECT_STRANDS object:
-
-  SUBJECT_STRANDS['Sciences et technologie']['1'] = [
-  'B - Systèmes vivants : Les êtres vivants : caractéristiques et besoins',
-  'C - Matière et énergie : L\'énergie dans nos vies',
-  'D - Structures et mécanismes : Les matériaux, les objets et les structures au quotidien',
-  'E - Systèmes de la Terre et de l\'espace : Le cycle des jours et des saisons'
-];
-
-SUBJECT_STRANDS['Sciences et technologie']['2'] = [
-  'B - Systèmes vivants : Les animaux : croissance et changements',
-  'C - Matière et énergie : Les propriétés des liquides et des solides',
-  'D - Structures et mécanismes : Les machines simples et le mouvement',
-  'E - Systèmes de la Terre et de l\'espace : L\'air et l\'eau dans l\'environnement'
-];
-
-SUBJECT_STRANDS['Sciences et technologie']['3'] = [
-  'B - Systèmes vivants : Les plantes : croissance et changements',
-  'C - Matière et énergie : Les forces et le mouvement',
-  'D - Structures et mécanismes : Les structures solides et stables',
-  'E - Systèmes de la Terre et de l\'espace : Le sol dans l\'environnement'
-];
+SUBJECT_STRANDS['Sciences et technologie'] = {
+  '1': [
+    'B - Systèmes vivants : Les êtres vivants : caractéristiques et besoins',
+    'C - Matière et énergie : L\'énergie dans nos vies',
+    'D - Structures et mécanismes : Les matériaux, les objets et les structures au quotidien',
+    'E - Systèmes de la Terre et de l\'espace : Le cycle des jours et des saisons'
+  ],
+  '2': [
+    'B - Systèmes vivants : Les animaux : croissance et changements',
+    'C - Matière et énergie : Les propriétés des liquides et des solides',
+    'D - Structures et mécanismes : Les machines simples et le mouvement',
+    'E - Systèmes de la Terre et de l\'espace : L\'air et l\'eau dans l\'environnement'
+  ],
+  '3': [
+    'B - Systèmes vivants : Les plantes : croissance et changements',
+    'C - Matière et énergie : Les forces et le mouvement',
+    'D - Structures et mécanismes : Les structures solides et stables',
+    'E - Systèmes de la Terre et de l\'espace : Le sol dans l\'environnement'
+  ],
   '4': [
     'B - Systèmes vivants : Les habitats et les communautés',
     'C - Matière et énergie : La lumière et le son',
@@ -817,10 +794,6 @@ SUBJECT_STRANDS['Sciences et technologie']['3'] = [
     'D - Structures et mécanismes : Le vol',
     'E - Systèmes de la Terre et de l\'espace : L\'espace'
   ]
-  // '1', '2', '3' intentionally omitted — not yet confirmed from your
-  // curriculum source. getStrandsForSubject() below returns an empty
-  // array for missing grades, so a 1re/2e/3e sciences student just sees
-  // an empty strand dropdown rather than an error, until we add these.
 };
 
 SUBJECT_STRANDS['Études sociales'] = {
@@ -855,8 +828,6 @@ SUBJECT_STRANDS['Études sociales'] = {
 //  - flat array (Français, Mathématiques): same list regardless of grade
 //  - object keyed by année (Sciences et technologie, Études sociales):
 //    grade-specific list
-// Call sites in observations.js/productions.js will switch from reading
-// SUBJECT_STRANDS[subject] directly to calling this instead.
 function getStrandsForSubject(subject, annee) {
   var entry = SUBJECT_STRANDS[subject];
   if (!entry) return [];
@@ -866,10 +837,11 @@ function getStrandsForSubject(subject, annee) {
 
 // Determines which année to use for a whole Productions batch session.
 // Same "the class is homogeneous" assumption Productions already relies
-// on elsewhere — reads it straight off the roster instead of asking the
-// teacher to pick it again. Uses the FIRST active grade 1-6 student found.
+// on elsewhere — reads it straight off the roster. Uses the FIRST
+// active grade 1-6 student found.
 function getSessionAnnee() {
   var roster = getRoster().filter(function(s) { return s.actif; });
   var g16 = roster.find(function(s) { return isGrade1to6(s.code); });
   return g16 ? g16.annee : null;
 }
+  =================================================
