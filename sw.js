@@ -2,7 +2,7 @@
 // SW.JS — Service Worker for offline support
 // ============================================================
 
-var CACHE_NAME = 'monprofai-v4';
+var CACHE_NAME = 'monprofai-v5';
 var BASE = '/monprofai-app/';
 var FILES_TO_CACHE = [
   BASE,
