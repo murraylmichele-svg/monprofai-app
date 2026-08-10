@@ -744,20 +744,6 @@ async function exportMarksSpreadsheet() {
 // ============================================================
 // GRADES 1-6 — PART G4: Sciences et technologie / Études sociales strands
 // ============================================================
-// APPEND this to the END of roster.js, after Part G1.
-// This piece only adds data + two helper functions — no UI wiring yet.
-//
-// Depends on:
-//   - SUBJECT_STRANDS, GRADES_1_6_SUBJECTS, isGrade1to6(), getRoster() — Part G1 (this file)
-// ============================================================
-
-// EDIT 1: add these two subjects to the existing GRADES_1_6_SUBJECTS array
-// var GRADES_1_6_SUBJECTS = [
-//   'Français',
-//   'Mathématiques',
-//   'Sciences et technologie',
-//   'Études sociales'
-// ];
 
 SUBJECT_STRANDS['Sciences et technologie'] = {
   '1': [
@@ -825,11 +811,6 @@ SUBJECT_STRANDS['Études sociales'] = {
   ]
 };
 
-// Reads the strand list for a subject, handling both shapes that now
-// exist in SUBJECT_STRANDS:
-//  - flat array (Français, Mathématiques): same list regardless of grade
-//  - object keyed by année (Sciences et technologie, Études sociales):
-//    grade-specific list
 function getStrandsForSubject(subject, annee) {
   var entry = SUBJECT_STRANDS[subject];
   if (!entry) return [];
@@ -837,13 +818,8 @@ function getStrandsForSubject(subject, annee) {
   return entry[annee] || [];
 }
 
-// Determines which année to use for a whole Productions batch session.
-// Same "the class is homogeneous" assumption Productions already relies
-// on elsewhere — reads it straight off the roster. Uses the FIRST
-// active grade 1-6 student found.
 function getSessionAnnee() {
   var roster = getRoster().filter(function(s) { return s.actif; });
   var g16 = roster.find(function(s) { return isGrade1to6(s.code); });
   return g16 ? g16.annee : null;
 }
-  =================================================
