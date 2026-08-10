@@ -1166,7 +1166,7 @@ function renderProductionSetupFieldsHtml() {
     return html;
   }
 
-  return buildProductionExpectationSetupHtml(GRADES_1_6_SUBJECTS[0], '');
+  return buildProductionExpectationSetupHtml(GRADES_1_6_SUBJECTS[0], '', getSessionAnnee());
 }
 
 function buildProductionExpectationSetupHtml(subject, strand) {
