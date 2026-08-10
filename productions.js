@@ -1227,8 +1227,10 @@ function buildProductionSetupNameFieldHtml(subject, strand) {
 
 function handleProductionSetupSubjectChange() {
   var subject = document.getElementById('input-subject').value;
+  var anneeInput = document.getElementById('input-annee');
+  var annee = anneeInput ? anneeInput.value : null;
   var wrapper = document.getElementById('production-setup-dynamic-fields');
-  if (wrapper) wrapper.innerHTML = buildProductionExpectationSetupHtml(subject, '');
+  if (wrapper) wrapper.innerHTML = buildProductionExpectationSetupHtml(subject, '', annee);
 }
 
 function handleProductionSetupStrandChange() {
