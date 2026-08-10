@@ -457,7 +457,9 @@ var ACHIEVEMENT_CATEGORIES = [
 
 var GRADES_1_6_SUBJECTS = [
   'Français',
-  'Mathématiques'
+  'Mathématiques',
+  'Sciences et technologie',
+  'Études sociales'
 ];
 
 var SUBJECT_STRANDS = {
