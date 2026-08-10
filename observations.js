@@ -718,11 +718,13 @@ function setObsLinkType(type) {
   if (expectationFields) expectationFields.style.display = (type === 'expectation') ? 'block' : 'none';
 }
 
-function buildObsExpectationFieldsHtml(subject, strand) {
-  var strands = SUBJECT_STRANDS[subject] || [];
+function buildObsExpectationFieldsHtml(subject, strand, annee) {
+  var strands = getStrandsForSubject(subject, annee);
   if (!strand) strand = strands[0] || '';
 
-  var html = '<div class="form-row">';
+  var html = '<input type="hidden" id="obs-annee" value="' + (annee || '') + '">';
+
+  html += '<div class="form-row">';
   html += '<label>Matière</label>';
   html += '<select id="obs-subject" onchange="handleObsSubjectChange()">';
   GRADES_1_6_SUBJECTS.forEach(function(subj) {
