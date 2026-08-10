@@ -778,9 +778,11 @@ function buildObsSousSujetFieldHtml(subject, strand) {
 
 function handleObsSubjectChange() {
   var subject = document.getElementById('obs-subject').value;
+  var anneeInput = document.getElementById('obs-annee');
+  var annee = anneeInput ? anneeInput.value : null;
   var expectationFields = document.getElementById('obs-expectation-fields');
   if (expectationFields) {
-    expectationFields.innerHTML = buildObsExpectationFieldsHtml(subject, '');
+    expectationFields.innerHTML = buildObsExpectationFieldsHtml(subject, '', annee);
   }
 }
 
