@@ -699,7 +699,9 @@ function renderObsLinkSectionHtml(studentCode) {
   html2 += '</div>';
 
   html2 += '<div id="obs-expectation-fields" style="display:none;">';
-  html2 += buildObsExpectationFieldsHtml(GRADES_1_6_SUBJECTS[0], '');
+  var linkSectionStudent = getRoster().find(function(s) { return s.code === studentCode; });
+  var linkSectionAnnee = linkSectionStudent ? linkSectionStudent.annee : null;
+  html2 += buildObsExpectationFieldsHtml(GRADES_1_6_SUBJECTS[0], '', linkSectionAnnee);
   html2 += '</div>';
 
   return peiReminder + html2;
