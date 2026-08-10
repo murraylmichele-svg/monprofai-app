@@ -754,3 +754,122 @@ async function exportMarksSpreadsheet() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+// ============================================================
+// GRADES 1-6 — PART G4: Sciences et technologie / Études sociales strands
+// ============================================================
+// APPEND this to the END of roster.js, after Part G1.
+// This piece only adds data + two helper functions — no UI wiring yet.
+// That comes in a separate piece once this is confirmed working.
+//
+// Depends on:
+//   - SUBJECT_STRANDS, GRADES_1_6_SUBJECTS, isGrade1to6(), getRoster() — Part G1 (this file)
+// ============================================================
+
+// EDIT 1: add these two subjects to the existing GRADES_1_6_SUBJECTS array
+// var GRADES_1_6_SUBJECTS = [
+//   'Français',
+//   'Mathématiques',
+//   'Sciences et technologie',
+//   'Études sociales'
+// ];
+
+// EDIT 2: SUBJECT_STRANDS stays exactly as-is for Français/Mathématiques
+// (flat arrays — those strands don't change by grade). These two new
+// subjects are added as OBJECTS keyed by année instead, because the
+// actual curriculum topic under each domain changes every year.
+// Add these two keys to the existing SUBJECT_STRANDS object:
+
+  SUBJECT_STRANDS['Sciences et technologie']['1'] = [
+  'B - Systèmes vivants : Les êtres vivants : caractéristiques et besoins',
+  'C - Matière et énergie : L\'énergie dans nos vies',
+  'D - Structures et mécanismes : Les matériaux, les objets et les structures au quotidien',
+  'E - Systèmes de la Terre et de l\'espace : Le cycle des jours et des saisons'
+];
+
+SUBJECT_STRANDS['Sciences et technologie']['2'] = [
+  'B - Systèmes vivants : Les animaux : croissance et changements',
+  'C - Matière et énergie : Les propriétés des liquides et des solides',
+  'D - Structures et mécanismes : Les machines simples et le mouvement',
+  'E - Systèmes de la Terre et de l\'espace : L\'air et l\'eau dans l\'environnement'
+];
+
+SUBJECT_STRANDS['Sciences et technologie']['3'] = [
+  'B - Systèmes vivants : Les plantes : croissance et changements',
+  'C - Matière et énergie : Les forces et le mouvement',
+  'D - Structures et mécanismes : Les structures solides et stables',
+  'E - Systèmes de la Terre et de l\'espace : Le sol dans l\'environnement'
+];
+  '4': [
+    'B - Systèmes vivants : Les habitats et les communautés',
+    'C - Matière et énergie : La lumière et le son',
+    'D - Structures et mécanismes : Les machines et leurs mécanismes',
+    'E - Systèmes de la Terre et de l\'espace : Les roches, les minéraux et les processus géologiques'
+  ],
+  '5': [
+    'B - Systèmes vivants : La santé et les systèmes du corps humain',
+    'C - Matière et énergie : Les propriétés et les changements de la matière',
+    'D - Structures et mécanismes : Les forces agissant sur les structures',
+    'E - Systèmes de la Terre et de l\'espace : Conservation de l\'énergie et des ressources'
+  ],
+  '6': [
+    'B - Systèmes vivants : La biodiversité',
+    'C - Matière et énergie : Les phénomènes, l\'énergie et les dispositifs électriques',
+    'D - Structures et mécanismes : Le vol',
+    'E - Systèmes de la Terre et de l\'espace : L\'espace'
+  ]
+  // '1', '2', '3' intentionally omitted — not yet confirmed from your
+  // curriculum source. getStrandsForSubject() below returns an empty
+  // array for missing grades, so a 1re/2e/3e sciences student just sees
+  // an empty strand dropdown rather than an error, until we add these.
+};
+
+SUBJECT_STRANDS['Études sociales'] = {
+  '1': [
+    'A - Patrimoine et identité : Les rôles et les responsabilités',
+    'B - Communauté et environnement : La communauté'
+  ],
+  '2': [
+    'A - Patrimoine et identité : Les traditions familiales et communautaires',
+    'B - Communauté et environnement : Les communautés du monde'
+  ],
+  '3': [
+    'A - Patrimoine et identité : Les communautés du Canada, 1780–1850',
+    'B - Communauté et environnement : Vivre et travailler en Ontario'
+  ],
+  '4': [
+    'A - Patrimoine et identité : Les sociétés anciennes',
+    'B - Communauté et environnement : Les régions politiques et physiques du Canada'
+  ],
+  '5': [
+    'A - Patrimoine et identité : Les interactions entre les communautés autochtones, et entre celles-ci et les Européens (avant 1713)',
+    'B - Communauté et environnement : L\'action gouvernementale et citoyenne'
+  ],
+  '6': [
+    'A - Patrimoine et identité : L\'expérience canadienne hier et aujourd\'hui',
+    'B - Communauté et environnement : Le Canada dans la communauté mondiale'
+  ]
+};
+
+// Reads the strand list for a subject, handling both shapes that now
+// exist in SUBJECT_STRANDS:
+//  - flat array (Français, Mathématiques): same list regardless of grade
+//  - object keyed by année (Sciences et technologie, Études sociales):
+//    grade-specific list
+// Call sites in observations.js/productions.js will switch from reading
+// SUBJECT_STRANDS[subject] directly to calling this instead.
+function getStrandsForSubject(subject, annee) {
+  var entry = SUBJECT_STRANDS[subject];
+  if (!entry) return [];
+  if (Array.isArray(entry)) return entry;
+  return entry[annee] || [];
+}
+
+// Determines which année to use for a whole Productions batch session.
+// Same "the class is homogeneous" assumption Productions already relies
+// on elsewhere — reads it straight off the roster instead of asking the
+// teacher to pick it again. Uses the FIRST active grade 1-6 student found.
+function getSessionAnnee() {
+  var roster = getRoster().filter(function(s) { return s.actif; });
+  var g16 = roster.find(function(s) { return isGrade1to6(s.code); });
+  return g16 ? g16.annee : null;
+}
