@@ -258,6 +258,43 @@ var productionSession = {
 };
 var productionViewMode = 'setup'; // 'setup' | 'history'
 
+var PHOTO_MAX_DIMENSION = 600;
+var PHOTO_JPEG_QUALITY = 0.5;
+
+function compressPhotoBlob(blob, maxDim, quality) {
+  return new Promise(function(resolve, reject) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width;
+      var h = img.height;
+      if (w > h && w > maxDim) {
+        h = Math.round(h * (maxDim / w));
+        w = maxDim;
+      } else if (h >= w && h > maxDim) {
+        w = Math.round(w * (maxDim / h));
+        h = maxDim;
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(img.src);
+      canvas.toBlob(function(compressedBlob) {
+        if (compressedBlob) {
+          resolve(compressedBlob);
+        } else {
+          reject(new Error('toBlob a échoué'));
+        }
+      }, 'image/jpeg', quality);
+    };
+    img.onerror = function() {
+      reject(new Error('Impossible de charger l\'image pour compression'));
+    };
+    img.src = URL.createObjectURL(blob);
+  });
+}
+
 // ---- MAIN ENTRY POINT (called by app.js) ----
 
 function renderProductions() {
