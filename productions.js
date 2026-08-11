@@ -995,6 +995,7 @@ function renderProductionChipStrip() {
 function jumpToProductionStudent(index) {
   productionSession.currentIndex = index;
   productionSession.currentPhotoFile = null;
+  productionSession.currentPhotoPreviewUrl = null;
   saveProductionSessionToStorage();
   renderProductions();
 }
