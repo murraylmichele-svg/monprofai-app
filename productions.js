@@ -514,27 +514,45 @@ async function handleProductionPhotoSelect(event) {
 
   if (!file) {
     productionSession.currentPhotoFile = null;
+    productionSession.currentPhotoPreviewUrl = null;
     if (status) status.textContent = '';
     return;
   }
 
+  if (status) status.textContent = ' Traitement de la photo...';
+
   var isHeic = file.type === 'image/heic' || file.type === 'image/heif' || /\.(heic|heif)$/i.test(file.name);
+  var workingBlob = file;
 
   if (isHeic && typeof heic2any === 'function') {
-    if (status) status.textContent = ' Conversion de la photo...';
     try {
       var converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
-      productionSession.currentPhotoFile = Array.isArray(converted) ? converted[0] : converted;
-      if (status) status.textContent = ' Photo sélectionnée.';
+      workingBlob = Array.isArray(converted) ? converted[0] : converted;
     } catch (err) {
       console.error('Erreur de conversion HEIC:', err);
-      productionSession.currentPhotoFile = file;
-      if (status) status.textContent = ' Photo sélectionnée (non convertie).';
     }
-  } else {
-    productionSession.currentPhotoFile = file;
-    if (status) status.textContent = ' Photo sélectionnée.';
   }
+
+  try {
+    var compressedBlob = await compressPhotoBlob(workingBlob, PHOTO_MAX_DIMENSION, PHOTO_JPEG_QUALITY);
+    productionSession.currentPhotoFile = compressedBlob;
+    productionSession.currentPhotoPreviewUrl = URL.createObjectURL(compressedBlob);
+  } catch (err) {
+    console.error('Erreur de compression de la photo:', err);
+    productionSession.currentPhotoFile = workingBlob;
+    productionSession.currentPhotoPreviewUrl = URL.createObjectURL(workingBlob);
+  }
+
+  renderProductions();
+}
+
+function retakeProductionPhoto() {
+  if (productionSession.currentPhotoPreviewUrl) {
+    URL.revokeObjectURL(productionSession.currentPhotoPreviewUrl);
+  }
+  productionSession.currentPhotoFile = null;
+  productionSession.currentPhotoPreviewUrl = null;
+  renderProductions();
 }
 
 function getSelectedProductionLevel() {
