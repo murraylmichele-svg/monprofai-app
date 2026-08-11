@@ -645,6 +645,7 @@ function skipProductionEntry() {
 function advanceProductionSession() {
   productionSession.currentIndex++;
   productionSession.currentPhotoFile = null;
+  productionSession.currentPhotoPreviewUrl = null;
   saveProductionSessionToStorage();
   renderProductions();
 }
