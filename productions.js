@@ -1190,6 +1190,7 @@ function resumeProductionSession() {
   productionSession.savedCount = stored.savedCount;
   productionSession.entryMap = stored.entryMap;
   productionSession.currentPhotoFile = null;
+  productionSession.currentPhotoPreviewUrl = null;
 
   renderProductions();
 }
