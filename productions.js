@@ -680,6 +680,7 @@ function resetProductionSession() {
   productionSession.studentList = [];
   productionSession.currentIndex = 0;
   productionSession.currentPhotoFile = null;
+  productionSession.currentPhotoPreviewUrl = null;
   productionSession.savedCount = 0;
   productionSession.entryMap = {};
   clearStoredProductionSession();
