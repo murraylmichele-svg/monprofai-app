@@ -630,4 +630,30 @@ table tr:hover {
   margin: 6px 0;
   font-size: 13px;
 }
+/* ============================================================
+   ADDITION — MonProf.ai
+   Allow the header nav to wrap gracefully on narrow screens,
+   now that "Observations et conversations" is a longer label
+   ============================================================ */
 
+header {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+nav button {
+  margin-left: 0;
+}
+
+@media (max-width: 480px) {
+  nav button {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
