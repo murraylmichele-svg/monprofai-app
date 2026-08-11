@@ -657,3 +657,15 @@ nav button {
     padding: 6px 10px;
   }
 }
+.photo-preview-box {
+  margin-top: 8px;
+}
+
+.photo-preview-img {
+  max-width: 220px;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  display: block;
+}
