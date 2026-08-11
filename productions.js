@@ -466,7 +466,7 @@ function renderProductionCaptureScreen(container) {
     html += '<br><button type="button" onclick="retakeProductionPhoto()">Reprendre la photo</button>';
     html += '</div>';
   } else {
-    html += '<input type="file" accept="image/*" capture="environment" id="input-photo" onchange="handleProductionPhotoSelect(event)">';
+    html += '<input type="file" accept="image/*" id="input-photo" onchange="handleProductionPhotoSelect(event)">';
   }
   html += '<span id="photo-status"></span>';
   html += '</div>';
