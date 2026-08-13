@@ -872,11 +872,9 @@ function buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selecte
   lines.push('- N\'utilise JAMAIS de cote (lettre) ni de pourcentage dans le texte — la cote est assignée séparément par l\'enseignante.');
   lines.push('- Ne reprends pas mot pour mot les attentes du curriculum.');
 
+  lines.push('- Longueur cible: maximum ' + charLimit + ' caractères, espaces compris — c\'est la limite du système Aspen utilisé pour imprimer les bulletins. Vise environ ' + targetChars + ' caractères pour laisser une marge de sécurité.');
   if (period === 'progres') {
     lines.push('- Ce commentaire accompagnera une formule de progrès ("progresse avec difficulté/bien/très bien") choisie séparément par l\'enseignante — ne répète pas cette formule dans le texte.');
-    lines.push('- Longueur cible: 3 à 5 phrases.');
-  } else {
-    lines.push('- Longueur cible: un paragraphe solide d\'environ 5 à 7 phrases.');
   }
 
   lines.push('- Réponds UNIQUEMENT avec le texte final, sans titre ni préambule.');
