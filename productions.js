@@ -1328,10 +1328,9 @@ function handleProductionSetupSubjectChange() {
   var subject = document.getElementById('input-subject').value;
   var anneeInput = document.getElementById('production-input-annee');
   var annee = anneeInput ? anneeInput.value : null;
-  var wrapper = document.getElementById('production-setup-dynamic-fields');
+  var wrapper = document.getElementById('production-setup-subject-fields');
   if (wrapper) wrapper.innerHTML = buildProductionExpectationSetupHtml(subject, '', annee);
 }
-
 function handleProductionSetupStrandChange() {
   var subject = document.getElementById('input-subject').value;
   var strand = document.getElementById('input-strand').value;
