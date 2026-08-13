@@ -1234,7 +1234,38 @@ function renderProductionSetupFieldsHtml() {
     return html;
   }
 
-  return buildProductionExpectationSetupHtml(GRADES_1_6_SUBJECTS[0], '', getSessionAnnee());
+  var grades = getDistinctGrades1to6Active();
+  var defaultAnnee = grades.length > 0 ? grades[0] : getSessionAnnee();
+
+  var html2 = '';
+  if (grades.length > 1) {
+    html2 += buildProductionAnneeSelectorHtml(grades, defaultAnnee);
+  }
+  html2 += '<div id="production-setup-subject-fields">';
+  html2 += buildProductionExpectationSetupHtml(GRADES_1_6_SUBJECTS[0], '', defaultAnnee);
+  html2 += '</div>';
+  return html2;
+}
+
+function buildProductionAnneeSelectorHtml(grades, selectedAnnee) {
+  var html = '<div class="form-row">';
+  html += '<label>Cette séance porte sur quelle année? (classe à niveaux multiples détectée)</label>';
+  html += '<select id="input-production-annee-selector" onchange="handleProductionSetupAnneeChange()">';
+  grades.forEach(function(g) {
+    var labelText = ANNEE_LABELS[g] || g;
+    html += '<option value="' + g + '"' + (g === selectedAnnee ? ' selected' : '') + '>' + labelText + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+  return html;
+}
+
+function handleProductionSetupAnneeChange() {
+  var annee = document.getElementById('input-production-annee-selector').value;
+  var subjectSelect = document.getElementById('input-subject');
+  var currentSubject = subjectSelect ? subjectSelect.value : GRADES_1_6_SUBJECTS[0];
+  var wrapper = document.getElementById('production-setup-subject-fields');
+  if (wrapper) wrapper.innerHTML = buildProductionExpectationSetupHtml(currentSubject, '', annee);
 }
 
 function buildProductionExpectationSetupHtml(subject, strand, annee) {
