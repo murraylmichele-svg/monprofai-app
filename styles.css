@@ -669,3 +669,9 @@ nav button {
   border: 1px solid #ddd;
   display: block;
 }
+#app-version-footer {
+  text-align: center;
+  font-size: 11px;
+  color: #999;
+  padding: 16px 0 24px;
+}
