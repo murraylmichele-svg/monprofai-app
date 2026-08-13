@@ -41,6 +41,10 @@
         navigator.serviceWorker.register('/monprofai-app/sw.js')
           .then(function(reg) {
             console.log('Service worker registered:', reg.scope);
+            // Force a check for a newer sw.js on every page load, instead of
+            // waiting for the browser's own (often slow, especially on iOS
+            // Safari) internal update-checking schedule.
+            reg.update();
           })
           .catch(function(err) {
             console.log('Service worker registration failed:', err);
