@@ -1078,7 +1078,8 @@ function renderGrade16Review(draft) {
 
   var html = '<div class="bulletin-review-box">';
   html += '<h4>Brouillon</h4>';
-  html += '<textarea id="g16-edit-text" rows="6">' + escapeHtmlForTextarea(draft.text) + '</textarea>';
+  html += '<textarea id="g16-edit-text" rows="6" oninput="updateG16CharCount()">' + escapeHtmlForTextarea(draft.text) + '</textarea>';
+  html += '<div id="g16-char-count"></div>';
 
   if (draft.period === 'progres') {
     html += '<div class="form-row">';
