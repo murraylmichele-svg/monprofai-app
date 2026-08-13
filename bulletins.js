@@ -1111,6 +1111,17 @@ function renderGrade16Review(draft) {
   html += '</div>';
 
   reviewArea.innerHTML = html;
+  updateG16CharCount();
+}
+
+function updateG16CharCount() {
+  var textarea = document.getElementById('g16-edit-text');
+  var countEl = document.getElementById('g16-char-count');
+  if (!textarea || !countEl) return;
+  var count = textarea.value.length;
+  var limit = SUBJECT_CHAR_LIMITS[grade16BulletinState.selectedSubject] || 1000;
+  countEl.textContent = count + ' / ' + limit + ' caractères (limite Aspen)';
+  countEl.style.color = count > limit ? '#c0392b' : '#666';
 }
 
 function saveGrade16Edits() {
