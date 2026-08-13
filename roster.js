@@ -852,3 +852,27 @@ function getSessionAnnee() {
   var g16 = roster.find(function(s) { return isGrade1to6(s.code); });
   return g16 ? g16.annee : null;
 }
+// ============================================================
+// GRADES 1-6 — Split-grade class support for Productions
+// ============================================================
+// Adds a labeled lookup for grade values, and a helper to detect
+// when the active roster spans more than one grade — used by
+// Productions setup to know when to show an année selector.
+// ============================================================
+
+var ANNEE_LABELS = {
+  '1': '1re année',
+  '2': '2e année',
+  '3': '3e année',
+  '4': '4e année',
+  '5': '5e année',
+  '6': '6e année'
+};
+
+// Every distinct grade currently present among active grade 1-6 students.
+function getDistinctGrades1to6Active() {
+  var roster = getRoster().filter(function(s) { return s.actif && isGrade1to6(s.code); });
+  var seen = {};
+  roster.forEach(function(s) { seen[s.annee] = true; });
+  return Object.keys(seen).sort();
+}
