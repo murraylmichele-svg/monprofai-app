@@ -392,15 +392,16 @@ function startProductionSession() {
   var roster = getRoster();
   var activeStudents = roster.filter(function(s) { return s.actif; });
 
-  // Sciences et technologie / Études sociales strand wording is grade-specific.
-  // If a strand was chosen for a particular année, only loop through students
-  // in that exact année — otherwise a split-grade class would get the wrong
-  // grade's strand text attached to some students' entries.
-  var gradeVaryingSubjects = ['Sciences et technologie', 'Études sociales'];
+  // A Productions session targets one specific activity/évaluation, which in
+  // practice is designed for one grade group — even when the strand label
+  // itself (e.g. "B - Nombres") happens to be shared across grades. So for
+  // any grades 1-6 session, only loop through students in the selected
+  // année. For a single-grade class this is a no-op (everyone already
+  // matches), it only changes behaviour for split-grade classes.
   var anneeInputForSession = document.getElementById('production-input-annee');
   var sessionAnnee = anneeInputForSession ? anneeInputForSession.value : null;
 
-  if (grade1to6Mode && gradeVaryingSubjects.indexOf(subject) !== -1 && sessionAnnee) {
+  if (grade1to6Mode && sessionAnnee) {
     activeStudents = activeStudents.filter(function(s) { return s.annee === sessionAnnee; });
   }
 
