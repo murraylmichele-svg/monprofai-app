@@ -392,8 +392,20 @@ function startProductionSession() {
   var roster = getRoster();
   var activeStudents = roster.filter(function(s) { return s.actif; });
 
+  // Sciences et technologie / Études sociales strand wording is grade-specific.
+  // If a strand was chosen for a particular année, only loop through students
+  // in that exact année — otherwise a split-grade class would get the wrong
+  // grade's strand text attached to some students' entries.
+  var gradeVaryingSubjects = ['Sciences et technologie', 'Études sociales'];
+  var anneeInputForSession = document.getElementById('production-input-annee');
+  var sessionAnnee = anneeInputForSession ? anneeInputForSession.value : null;
+
+  if (grade1to6Mode && gradeVaryingSubjects.indexOf(subject) !== -1 && sessionAnnee) {
+    activeStudents = activeStudents.filter(function(s) { return s.annee === sessionAnnee; });
+  }
+
   if (activeStudents.length === 0) {
-    alert('Aucun élève actif dans la liste de classe.');
+    alert('Aucun élève actif correspondant à cette année (' + (sessionAnnee || '?') + ') dans la liste de classe.');
     return;
   }
 
