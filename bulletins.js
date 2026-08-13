@@ -839,7 +839,10 @@ function getGrade16Draft(studentCode, subject, period) {
 }
 
 // ---- PROMPT + GENERATION ----
-
+function getSubjectPrepositionPhrase(subject) {
+  var startsWithVowelSound = /^[aeiouhâäéèêëîïôöùûü]/i.test(subject);
+  return startsWithVowelSound ? ('d\'' + subject) : ('de ' + subject);
+}
 function buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selectedEntries) {
   var lines = [];
   var periodLabel = period === 'progres'
