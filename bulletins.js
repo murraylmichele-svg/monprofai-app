@@ -754,6 +754,13 @@ var GRADE16_DRAFTS_KEY = 'monprofai_grade16_bulletin_drafts';
 var COTE_OPTIONS = ['A+','A','A-','B+','B','B-','C+','C','C-','D+','D','D-'];
 var PROGRES_OPTIONS = ['Progresse avec difficulté', 'Progresse bien', 'Progresse très bien'];
 
+var SUBJECT_CHAR_LIMITS = {
+  'Français': 1000,
+  'Mathématiques': 1100,
+  'Sciences et technologie': 1000,
+  'Études sociales': 700
+};
+
 var grade16BulletinState = {
   selectedStudent: '',
   selectedSubject: 'Français',
