@@ -855,6 +855,8 @@ function buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selecte
   var periodLabel = period === 'progres'
     ? 'le bulletin de progrès scolaire (première communication, automne)'
     : (period === 'scolaire1' ? 'le bulletin scolaire (deuxième communication, janvier)' : 'le bulletin scolaire (troisième communication, juin)');
+  var charLimit = SUBJECT_CHAR_LIMITS[subject] || 1000;
+  var targetChars = Math.round(charLimit * 0.9);
 
   lines.push('Tu es une enseignante en Ontario qui rédige un commentaire ' + getSubjectPrepositionPhrase(subject) + ' pour ' + periodLabel + '.');
   lines.push('');
