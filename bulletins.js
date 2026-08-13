@@ -272,6 +272,7 @@ function renderBulletinReview(draft) {
   html += '</div>';
 
   reviewArea.innerHTML = html;
+  updateG16CharCount();
 }
 
 function saveBulletinEdits() {
