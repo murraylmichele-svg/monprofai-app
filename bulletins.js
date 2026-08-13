@@ -271,8 +271,6 @@ function renderBulletinReview(draft) {
   html += '<span id="bulletin-save-status"></span>';
   html += '</div>';
 
-  html += '</div>';
-
   reviewArea.innerHTML = html;
 }
 
