@@ -1241,7 +1241,7 @@ function buildProductionExpectationSetupHtml(subject, strand, annee) {
   var strands = getStrandsForSubject(subject, annee);
   if (!strand) strand = strands[0] || '';
 
-  var html = '<input type="hidden" id="input-annee" value="' + (annee || '') + '">';
+  var html = '<input type="hidden" id="production-input-annee" value="' + (annee || '') + '">';
 
   html += '<div class="form-row">';
   html += '<label>Matière: </label>';
