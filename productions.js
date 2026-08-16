@@ -354,12 +354,11 @@ function renderProductionSetupScreen(container) {
   } else {
     html += '<div id="production-setup">';
     html += '<h3>Nouvelle entrée (un élève)</h3>';
-    html += '<p><em>Le formulaire pour une entrée individuelle sera ajouté à la prochaine étape.</em></p>';
+    html += renderProductionSingleFormHtml();
     html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
     html += '<button onclick="switchToProductionGrid()">Suivi par activité</button>';
     html += '</div>';
   }
-
   html += '<div id="production-recent-list"><p><em>Chargement...</em></p></div>';
 
   html += '<div class="data-management-section">';
