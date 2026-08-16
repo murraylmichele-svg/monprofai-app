@@ -698,14 +698,7 @@ function renderProductionCaptureScreen(container) {
 
   html += '<div class="form-row">';
   html += '<label>' + (existingEntry ? 'Ajouter une photo' : 'Photo') + ' (optionnelle):</label><br>';
-  if (productionSession.currentPhotoPreviewUrl) {
-    html += '<div class="photo-preview-box">';
-    html += '<img src="' + productionSession.currentPhotoPreviewUrl + '" alt="Aperçu de la photo" class="photo-preview-img">';
-    html += '<br><button type="button" onclick="retakeProductionPhoto()">Reprendre la photo</button>';
-    html += '</div>';
-  } else {
-    html += '<input type="file" accept="image/*" id="input-photo" onchange="handleProductionPhotoSelect(event)">';
-  }
+  html += '<div id="production-photo-area">' + renderProductionPhotoAreaHtml() + '</div>';
   html += '<span id="photo-status"></span>';
   html += '</div>';
 
