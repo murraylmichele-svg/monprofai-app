@@ -315,6 +315,13 @@ function renderProductions() {
 
 // ---- SCREEN 1: SETUP ----
 
+var productionCaptureMode = 'single'; // 'single' | 'batch'
+
+function setProductionCaptureMode(mode) {
+  productionCaptureMode = mode;
+  renderProductions();
+}
+
 function renderProductionSetupScreen(container) {
   var storedSession = getStoredProductionSession();
 
@@ -329,15 +336,29 @@ function renderProductionSetupScreen(container) {
     html += '</div>';
   }
 
-  html += '<div id="production-setup">';
-  html += '<h3>Nouvelle séance</h3>';
-  html += '<div id="production-setup-dynamic-fields">';
-  html += renderProductionSetupFieldsHtml();
+  html += '<div class="obs-type-toggle">';
+  html += '<button class="type-btn' + (productionCaptureMode === 'single' ? ' active' : '') + '" onclick="setProductionCaptureMode(\'single\')">Un élève</button>';
+  html += '<button class="type-btn' + (productionCaptureMode === 'batch' ? ' active' : '') + '" onclick="setProductionCaptureMode(\'batch\')">Toute la classe</button>';
   html += '</div>';
-  html += '<button onclick="startProductionSession()">Commencer la séance</button> ';
-  html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
-  html += '<button onclick="switchToProductionGrid()">Suivi par activité</button>';
-  html += '</div>';
+
+  if (productionCaptureMode === 'batch') {
+    html += '<div id="production-setup">';
+    html += '<h3>Nouvelle séance (toute la classe)</h3>';
+    html += '<div id="production-setup-dynamic-fields">';
+    html += renderProductionSetupFieldsHtml();
+    html += '</div>';
+    html += '<button onclick="startProductionSession()">Commencer la séance</button> ';
+    html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
+    html += '<button onclick="switchToProductionGrid()">Suivi par activité</button>';
+    html += '</div>';
+  } else {
+    html += '<div id="production-setup">';
+    html += '<h3>Nouvelle entrée (un élève)</h3>';
+    html += '<p><em>Le formulaire pour une entrée individuelle sera ajouté à la prochaine étape.</em></p>';
+    html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
+    html += '<button onclick="switchToProductionGrid()">Suivi par activité</button>';
+    html += '</div>';
+  }
 
   html += '<div id="production-recent-list"><p><em>Chargement...</em></p></div>';
 
