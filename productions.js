@@ -321,7 +321,208 @@ function setProductionCaptureMode(mode) {
   productionCaptureMode = mode;
   renderProductions();
 }
+var productionSingleCapture = {
+  photoFile: null,
+  photoPreviewUrl: null
+};
 
+function renderProductionSingleFormHtml() {
+  productionSingleCapture.photoFile = null;
+  productionSingleCapture.photoPreviewUrl = null;
+
+  var roster = getRoster().filter(function(s) { return s.actif && !isGrade1to6(s.code); });
+
+  if (roster.length === 0) {
+    return '<p><em>Aucun élève de maternelle/jardin actif. Pour la 1re à la 6e année, cette étape arrive bientôt — utilisez "Toute la classe" pour le moment.</em></p>';
+  }
+
+  var html = '<div class="form-row">';
+  html += '<label>Élève</label>';
+  html += '<select id="prod-single-student" onchange="handleProductionSingleStudentChange()">';
+  html += '<option value="">-- Sélectionner un élève --</option>';
+  roster.forEach(function(s) {
+    html += '<option value="' + s.code + '">' + displayName(s) + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div id="prod-single-fields"><p><em>Sélectionnez un élève pour afficher les champs.</em></p></div>';
+
+  return html;
+}
+
+function handleProductionSingleStudentChange() {
+  var select = document.getElementById('prod-single-student');
+  var studentCode = select ? select.value : '';
+  var fieldsArea = document.getElementById('prod-single-fields');
+  if (!fieldsArea) return;
+
+  productionSingleCapture.photoFile = null;
+  productionSingleCapture.photoPreviewUrl = null;
+
+  if (!studentCode) {
+    fieldsArea.innerHTML = '<p><em>Sélectionnez un élève pour afficher les champs.</em></p>';
+    return;
+  }
+
+  fieldsArea.innerHTML = renderProductionSingleCaptureFieldsHtml(studentCode);
+}
+
+function renderProductionSingleCaptureFieldsHtml(studentCode) {
+  var html = getPeiReminderHtml(studentCode);
+
+  html += '<div class="form-row">';
+  html += '<label>Domaine</label>';
+  html += '<div class="domaine-btns">';
+  html += '<button class="domaine-btn active" id="prod-single-domaine-A" onclick="setProductionSingleDomaine(\'A\')"><strong>A</strong> Langue & maths</button>';
+  html += '<button class="domaine-btn" id="prod-single-domaine-B" onclick="setProductionSingleDomaine(\'B\')"><strong>B</strong> Résolution & innovation</button>';
+  html += '<button class="domaine-btn" id="prod-single-domaine-C" onclick="setProductionSingleDomaine(\'C\')"><strong>C</strong> Autorégulation & bien-être</button>';
+  html += '<button class="domaine-btn" id="prod-single-domaine-D" onclick="setProductionSingleDomaine(\'D\')"><strong>D</strong> Appartenance & contribution</button>';
+  html += '</div>';
+  html += '</div>';
+  html += '<input type="hidden" id="prod-single-domaine" value="A">';
+
+  html += '<div class="form-row">';
+  html += '<label>Activité (facultatif)</label>';
+  html += '<input type="text" id="prod-single-activity" placeholder="ex: Cercle du matin" maxlength="80">';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Note</label>';
+  html += '<textarea id="prod-single-note" rows="3" placeholder="Qu\'est-ce que cette production démontre?"></textarea>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Photo (optionnelle):</label><br>';
+  html += '<div id="prod-single-photo-area">' + renderProductionSinglePhotoAreaHtml() + '</div>';
+  html += '<span id="prod-single-photo-status"></span>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Niveau interne (facultatif, jamais montré aux parents):</label><br>';
+  html += '<label><input type="radio" name="prod-single-level" value="" checked> Pas de niveau</label> ';
+  html += '<label><input type="radio" name="prod-single-level" value="emergent"> Émergent</label> ';
+  html += '<label><input type="radio" name="prod-single-level" value="developing"> En développement</label> ';
+  html += '<label><input type="radio" name="prod-single-level" value="confirmed"> Confirmé</label>';
+  html += '</div>';
+
+  html += '<button onclick="saveProductionSingleEntry(\'' + studentCode + '\')">Enregistrer</button>';
+  html += '<span id="prod-single-save-status"></span>';
+
+  return html;
+}
+
+function setProductionSingleDomaine(d) {
+  document.getElementById('prod-single-domaine').value = d;
+  ['A', 'B', 'C', 'D'].forEach(function(x) {
+    document.getElementById('prod-single-domaine-' + x).className = 'domaine-btn' + (x === d ? ' active' : '');
+  });
+}
+
+function renderProductionSinglePhotoAreaHtml() {
+  if (productionSingleCapture.photoPreviewUrl) {
+    var html = '<div class="photo-preview-box">';
+    html += '<img src="' + productionSingleCapture.photoPreviewUrl + '" alt="Aperçu de la photo" class="photo-preview-img">';
+    html += '<br><button type="button" onclick="retakeProductionSinglePhoto()">Reprendre la photo</button>';
+    html += '</div>';
+    return html;
+  }
+  return '<input type="file" accept="image/*" id="prod-single-photo-input" onchange="handleProductionSinglePhotoSelect(event)">';
+}
+
+async function handleProductionSinglePhotoSelect(event) {
+  var file = event.target.files[0];
+  var status = document.getElementById('prod-single-photo-status');
+
+  if (!file) return;
+
+  if (status) status.textContent = ' Traitement de la photo...';
+
+  var isHeic = file.type === 'image/heic' || file.type === 'image/heif' || /\.(heic|heif)$/i.test(file.name);
+  var workingBlob = file;
+
+  if (isHeic && typeof heic2any === 'function') {
+    try {
+      var converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+      workingBlob = Array.isArray(converted) ? converted[0] : converted;
+    } catch (err) {
+      console.error('Erreur de conversion HEIC:', err);
+    }
+  }
+
+  try {
+    var compressedBlob = await compressPhotoBlob(workingBlob, PHOTO_MAX_DIMENSION, PHOTO_JPEG_QUALITY);
+    productionSingleCapture.photoFile = compressedBlob;
+    productionSingleCapture.photoPreviewUrl = URL.createObjectURL(compressedBlob);
+  } catch (err) {
+    console.error('Erreur de compression de la photo:', err);
+    productionSingleCapture.photoFile = workingBlob;
+    productionSingleCapture.photoPreviewUrl = URL.createObjectURL(workingBlob);
+  }
+
+  if (status) status.textContent = '';
+  var photoArea = document.getElementById('prod-single-photo-area');
+  if (photoArea) photoArea.innerHTML = renderProductionSinglePhotoAreaHtml();
+}
+
+function retakeProductionSinglePhoto() {
+  if (productionSingleCapture.photoPreviewUrl) {
+    URL.revokeObjectURL(productionSingleCapture.photoPreviewUrl);
+  }
+  productionSingleCapture.photoFile = null;
+  productionSingleCapture.photoPreviewUrl = null;
+
+  var photoArea = document.getElementById('prod-single-photo-area');
+  if (photoArea) photoArea.innerHTML = renderProductionSinglePhotoAreaHtml();
+}
+
+async function saveProductionSingleEntry(studentCode) {
+  var domaineInput = document.getElementById('prod-single-domaine');
+  var activityInput = document.getElementById('prod-single-activity');
+  var noteInput = document.getElementById('prod-single-note');
+  var levelRadios = document.getElementsByName('prod-single-level');
+
+  var domaine = domaineInput ? domaineInput.value : 'A';
+  var activityTag = activityInput ? activityInput.value.trim() : '';
+  var note = noteInput ? noteInput.value.trim() : '';
+  var level = '';
+  for (var i = 0; i < levelRadios.length; i++) {
+    if (levelRadios[i].checked) level = levelRadios[i].value;
+  }
+
+  var statusEl = document.getElementById('prod-single-save-status');
+  if (statusEl) statusEl.textContent = ' Enregistrement...';
+
+  try {
+    await addProduction({
+      studentCode: studentCode,
+      domain: domaine,
+      note: note,
+      level: level || null,
+      activityTag: activityTag,
+      photoBlobs: productionSingleCapture.photoFile ? [productionSingleCapture.photoFile] : []
+    });
+
+    productionSingleCapture.photoFile = null;
+    productionSingleCapture.photoPreviewUrl = null;
+
+    var studentSelect = document.getElementById('prod-single-student');
+    if (studentSelect) studentSelect.value = '';
+    var fieldsArea = document.getElementById('prod-single-fields');
+    if (fieldsArea) fieldsArea.innerHTML = '<p><em>Sélectionnez un élève pour afficher les champs.</em></p>';
+
+    loadAndRenderRecentProductions();
+
+    if (statusEl) {
+      statusEl.textContent = ' ✓ Enregistré';
+      setTimeout(function() { statusEl.textContent = ''; }, 2000);
+    }
+  } catch (err) {
+    if (statusEl) statusEl.textContent = '';
+    alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
+    console.error(err);
+  }
+}
 function renderProductionSetupScreen(container) {
   var storedSession = getStoredProductionSession();
 
