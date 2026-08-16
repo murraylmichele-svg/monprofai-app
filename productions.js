@@ -740,16 +740,22 @@ function renderProductionCaptureScreen(container) {
   container.innerHTML = html;
 }
 
+function renderProductionPhotoAreaHtml() {
+  if (productionSession.currentPhotoPreviewUrl) {
+    var html = '<div class="photo-preview-box">';
+    html += '<img src="' + productionSession.currentPhotoPreviewUrl + '" alt="Aperçu de la photo" class="photo-preview-img">';
+    html += '<br><button type="button" onclick="retakeProductionPhoto()">Reprendre la photo</button>';
+    html += '</div>';
+    return html;
+  }
+  return '<input type="file" accept="image/*" id="input-photo" onchange="handleProductionPhotoSelect(event)">';
+}
+
 async function handleProductionPhotoSelect(event) {
   var file = event.target.files[0];
   var status = document.getElementById('photo-status');
 
-  if (!file) {
-    productionSession.currentPhotoFile = null;
-    productionSession.currentPhotoPreviewUrl = null;
-    if (status) status.textContent = '';
-    return;
-  }
+  if (!file) return;
 
   if (status) status.textContent = ' Traitement de la photo...';
 
@@ -775,7 +781,20 @@ async function handleProductionPhotoSelect(event) {
     productionSession.currentPhotoPreviewUrl = URL.createObjectURL(workingBlob);
   }
 
-  renderProductions();
+  if (status) status.textContent = '';
+  var photoArea = document.getElementById('production-photo-area');
+  if (photoArea) photoArea.innerHTML = renderProductionPhotoAreaHtml();
+}
+
+function retakeProductionPhoto() {
+  if (productionSession.currentPhotoPreviewUrl) {
+    URL.revokeObjectURL(productionSession.currentPhotoPreviewUrl);
+  }
+  productionSession.currentPhotoFile = null;
+  productionSession.currentPhotoPreviewUrl = null;
+
+  var photoArea = document.getElementById('production-photo-area');
+  if (photoArea) photoArea.innerHTML = renderProductionPhotoAreaHtml();
 }
 
 function retakeProductionPhoto() {
