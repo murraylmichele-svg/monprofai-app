@@ -330,10 +330,10 @@ function renderProductionSingleFormHtml() {
   productionSingleCapture.photoFile = null;
   productionSingleCapture.photoPreviewUrl = null;
 
-  var roster = getRoster().filter(function(s) { return s.actif && !isGrade1to6(s.code); });
+  var roster = getRoster().filter(function(s) { return s.actif; });
 
   if (roster.length === 0) {
-    return '<p><em>Aucun élève de maternelle/jardin actif. Pour la 1re à la 6e année, cette étape arrive bientôt — utilisez "Toute la classe" pour le moment.</em></p>';
+    return '<p><em>Aucun élève actif dans la liste de classe.</em></p>';
   }
 
   var html = '<div class="form-row">';
