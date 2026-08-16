@@ -365,7 +365,11 @@ function handleProductionSingleStudentChange() {
     return;
   }
 
-  fieldsArea.innerHTML = renderProductionSingleCaptureFieldsHtml(studentCode);
+  if (isGrade1to6(studentCode)) {
+    fieldsArea.innerHTML = renderProductionSingleG16FieldsHtml(studentCode);
+  } else {
+    fieldsArea.innerHTML = renderProductionSingleCaptureFieldsHtml(studentCode);
+  }
 }
 
 function renderProductionSingleCaptureFieldsHtml(studentCode) {
