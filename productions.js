@@ -1575,3 +1575,170 @@ function handleProductionSetupStrandChange() {
   var row = document.getElementById('production-setup-name-row');
   if (row) row.innerHTML = buildProductionSetupNameFieldHtml(subject, strand);
 }
+function renderProductionSingleG16FieldsHtml(studentCode) {
+  var student = getRoster().find(function(s) { return s.code === studentCode; });
+  var annee = student ? student.annee : null;
+
+  var html = getPeiReminderHtml(studentCode);
+
+  html += '<input type="hidden" id="prod-single-annee" value="' + (annee || '') + '">';
+
+  html += '<div class="form-row">';
+  html += '<label>Matière</label>';
+  html += '<select id="prod-single-subject" onchange="handleProductionSingleSubjectChange()">';
+  GRADES_1_6_SUBJECTS.forEach(function(subj) {
+    html += '<option value="' + subj + '">' + subj + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div id="prod-single-g16-subject-fields">';
+  html += buildProductionSingleG16SubjectFieldsHtml(GRADES_1_6_SUBJECTS[0], '', annee);
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Compétence (grille d\'évaluation)</label>';
+  html += '<select id="prod-single-achievement">';
+  ACHIEVEMENT_CATEGORIES.forEach(function(cat) {
+    html += '<option value="' + cat + '">' + cat + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Note</label>';
+  html += '<textarea id="prod-single-note" rows="3" placeholder="Qu\'est-ce que cette production démontre?"></textarea>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Photo (optionnelle):</label><br>';
+  html += '<div id="prod-single-photo-area">' + renderProductionSinglePhotoAreaHtml() + '</div>';
+  html += '<span id="prod-single-photo-status"></span>';
+  html += '</div>';
+
+  html += '<div class="form-row">';
+  html += '<label>Niveau (officiel):</label><br>';
+  html += '<label><input type="radio" name="prod-single-niveau" value="" checked> Aucun niveau</label> ';
+  NIVEAU_OPTIONS.forEach(function(n) {
+    html += '<label><input type="radio" name="prod-single-niveau" value="' + n + '"> ' + n + '</label> ';
+  });
+  html += '</div>';
+
+  html += '<button onclick="saveProductionSingleG16Entry(\'' + studentCode + '\')">Enregistrer</button>';
+  html += '<span id="prod-single-save-status"></span>';
+
+  return html;
+}
+
+function buildProductionSingleG16SubjectFieldsHtml(subject, strand, annee) {
+  var strands = getStrandsForSubject(subject, annee);
+  if (!strand) strand = strands[0] || '';
+
+  var html = '<div class="form-row">';
+  html += '<label>Domaine/Volet</label>';
+  html += '<select id="prod-single-strand" onchange="handleProductionSingleStrandChange()">';
+  strands.forEach(function(s) {
+    html += '<option value="' + s + '"' + (s === strand ? ' selected' : '') + '>' + s + '</option>';
+  });
+  html += '</select>';
+  html += '</div>';
+
+  html += '<div class="form-row" id="prod-single-activity-row">';
+  html += renderProductionSingleActivityFieldHtml(subject, strand);
+  html += '</div>';
+
+  return html;
+}
+
+function renderProductionSingleActivityFieldHtml(subject, strand) {
+  var isDomaineBFrancais = (subject === 'Français' && strand === 'B - Notions fondamentales de la langue');
+
+  if (isDomaineBFrancais) {
+    var html = '<label>Notion fondamentale</label>';
+    html += '<select id="prod-single-activity-select">';
+    DOMAINE_B_FRANCAIS_CONTINUUM.forEach(function(item) {
+      html += '<option value="' + item + '">' + item + '</option>';
+    });
+    html += '</select>';
+    return html;
+  }
+
+  return '<label>Activité (facultatif)</label><input type="text" id="prod-single-activity" placeholder="ex: multiplication, triangles..." maxlength="80">';
+}
+
+function handleProductionSingleSubjectChange() {
+  var subjectSelect = document.getElementById('prod-single-subject');
+  var subject = subjectSelect ? subjectSelect.value : GRADES_1_6_SUBJECTS[0];
+  var anneeInput = document.getElementById('prod-single-annee');
+  var annee = anneeInput ? anneeInput.value : null;
+
+  var wrapper = document.getElementById('prod-single-g16-subject-fields');
+  if (wrapper) wrapper.innerHTML = buildProductionSingleG16SubjectFieldsHtml(subject, '', annee);
+}
+
+function handleProductionSingleStrandChange() {
+  var subjectSelect = document.getElementById('prod-single-subject');
+  var strandSelect = document.getElementById('prod-single-strand');
+  var subject = subjectSelect ? subjectSelect.value : GRADES_1_6_SUBJECTS[0];
+  var strand = strandSelect ? strandSelect.value : '';
+
+  var row = document.getElementById('prod-single-activity-row');
+  if (row) row.innerHTML = renderProductionSingleActivityFieldHtml(subject, strand);
+}
+
+async function saveProductionSingleG16Entry(studentCode) {
+  var subjectSelect = document.getElementById('prod-single-subject');
+  var strandSelect = document.getElementById('prod-single-strand');
+  var achievementSelect = document.getElementById('prod-single-achievement');
+  var activityInput = document.getElementById('prod-single-activity');
+  var activitySelect = document.getElementById('prod-single-activity-select');
+  var noteInput = document.getElementById('prod-single-note');
+  var niveauRadios = document.getElementsByName('prod-single-niveau');
+
+  var subject = subjectSelect ? subjectSelect.value : '';
+  var strand = strandSelect ? strandSelect.value : '';
+  var achievementCategory = achievementSelect ? achievementSelect.value : '';
+  var activityTag = activitySelect ? activitySelect.value : (activityInput ? activityInput.value.trim() : '');
+  var note = noteInput ? noteInput.value.trim() : '';
+  var niveau = '';
+  for (var i = 0; i < niveauRadios.length; i++) {
+    if (niveauRadios[i].checked) niveau = niveauRadios[i].value;
+  }
+
+  var statusEl = document.getElementById('prod-single-save-status');
+  if (statusEl) statusEl.textContent = ' Enregistrement...';
+
+  try {
+    await addProduction({
+      studentCode: studentCode,
+      domain: '',
+      note: note,
+      level: null,
+      grade: niveau || null,
+      activityTag: activityTag,
+      subject: subject,
+      strand: strand,
+      achievementCategory: achievementCategory,
+      photoBlobs: productionSingleCapture.photoFile ? [productionSingleCapture.photoFile] : []
+    });
+
+    productionSingleCapture.photoFile = null;
+    productionSingleCapture.photoPreviewUrl = null;
+
+    var studentSelect = document.getElementById('prod-single-student');
+    if (studentSelect) studentSelect.value = '';
+    var fieldsArea = document.getElementById('prod-single-fields');
+    if (fieldsArea) fieldsArea.innerHTML = '<p><em>Sélectionnez un élève pour afficher les champs.</em></p>';
+
+    loadAndRenderRecentProductions();
+
+    if (statusEl) {
+      statusEl.textContent = ' ✓ Enregistré';
+      setTimeout(function() { statusEl.textContent = ''; }, 2000);
+    }
+  } catch (err) {
+    if (statusEl) statusEl.textContent = '';
+    alert('Erreur lors de l\'enregistrement. Veuillez réessayer.');
+    console.error(err);
+  }
+}
