@@ -489,6 +489,12 @@ var SUBJECT_STRANDS = {
     'B - Vie active',
     'C - Compétence motrice',
     'D - Vie saine'
+  ],
+  'Éducation artistique': [
+    'A - Art dramatique',
+    'B - Arts visuels',
+    'C - Danse',
+    'D - Musique'
   ]
 };
 
