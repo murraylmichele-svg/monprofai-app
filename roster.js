@@ -461,7 +461,8 @@ var GRADES_1_6_SUBJECTS = [
   'Sciences et technologie',
   'Études sociales',
   'Enseignement religieux',
-  'Anglais'
+  'Anglais',
+  'Éducation physique et santé'
 ];
 
 var SUBJECT_STRANDS = {
