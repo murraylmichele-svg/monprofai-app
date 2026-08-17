@@ -771,7 +771,7 @@ function buildObsSousSujetFieldHtml(subject, strand) {
     return html;
   }
 
-  var html2 = '<label>Sous-sujet (facultatif)</label>';
+  var html2 = '<label>Activité (facultatif)</label>';
   html2 += '<input type="text" id="obs-sous-sujet" placeholder="ex: multiplication, triangles..." maxlength="80">';
   return html2;
 }
