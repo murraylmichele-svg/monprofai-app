@@ -1571,7 +1571,7 @@ function buildProductionSetupNameFieldHtml(subject, strand) {
     return html;
   }
 
-  return '<label>Nom de l\'évaluation: </label><input type="text" id="input-activity-tag" placeholder="ex: Test - fractions" maxlength="80">';
+  return '<label>Activité (facultatif): </label><input type="text" id="input-activity-tag" placeholder="ex: Test - fractions" maxlength="80">';
 }
 
 function handleProductionSetupSubjectChange() {
