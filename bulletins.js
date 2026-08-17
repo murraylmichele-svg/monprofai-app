@@ -872,6 +872,7 @@ function buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selecte
   lines.push('- Si l\'élève éprouve des difficultés, formule-le avec douceur (ex: "devra", "pourrait", "commence à").');
   lines.push('- N\'utilise JAMAIS de cote (lettre) ni de pourcentage dans le texte — la cote est assignée séparément par l\'enseignante.');
   lines.push('- Ne reprends pas mot pour mot les attentes du curriculum.');
+  lines.push('- Rédige le commentaire ENTIÈREMENT EN FRANÇAIS, même si le nom de la matière ou des volets du curriculum est en anglais (c\'est le cas pour Anglais, par exemple).');
 
   lines.push('- Longueur cible: maximum ' + charLimit + ' caractères, espaces compris — c\'est la limite du système Aspen utilisé pour imprimer les bulletins. Vise environ ' + targetChars + ' caractères pour laisser une marge de sécurité.');
   if (period === 'progres') {
