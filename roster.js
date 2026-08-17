@@ -476,6 +476,11 @@ var SUBJECT_STRANDS = {
     'D - Données',
     'E - Sens de l\'espace',
     'F - Littératie financière'
+  ],
+  'Anglais': [
+    'A - Oral and Oral-Visual Communication',
+    'B - Reading and Interpretation',
+    'C - Writing and Representation'
   ]
 };
 
