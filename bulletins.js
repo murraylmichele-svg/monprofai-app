@@ -1104,7 +1104,10 @@ async function handleGenerateGrade16Click() {
       grade16BulletinState.selectedSubject,
       grade16BulletinState.selectedPeriod,
       grade16BulletinState.selectedEntryIds,
-      grade16BulletinState.entries
+      grade16BulletinState.entries,
+      function(message) {
+        if (statusEl) statusEl.textContent = message;
+      }
     );
 
     saveGrade16Draft(
