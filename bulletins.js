@@ -758,7 +758,8 @@ var SUBJECT_CHAR_LIMITS = {
   'Français': 1000,
   'Mathématiques': 1100,
   'Sciences et technologie': 1000,
-  'Études sociales': 700
+  'Études sociales': 700,
+  'Enseignement religieux': 575
 };
 
 var grade16BulletinState = {
