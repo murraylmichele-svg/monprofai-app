@@ -832,6 +832,44 @@ SUBJECT_STRANDS['Études sociales'] = {
   ]
 };
 
+SUBJECT_STRANDS['Enseignement religieux'] = {
+  '1': [
+    '1 - Bible',
+    '2 - Convictions au sujet de la présence de Dieu',
+    '3 - Vie spirituelle et sacramentelle',
+    '4 - Agir et engagement'
+  ],
+  '2': [
+    '1 - Bible',
+    '2 - Convictions au sujet de la relation de Dieu avec les humains et des humains entre eux',
+    '3 - Vie spirituelle et sacramentelle',
+    '4 - Agir et engagement'
+  ],
+  '3': [
+    '1 - Bible',
+    '2 - Convictions au sujet de l\'avènement du Royaume de Dieu',
+    '3 - Vie spirituelle et sacramentelle',
+    '4 - Agir et engagement'
+  ],
+  '4': [
+    '1 - Bible',
+    '2 - Convictions au sujet de Jésus, Bonne Nouvelle',
+    '3 - Vie spirituelle et sacramentelle',
+    '4 - Agir et engagement'
+  ],
+  '5': [
+    '1 - Bible',
+    '2 - Convictions au sujet de l\'Esprit Saint, Dieu à l\'œuvre dans le monde',
+    '3 - Vie spirituelle et sacramentelle',
+    '4 - Agir et engagement'
+  ],
+  '6': [
+    '1 - Bible',
+    '2 - Convictions au sujet de Jésus, chemin de Vie',
+    '3 - Vie spirituelle et sacramentelle',
+    '4 - Agir et engagement'
+  ]
+};
 // Reads the strand list for a subject, handling both shapes that now
 // exist in SUBJECT_STRANDS:
 //  - flat array (Français, Mathématiques): same list regardless of grade
