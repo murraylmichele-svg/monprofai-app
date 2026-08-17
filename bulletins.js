@@ -898,7 +898,44 @@ function buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selecte
   return lines.join('\n');
 }
 
-async function generateGrade16SubjectComment(studentCode, subject, period, selectedEntryIds, allEntries) {
+var MAX_SHORTEN_ATTEMPTS = 3;
+
+async function shortenCommentViaAI(rawText, charLimit) {
+  var targetChars = Math.round(charLimit * 0.95);
+  var prompt = 'Voici un commentaire de bulletin qui dépasse la limite permise de ' + charLimit +
+    ' caractères (espaces compris).\n\n' +
+    'COMMENTAIRE ACTUEL (' + rawText.length + ' caractères):\n' + rawText + '\n\n' +
+    'Reformule ce commentaire pour qu\'il tienne en moins de ' + targetChars +
+    ' caractères, en conservant le même sens, le même ton constructif et les mêmes informations essentielles (point fort et prochaine étape). ' +
+    'Ne raccourcis pas simplement en supprimant des phrases à la fin — reformule l\'ensemble de façon plus concise. ' +
+    'Réponds UNIQUEMENT avec le texte final reformulé, sans préambule, sans guillemets, sans indication du nombre de caractères.';
+
+  return await callBulletinProxy(prompt);
+}
+
+// Guaranteed last-resort fallback if the AI still won't comply after retries —
+// cuts at the last full sentence within the limit when possible, otherwise
+// at the last word boundary. This is pure local text manipulation, not an
+// API call, so it's safe to run on the already-deanonymized final text.
+function truncateToSentenceBoundary(text, limit) {
+  if (text.length <= limit) return text;
+
+  var truncated = text.slice(0, limit);
+  var lastPeriod = truncated.lastIndexOf('. ');
+
+  if (lastPeriod > limit * 0.5) {
+    return truncated.slice(0, lastPeriod + 1).trim();
+  }
+
+  var lastSpace = truncated.lastIndexOf(' ');
+  if (lastSpace > 0) {
+    return truncated.slice(0, lastSpace).trim() + '…';
+  }
+
+  return truncated.trim();
+}
+
+async function generateGrade16SubjectComment(studentCode, subject, period, selectedEntryIds, allEntries, onStatusUpdate) {
   var roster = getRoster();
   var student = roster.find(function(s) { return s.code === studentCode; });
   var pronom = student ? student.pronom : 'iel';
@@ -907,7 +944,26 @@ async function generateGrade16SubjectComment(studentCode, subject, period, selec
 
   var prompt = buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selectedEntries);
   var rawComment = await callBulletinProxy(prompt);
-  return deanonymizeBulletinText(rawComment, studentCode);
+
+  var charLimit = SUBJECT_CHAR_LIMITS[subject] || 1000;
+
+  // Check against the deanonymized (final, real-name) length, since that's
+  // what actually gets pasted into Aspen — but keep sending only the
+  // anonymized/coded version to the AI for every shorten attempt, per the
+  // privacy rule that real names never leave the device.
+  for (var attempt = 0; attempt < MAX_SHORTEN_ATTEMPTS; attempt++) {
+    var deanonymized = deanonymizeBulletinText(rawComment, studentCode);
+    if (deanonymized.length <= charLimit) {
+      return deanonymized;
+    }
+    if (onStatusUpdate) onStatusUpdate(' Ajustement de la longueur...');
+    rawComment = await shortenCommentViaAI(rawComment, charLimit);
+  }
+
+  // Guaranteed fallback: even if the AI never got it under the limit,
+  // the teacher will never see an over-limit draft.
+  var finalText = deanonymizeBulletinText(rawComment, studentCode);
+  return truncateToSentenceBoundary(finalText, charLimit);
 }
 
 // ---- UI ----
