@@ -482,6 +482,12 @@ var SUBJECT_STRANDS = {
     'A - Oral and Oral-Visual Communication',
     'B - Reading and Interpretation',
     'C - Writing and Representation'
+  ],
+  'Éducation physique et santé': [
+    'A - Apprentissage socioémotionnel',
+    'B - Vie active',
+    'C - Compétence motrice',
+    'D - Vie saine'
   ]
 };
 
