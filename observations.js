@@ -3,6 +3,11 @@
 // ============================================================
 
 var OBS_KEY = 'monprofai_observations';
+
+var obsPhotoCapture = {
+  photoFile: null,
+  photoPreviewUrl: null
+};
 // ============================================================
 // observations.js — MonProf.ai
 // ADDITION: IndexedDB data layer for Observation photos
