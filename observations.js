@@ -64,6 +64,36 @@ function retakeObsPhoto() {
   var photoArea = document.getElementById('obs-photo-area');
   if (photoArea) photoArea.innerHTML = renderObsPhotoAreaHtml();
 }
+function retakeObsPhoto() {
+  if (obsPhotoCapture.photoPreviewUrl) {
+    URL.revokeObjectURL(obsPhotoCapture.photoPreviewUrl);
+  }
+  obsPhotoCapture.photoFile = null;
+  obsPhotoCapture.photoPreviewUrl = null;
+
+  var photoArea = document.getElementById('obs-photo-area');
+  if (photoArea) photoArea.innerHTML = renderObsPhotoAreaHtml();
+}
+
+function loadObsHistoryThumbnails() {
+  var obs = getObservations();
+  obs.forEach(function(o) {
+    if (o.photoIds && o.photoIds.length > 0) {
+      loadObsRecentThumbnail(o.id, o.photoIds[0]);
+    }
+  });
+}
+
+async function loadObsRecentThumbnail(observationId, photoId) {
+  var span = document.getElementById('obs-recent-photo-' + observationId);
+  if (!span) return;
+
+  var mediaRecord = await getObservationPhoto(photoId);
+  if (!span || !mediaRecord || !mediaRecord.blob) return;
+
+  var objectUrl = URL.createObjectURL(mediaRecord.blob);
+  span.innerHTML = '<img src="' + objectUrl + '" alt="Photo" style="max-width:50px; max-height:50px; object-fit:cover; border-radius:4px; cursor:pointer;" onclick="window.open(\'' + objectUrl + '\', \'_blank\')">';
+}
 // ============================================================
 // observations.js — MonProf.ai
 // ADDITION: IndexedDB data layer for Observation photos
