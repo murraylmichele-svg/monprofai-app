@@ -315,6 +315,7 @@ html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</bu
   html += '</div>';
 
   container.innerHTML = html;
+  loadObsHistoryThumbnails();
 }
 
 // ============================================================
