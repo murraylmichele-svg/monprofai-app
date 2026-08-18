@@ -1164,9 +1164,8 @@ function renderImportPreviewHtml(preview) {
     html += '</ul>';
   }
 
-  html += '<button onclick="handleConfirmImport()">Importer les observations et conversations</button>';
+  html += '<button onclick="handleConfirmImport()">Importer les données (observations, conversations et productions)</button>';
   html += '<span id="import-commit-status"></span>';
-  html += '<p><em>Note: l\'importation des productions sera ajoutée dans une prochaine étape.</em></p>';
   html += '</div>';
   return html;
 }
