@@ -419,7 +419,7 @@ function renderProductionSingleCaptureFieldsHtml(studentCode) {
 
 function setProductionSingleDomaine(d) {
   document.getElementById('prod-single-domaine').value = d;
-  ['A', 'B', 'C', 'D'].forEach(function(x) {
+  ['A', 'B', 'C', 'D', 'E'].forEach(function(x) {
     document.getElementById('prod-single-domaine-' + x).className = 'domaine-btn' + (x === d ? ' active' : '');
   });
 }
