@@ -516,12 +516,21 @@ async function generateBulletinForStudent(studentCode, period) {
   }
 
   var periodLabel = BULLETIN_PERIODS[period] || period;
-  var domains = ['A', 'B', 'C', 'D'];
+  var domains = ['A', 'B', 'C', 'D', 'E'];
   var result = {};
 
   for (var i = 0; i < domains.length; i++) {
     var domain = domains[i];
     var domainEvidence = filterEvidenceByDomain(fullEvidence, domain);
+
+    // Domaine E (Éveil religieux) is Catholic-specific and optional — most
+    // non-Catholic students will have zero evidence here. Skip generating
+    // (and skip showing) this domain entirely rather than asking the AI
+    // to write a paragraph with nothing to base it on.
+    if (domain === 'E' && domainEvidence.observations.length === 0 && domainEvidence.productions.length === 0) {
+      continue;
+    }
+
     var domainPrompt = buildDomainBulletinPrompt(domainEvidence, domain, pronom, periodLabel);
     var rawDomainComment = await callBulletinProxy(domainPrompt);
     result[domain] = deanonymizeBulletinText(rawDomainComment, studentCode);
