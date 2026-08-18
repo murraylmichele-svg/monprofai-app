@@ -1196,3 +1196,127 @@ function handleImportFileSelect(event) {
   };
   reader.readAsText(file);
 }
+// ============================================================
+// roster.js — MonProf.ai
+// ADDITION: Import commit — Observations only (Piece 3a)
+// ============================================================
+// Builds a map from imported student codes to this device's local
+// codes (matched students keep their local code; new students,
+// if checked, get created here with a fresh local code). Then
+// writes imported observations directly into local storage,
+// preserving their original id/date (so re-running the same
+// import twice is safe — duplicates are skipped by id), and
+// re-saves any embedded photos into this device's own IndexedDB.
+//
+// Productions import is NOT yet included — see Piece 3b.
+// ============================================================
+
+function base64ToBlob(base64String, mimeType) {
+  var byteString = atob(base64String.split(',')[1]);
+  var byteArray = new Uint8Array(byteString.length);
+  for (var i = 0; i < byteString.length; i++) {
+    byteArray[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([byteArray], { type: mimeType });
+}
+
+function buildImportCodeMap(preview) {
+  var codeMap = {};
+
+  preview.matchedStudents.forEach(function(s) {
+    codeMap[s.importedCode] = s.localCode;
+  });
+
+  preview.newStudents.forEach(function(s, i) {
+    var checkbox = document.getElementById('import-new-' + i);
+    var included = checkbox ? checkbox.checked : true;
+    if (included) {
+      var newStudent = addStudent(s.prenom, s.nomInitial.replace('.', ''), 'elle', s.annee, false, false);
+      codeMap[s.importedCode] = newStudent.code;
+    } else {
+      codeMap[s.importedCode] = null;
+    }
+  });
+
+  return codeMap;
+}
+
+async function commitImportedObservations(importedData, codeMap) {
+  var importedObs = importedData.observations || [];
+  var localObs = getObservations();
+  var localIds = {};
+  localObs.forEach(function(o) { localIds[o.id] = true; });
+
+  var addedCount = 0;
+  var skippedDuplicates = 0;
+  var skippedExcluded = 0;
+
+  for (var i = 0; i < importedObs.length; i++) {
+    var o = importedObs[i];
+    var localCode = codeMap[o.studentCode];
+
+    if (!localCode) {
+      skippedExcluded++;
+      continue;
+    }
+    if (localIds[o.id]) {
+      skippedDuplicates++;
+      continue;
+    }
+
+    var newPhotoIds = [];
+    if (o.photos && o.photos.length > 0) {
+      for (var j = 0; j < o.photos.length; j++) {
+        var photoBlob = base64ToBlob(o.photos[j].data, o.photos[j].mimeType);
+        var newMediaId = await saveObservationPhoto(o.id, photoBlob);
+        newPhotoIds.push(newMediaId);
+      }
+    }
+
+    var newEntry = Object.assign({}, o);
+    newEntry.studentCode = localCode;
+    newEntry.photoIds = newPhotoIds;
+    delete newEntry.photos;
+
+    localObs.push(newEntry);
+    localIds[o.id] = true;
+    addedCount++;
+  }
+
+  saveObservations(localObs);
+  return { addedCount: addedCount, skippedDuplicates: skippedDuplicates, skippedExcluded: skippedExcluded };
+}
+
+async function handleConfirmImport() {
+  var statusEl = document.getElementById('import-commit-status');
+  var importedData = window._pendingImportData;
+  var preview = window._pendingImportPreview;
+
+  if (!importedData || !preview) {
+    alert('Aucun fichier chargé.');
+    return;
+  }
+
+  if (statusEl) statusEl.textContent = ' Importation en cours...';
+
+  try {
+    var codeMap = buildImportCodeMap(preview);
+    var result = await commitImportedObservations(importedData, codeMap);
+
+    if (statusEl) statusEl.textContent = '';
+    alert(
+      'Importation terminée.\n' +
+      result.addedCount + ' observation(s)/conversation(s) ajoutée(s).\n' +
+      result.skippedDuplicates + ' déjà présente(s) (ignorée(s)).\n' +
+      result.skippedExcluded + ' ignorée(s) (élève non inclus).'
+    );
+
+    window._pendingImportData = null;
+    window._pendingImportPreview = null;
+    renderRoster();
+  } catch (err) {
+    if (statusEl) statusEl.textContent = '';
+    alert('Erreur lors de l\'importation. Veuillez réessayer.');
+    console.error(err);
+  }
+}
