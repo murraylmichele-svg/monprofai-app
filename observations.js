@@ -172,7 +172,7 @@ function setObsType(type) {
 
 function setDomaine(d) {
   document.getElementById('obs-domaine').value = d;
-  ['A','B','C','D'].forEach(function(x) {
+  ['A','B','C','D','E'].forEach(function(x) {
     document.getElementById('domaine-' + x).className = 'domaine-btn' + (x === d ? ' active' : '');
   });
 }
