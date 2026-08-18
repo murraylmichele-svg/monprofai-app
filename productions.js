@@ -956,7 +956,8 @@ function getDomainLabel(domain) {
     A: 'A - Langue et mathématiques fondamentales',
     B: 'B - Résolution de problèmes et innovation',
     C: 'C - Autorégulation et bien-être',
-    D: 'D - Appartenance et contribution'
+    D: 'D - Appartenance et contribution',
+    E: 'E - Éveil religieux'
   };
   return labels[domain] || domain;
 }
