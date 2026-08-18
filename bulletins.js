@@ -567,9 +567,10 @@ function copyBulletinDraftToClipboard() {
     var textarea = document.getElementById('bulletin-edit-combined');
     textToCopy = textarea ? textarea.value : (draft.text || '');
   } else {
-    var domainLabels = { A: 'Domaine A', B: 'Domaine B', C: 'Domaine C', D: 'Domaine D' };
-    ['A', 'B', 'C', 'D'].forEach(function(d) {
+    var domainLabels = { A: 'Domaine A', B: 'Domaine B', C: 'Domaine C', D: 'Domaine D', E: 'Domaine E - Éveil religieux' };
+    ['A', 'B', 'C', 'D', 'E'].forEach(function(d) {
       var domainTextarea = document.getElementById('bulletin-edit-domain-' + d);
+      if (d === 'E' && !domainTextarea) return;
       var val = domainTextarea ? domainTextarea.value : ((draft.domains && draft.domains[d]) || '');
       textToCopy += domainLabels[d] + ':\n' + val + '\n\n';
     });
