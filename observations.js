@@ -598,11 +598,13 @@ function editObsNote(id) {
   });
   saveObservations(obs);
   document.getElementById('obs-history').innerHTML = renderObsHistory();
+  loadObsHistoryThumbnails();
 }
 
 function deleteObsEntry(id) {
   deleteObservation(id);
   document.getElementById('obs-history').innerHTML = renderObsHistory();
+  loadObsHistoryThumbnails();
 }
 // ============================================================
 // observations.js — MonProf.ai
