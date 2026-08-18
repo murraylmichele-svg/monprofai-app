@@ -325,7 +325,121 @@ async function exportAllDataAsFile() {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
+// ============================================================
+// roster.js — MonProf.ai
+// ADDITION: Export including photos, for transferring data
+// between devices (or between teachers)
+// ============================================================
+// Separate from exportAllDataAsFile() above, which stays fast and
+// text-only for the pre-deletion safety backups. This one embeds
+// photo blobs as base64 directly in the JSON, so the resulting
+// file can be several MB — that's expected, since it's meant to
+// be moved to another device, not used as a quick safety net.
+//
+// Depends on:
+//   - getObservationPhoto() — observations.js
+//   - getProductionPhoto() — productions.js
+// ============================================================
 
+function blobToBase64(blob) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onloadend = function() { resolve(reader.result); };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function exportAllDataWithPhotosAsFile() {
+  var roster = getRoster();
+  var observations = getObservations();
+  var productions = await getAllProductions();
+
+  var observationsForExport = [];
+  for (var i = 0; i < observations.length; i++) {
+    var o = observations[i];
+    var oPhotos = [];
+    if (o.photoIds && o.photoIds.length > 0) {
+      for (var j = 0; j < o.photoIds.length; j++) {
+        var oMedia = await getObservationPhoto(o.photoIds[j]);
+        if (oMedia && oMedia.blob) {
+          var oBase64 = await blobToBase64(oMedia.blob);
+          oPhotos.push({ id: oMedia.id, mimeType: oMedia.mimeType, data: oBase64 });
+        }
+      }
+    }
+    var oCopy = Object.assign({}, o);
+    oCopy.photos = oPhotos;
+    delete oCopy.photoIds;
+    observationsForExport.push(oCopy);
+  }
+
+  var productionsForExport = [];
+  for (var k = 0; k < productions.length; k++) {
+    var p = productions[k];
+    var pPhotos = [];
+    if (p.photoIds && p.photoIds.length > 0) {
+      for (var m = 0; m < p.photoIds.length; m++) {
+        var pMedia = await getProductionPhoto(p.photoIds[m]);
+        if (pMedia && pMedia.blob) {
+          var pBase64 = await blobToBase64(pMedia.blob);
+          pPhotos.push({ id: pMedia.id, mimeType: pMedia.mimeType, data: pBase64 });
+        }
+      }
+    }
+    productionsForExport.push({
+      id: p.id,
+      studentCode: p.studentCode,
+      domain: p.domain,
+      activityTag: p.activityTag,
+      note: p.note,
+      level: p.level,
+      linkType: p.linkType,
+      hhCategory: p.hhCategory,
+      subject: p.subject,
+      strand: p.strand,
+      achievementCategory: p.achievementCategory,
+      grade: p.grade,
+      photos: pPhotos,
+      createdAt: p.createdAt,
+      editedAt: p.editedAt
+    });
+  }
+
+  var exportData = {
+    exportedAt: new Date().toISOString(),
+    includesPhotos: true,
+    note: 'Cette sauvegarde inclut les photos (encodées en base64) — destinée au transfert vers un autre appareil.',
+    roster: roster,
+    observations: observationsForExport,
+    productions: productionsForExport
+  };
+
+  var blob = new Blob([JSON.stringify(exportData)], { type: 'application/json' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = 'monprofai_transfert_' + dateStr + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function handleExportWithPhotosClick() {
+  var statusEl = document.getElementById('export-photos-status');
+  if (statusEl) statusEl.textContent = ' Préparation du fichier (ceci peut prendre un moment si vous avez beaucoup de photos)...';
+  try {
+    await exportAllDataWithPhotosAsFile();
+    if (statusEl) statusEl.textContent = ' ✓ Téléchargement lancé.';
+    setTimeout(function() { if (statusEl) statusEl.textContent = ''; }, 3000);
+  } catch (err) {
+    if (statusEl) statusEl.textContent = '';
+    alert('Erreur lors de la préparation du fichier. Veuillez réessayer.');
+    console.error(err);
+  }
+}
 async function resetAllYearData() {
   var confirmed = confirm(
     'Ceci supprimera TOUTES les observations et productions pour TOUS les élèves. ' +
