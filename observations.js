@@ -3,7 +3,93 @@
 // ============================================================
 
 var OBS_KEY = 'monprofai_observations';
+// ============================================================
+// observations.js — MonProf.ai
+// ADDITION: IndexedDB data layer for Observation photos
+// ============================================================
+// Mirrors the same pattern already used in productions.js for
+// Productions photos — a separate IndexedDB database, since photo
+// blobs can't live in localStorage alongside the observation data.
+// This part only handles storage. No UI yet — test in the browser
+// console before moving to the next piece.
+// ============================================================
 
+const OBS_MEDIA_DB_NAME = "monprofai_observations_media";
+const OBS_MEDIA_DB_VERSION = 1;
+
+let obsMediaDB = null;
+
+function openObsMediaDB() {
+  return new Promise((resolve, reject) => {
+    if (obsMediaDB) {
+      resolve(obsMediaDB);
+      return;
+    }
+
+    const request = indexedDB.open(OBS_MEDIA_DB_NAME, OBS_MEDIA_DB_VERSION);
+
+    request.onupgradeneeded = function (event) {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains("observation_media")) {
+        const store = db.createObjectStore("observation_media", { keyPath: "id" });
+        store.createIndex("observationId", "observationId", { unique: false });
+      }
+    };
+
+    request.onsuccess = function (event) {
+      obsMediaDB = event.target.result;
+      resolve(obsMediaDB);
+    };
+
+    request.onerror = function (event) {
+      console.error("Erreur d'ouverture de la base observations_media:", event.target.error);
+      reject(event.target.error);
+    };
+  });
+}
+
+function generateObsMediaId() {
+  return "obsphoto_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+}
+
+function saveObservationPhoto(observationId, blob) {
+  return openObsMediaDB().then((db) => {
+    const mediaId = generateObsMediaId();
+    const mediaRecord = {
+      id: mediaId,
+      observationId: observationId,
+      blob: blob,
+      mimeType: blob.type || "image/jpeg",
+      createdAt: new Date().toISOString(),
+    };
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction("observation_media", "readwrite");
+      tx.objectStore("observation_media").add(mediaRecord);
+      tx.oncomplete = () => resolve(mediaId);
+      tx.onerror = () => reject(tx.error);
+    });
+  });
+}
+
+async function getObservationPhoto(mediaId) {
+  const db = await openObsMediaDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("observation_media", "readonly");
+    const request = tx.objectStore("observation_media").get(mediaId);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function deleteObservationPhoto(mediaId) {
+  const db = await openObsMediaDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction("observation_media", "readwrite");
+    tx.objectStore("observation_media").delete(mediaId);
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+  });
+}
 function getObservations() {
   try {
     var data = localStorage.getItem(OBS_KEY);
