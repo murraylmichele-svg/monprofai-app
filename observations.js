@@ -669,6 +669,7 @@ function renderObsLinkSectionHtml(studentCode) {
     html += '<button class="domaine-btn" id="domaine-B" onclick="setDomaine(\'B\')"><strong>B</strong> Résolution & innovation</button>';
     html += '<button class="domaine-btn" id="domaine-C" onclick="setDomaine(\'C\')"><strong>C</strong> Autorégulation & bien-être</button>';
     html += '<button class="domaine-btn" id="domaine-D" onclick="setDomaine(\'D\')"><strong>D</strong> Appartenance & contribution</button>';
+    html += '<button class="domaine-btn" id="domaine-E" onclick="setDomaine(\'E\')"><strong>E</strong> Éveil religieux</button>';
     html += '</div>';
     html += '</div>';
     html += '<input type="hidden" id="obs-domaine" value="A">';
