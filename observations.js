@@ -206,6 +206,15 @@ html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</bu
   html += renderObsLinkSectionHtml('');
   html += '</div>';
 
+  // Photo
+  obsPhotoCapture.photoFile = null;
+  obsPhotoCapture.photoPreviewUrl = null;
+  html += '<div class="form-row">';
+  html += '<label>Photo (optionnelle):</label><br>';
+  html += '<div id="obs-photo-area">' + renderObsPhotoAreaHtml() + '</div>';
+  html += '<span id="obs-photo-status"></span>';
+  html += '</div>';
+
   // Note + mic
   html += '<div class="form-row">';
   html += '<label>Note</label>';
