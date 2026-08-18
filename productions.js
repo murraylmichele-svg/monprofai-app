@@ -377,11 +377,12 @@ function renderProductionSingleCaptureFieldsHtml(studentCode) {
 
   html += '<div class="form-row">';
   html += '<label>Domaine</label>';
-  html += '<div class="domaine-btns">';
+ html += '<div class="domaine-btns">';
   html += '<button class="domaine-btn active" id="prod-single-domaine-A" onclick="setProductionSingleDomaine(\'A\')"><strong>A</strong> Langue & maths</button>';
   html += '<button class="domaine-btn" id="prod-single-domaine-B" onclick="setProductionSingleDomaine(\'B\')"><strong>B</strong> Résolution & innovation</button>';
   html += '<button class="domaine-btn" id="prod-single-domaine-C" onclick="setProductionSingleDomaine(\'C\')"><strong>C</strong> Autorégulation & bien-être</button>';
   html += '<button class="domaine-btn" id="prod-single-domaine-D" onclick="setProductionSingleDomaine(\'D\')"><strong>D</strong> Appartenance & contribution</button>';
+  html += '<button class="domaine-btn" id="prod-single-domaine-E" onclick="setProductionSingleDomaine(\'E\')"><strong>E</strong> Éveil religieux</button>';
   html += '</div>';
   html += '</div>';
   html += '<input type="hidden" id="prod-single-domaine" value="A">';
