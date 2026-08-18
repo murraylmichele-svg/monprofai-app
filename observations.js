@@ -8,6 +8,62 @@ var obsPhotoCapture = {
   photoFile: null,
   photoPreviewUrl: null
 };
+function renderObsPhotoAreaHtml() {
+  if (obsPhotoCapture.photoPreviewUrl) {
+    var html = '<div class="photo-preview-box">';
+    html += '<img src="' + obsPhotoCapture.photoPreviewUrl + '" alt="Aperçu de la photo" class="photo-preview-img">';
+    html += '<br><button type="button" onclick="retakeObsPhoto()">Reprendre la photo</button>';
+    html += '</div>';
+    return html;
+  }
+  return '<input type="file" accept="image/*" id="obs-photo-input" onchange="handleObsPhotoSelect(event)">';
+}
+
+async function handleObsPhotoSelect(event) {
+  var file = event.target.files[0];
+  var status = document.getElementById('obs-photo-status');
+
+  if (!file) return;
+
+  if (status) status.textContent = ' Traitement de la photo...';
+
+  var isHeic = file.type === 'image/heic' || file.type === 'image/heif' || /\.(heic|heif)$/i.test(file.name);
+  var workingBlob = file;
+
+  if (isHeic && typeof heic2any === 'function') {
+    try {
+      var converted = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+      workingBlob = Array.isArray(converted) ? converted[0] : converted;
+    } catch (err) {
+      console.error('Erreur de conversion HEIC:', err);
+    }
+  }
+
+  try {
+    var compressedBlob = await compressPhotoBlob(workingBlob, PHOTO_MAX_DIMENSION, PHOTO_JPEG_QUALITY);
+    obsPhotoCapture.photoFile = compressedBlob;
+    obsPhotoCapture.photoPreviewUrl = URL.createObjectURL(compressedBlob);
+  } catch (err) {
+    console.error('Erreur de compression de la photo:', err);
+    obsPhotoCapture.photoFile = workingBlob;
+    obsPhotoCapture.photoPreviewUrl = URL.createObjectURL(workingBlob);
+  }
+
+  if (status) status.textContent = '';
+  var photoArea = document.getElementById('obs-photo-area');
+  if (photoArea) photoArea.innerHTML = renderObsPhotoAreaHtml();
+}
+
+function retakeObsPhoto() {
+  if (obsPhotoCapture.photoPreviewUrl) {
+    URL.revokeObjectURL(obsPhotoCapture.photoPreviewUrl);
+  }
+  obsPhotoCapture.photoFile = null;
+  obsPhotoCapture.photoPreviewUrl = null;
+
+  var photoArea = document.getElementById('obs-photo-area');
+  if (photoArea) photoArea.innerHTML = renderObsPhotoAreaHtml();
+}
 // ============================================================
 // observations.js — MonProf.ai
 // ADDITION: IndexedDB data layer for Observation photos
