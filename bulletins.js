@@ -259,8 +259,9 @@ function renderBulletinReview(draft) {
   if (draft.type === 'combined') {
     html += '<textarea id="bulletin-edit-combined" rows="8">' + escapeHtmlForTextarea(draft.text) + '</textarea>';
   } else {
-    var domainLabels = { A: 'Domaine A', B: 'Domaine B', C: 'Domaine C', D: 'Domaine D' };
-    ['A', 'B', 'C', 'D'].forEach(function(d) {
+    var domainLabels = { A: 'Domaine A', B: 'Domaine B', C: 'Domaine C', D: 'Domaine D', E: 'Domaine E - Éveil religieux' };
+    ['A', 'B', 'C', 'D', 'E'].forEach(function(d) {
+      if (d === 'E' && !(draft.domains && draft.domains.hasOwnProperty('E'))) return;
       html += '<h4>' + domainLabels[d] + '</h4>';
       html += '<textarea id="bulletin-edit-domain-' + d + '" rows="5">' + escapeHtmlForTextarea((draft.domains && draft.domains[d]) || '') + '</textarea>';
     });
