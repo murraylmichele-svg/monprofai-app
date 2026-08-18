@@ -523,7 +523,7 @@ function renderObsHistory() {
 
   var html = '<h3>Entrées récentes (' + obs.length + ')</h3>';
   html += '<table class="obs-table">';
-  html += '<tr><th>Date</th><th>Élève</th><th>Type</th><th>Dom.</th><th>Activité</th><th>Note</th><th></th></tr>';
+  html += '<tr><th>Date</th><th>Élève</th><th>Type</th><th>Dom.</th><th>Activité</th><th>Note</th><th>Photo</th><th></th></tr>';
 
   obs.forEach(function(o) {
     var student = roster.find(function(s) { return s.code === o.studentCode; });
@@ -540,6 +540,11 @@ function renderObsHistory() {
     html += '<td><strong>' + (o.subject || o.domaine) + '</strong></td>';
     html += '<td>' + (o.activityTag || '') + '</td>';
     html += '<td>' + noteDisplay + '</td>';
+    if (o.photoIds && o.photoIds.length > 0) {
+      html += '<td><span id="obs-recent-photo-' + o.id + '"><em>...</em></span></td>';
+    } else {
+      html += '<td></td>';
+    }
     html += '<td><button class="btn-delete" onclick="deleteObsEntry(' + o.id + ')">✕</button></td>';
     html += '</tr>';
   });
