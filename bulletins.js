@@ -285,7 +285,7 @@ function saveBulletinEdits() {
     var textarea = document.getElementById('bulletin-edit-combined');
     if (textarea) draft.text = textarea.value;
   } else {
-    ['A', 'B', 'C', 'D'].forEach(function(d) {
+    ['A', 'B', 'C', 'D', 'E'].forEach(function(d) {
       var domainTextarea = document.getElementById('bulletin-edit-domain-' + d);
       if (domainTextarea) {
         if (!draft.domains) draft.domains = {};
