@@ -502,7 +502,7 @@ function switchToObsDomainView() {
 function renderObsDomainView(container) {
   var roster = getRoster().filter(function(s) { return s.actif; });
   var allObs = getObservations();
-  var domains = ['A', 'B', 'C', 'D'];
+  var domains = ['A', 'B', 'C', 'D', 'E'];
 
   var html = '<h2>Observations et conversations</h2>';
   html += '<button onclick="switchToObsCapture()">Retour à la capture</button>';
@@ -510,11 +510,11 @@ function renderObsDomainView(container) {
   html += '<p>Nombre d\'entrées par domaine pour chaque élève.</p>';
 
   html += '<table class="obs-domain-table">';
-  html += '<tr><th>Élève</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>';
+  html += '<tr><th>Élève</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th></tr>';
 
   roster.forEach(function(s) {
     var studentObs = allObs.filter(function(o) { return o.studentCode === s.code; });
-    var domainCounts = { A: 0, B: 0, C: 0, D: 0 };
+    var domainCounts = { A: 0, B: 0, C: 0, D: 0, E: 0 };
     studentObs.forEach(function(o) {
       if (domainCounts.hasOwnProperty(o.domaine)) domainCounts[o.domaine]++;
     });
