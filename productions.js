@@ -1757,3 +1757,88 @@ async function saveProductionSingleG16Entry(studentCode) {
     console.error(err);
   }
 }
+// ============================================================
+// productions.js — MonProf.ai
+// ADDITION: Import commit — Productions (Piece 3b)
+// ============================================================
+// Unlike addProduction(), this writes a record with its ORIGINAL
+// id and createdAt preserved (from the imported file), instead of
+// generating new ones. That's essential for two reasons: the id
+// is what the dedup check in roster.js relies on to avoid creating
+// duplicates on a repeat import, and preserving createdAt keeps
+// the original capture date correct instead of showing "today".
+//
+// Depends on:
+//   - openProductionsDB(), saveProductionPhoto(), getAllProductions() — this file
+//   - base64ToBlob() — roster.js
+// ============================================================
+
+function insertImportedProductionRecord(record) {
+  return openProductionsDB().then((db) => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction("productions", "readwrite");
+      tx.objectStore("productions").add(record);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  });
+}
+
+async function commitImportedProductions(importedData, codeMap) {
+  var importedProds = importedData.productions || [];
+  var localProds = await getAllProductions();
+  var localIds = {};
+  localProds.forEach(function(p) { localIds[p.id] = true; });
+
+  var addedCount = 0;
+  var skippedDuplicates = 0;
+  var skippedExcluded = 0;
+
+  for (var i = 0; i < importedProds.length; i++) {
+    var p = importedProds[i];
+    var localCode = codeMap[p.studentCode];
+
+    if (!localCode) {
+      skippedExcluded++;
+      continue;
+    }
+    if (localIds[p.id]) {
+      skippedDuplicates++;
+      continue;
+    }
+
+    var newPhotoIds = [];
+    if (p.photos && p.photos.length > 0) {
+      for (var j = 0; j < p.photos.length; j++) {
+        var photoBlob = base64ToBlob(p.photos[j].data, p.photos[j].mimeType);
+        var newMediaId = await saveProductionPhoto(p.id, photoBlob);
+        newPhotoIds.push(newMediaId);
+      }
+    }
+
+    var record = {
+      id: p.id,
+      studentCode: localCode,
+      domain: p.domain || '',
+      activityTag: p.activityTag || '',
+      note: p.note || '',
+      level: p.level || null,
+      linkType: p.linkType || null,
+      hhCategory: p.hhCategory || null,
+      subject: p.subject || null,
+      strand: p.strand || null,
+      achievementCategory: p.achievementCategory || null,
+      grade: p.grade || null,
+      photoIds: newPhotoIds,
+      audioNoteId: null,
+      createdAt: p.createdAt || new Date().toISOString(),
+      editedAt: p.editedAt || null
+    };
+
+    await insertImportedProductionRecord(record);
+    localIds[p.id] = true;
+    addedCount++;
+  }
+
+  return { addedCount: addedCount, skippedDuplicates: skippedDuplicates, skippedExcluded: skippedExcluded };
+}
