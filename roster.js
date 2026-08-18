@@ -218,6 +218,9 @@ function renderRoster() {
   html += '<span id="export-photos-status"></span>';
   html += '<p style="margin-top:16px;">Téléchargez une sauvegarde et effacez toutes les observations et productions pour repartir à zéro (ex: nouvelle année scolaire). La liste de classe n\'est pas touchée par cette action.</p>';
   html += '<button class="btn-delete" onclick="resetAllYearData()">Effacer toutes les données (nouvelle année)</button>';
+  html += '<p style="margin-top:16px;">Importer une sauvegarde depuis un autre appareil (ex: transférer les données de votre téléphone vers cet ordinateur):</p>';
+  html += '<input type="file" accept="application/json" id="import-file-input" onchange="handleImportFileSelect(event)">';
+  html += '<div id="import-preview-area"></div>';
   html += '</div>';
 
   container.innerHTML = html;
