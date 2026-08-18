@@ -1179,7 +1179,8 @@ function handleImportFileSelect(event) {
     try {
       var importedData = JSON.parse(e.target.result);
       var preview = buildImportPreview(importedData);
-      window._pendingImportData = importedData; // held for the next piece (review/commit)
+      window._pendingImportData = importedData;
+      window._pendingImportPreview = preview;
       if (previewArea) previewArea.innerHTML = renderImportPreviewHtml(preview);
     } catch (err) {
       console.error(err);
