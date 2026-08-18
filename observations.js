@@ -465,10 +465,29 @@ function submitObsForm() {
     activityTag = activityInput ? activityInput.value.trim() : '';
   }
 
-  addObservation(studentCode, type, domaine, note, false, activityTag, extra);
+ var newEntry = addObservation(studentCode, type, domaine, note, false, activityTag, extra);
+
+  if (obsPhotoCapture.photoFile) {
+    saveObservationPhoto(newEntry.id, obsPhotoCapture.photoFile).then(function(mediaId) {
+      var obs = getObservations();
+      obs = obs.map(function(o) {
+        if (o.id === newEntry.id) {
+          o.photoIds = [mediaId];
+        }
+        return o;
+      });
+      saveObservations(obs);
+      document.getElementById('obs-history').innerHTML = renderObsHistory();
+    });
+  }
+
+  obsPhotoCapture.photoFile = null;
+  obsPhotoCapture.photoPreviewUrl = null;
+
   document.getElementById('obs-note').value = '';
   document.getElementById('obs-student').value = '';
   document.getElementById('obs-link-section').innerHTML = renderObsLinkSectionHtml('');
+  document.getElementById('obs-photo-area').innerHTML = renderObsPhotoAreaHtml();
   document.getElementById('obs-history').innerHTML = renderObsHistory();
 }
 function handleProcessQueue() {
