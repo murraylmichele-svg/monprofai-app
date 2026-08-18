@@ -510,7 +510,10 @@ async function generateBulletinForStudent(studentCode, period) {
 
   var fullEvidence = await getBulletinEvidenceForStudent(studentCode);
 
-  if (period === 'observations_initiales') {
+   if (period === 'observations_initiales') {
+    if (fullEvidence.observations.length === 0 && fullEvidence.productions.length === 0) {
+      return { type: 'combined', text: '' };
+    }
     var prompt = buildBulletinPrompt(fullEvidence, pronom);
     var rawComment = await callBulletinProxy(prompt);
     return { type: 'combined', text: deanonymizeBulletinText(rawComment, studentCode) };
