@@ -184,6 +184,7 @@ function addObservation(studentCode, type, domaine, note, pending, activityTag, 
     subject: extra.subject || null,
     strand: extra.strand || null,
     achievementCategory: extra.achievementCategory || null,
+    photoIds: [],
     date: new Date().toISOString().slice(0, 10),
     timestamp: Date.now()
   };
