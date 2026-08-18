@@ -213,6 +213,9 @@ function renderRoster() {
   html += '<p>Téléchargez un fichier CSV de toutes les observations, conversations et productions (notes/niveaux) — utile pour partager avec la direction.</p>';
   html += '<button onclick="exportMarksSpreadsheet()">Télécharger les données (CSV)</button> ';
   html += '<button onclick="exportGradebookXLSX()">Télécharger le carnet de notes (Excel, par matière/domaine)</button>';
+  html += '<p style="margin-top:16px;">Téléchargez une sauvegarde complète, incluant les photos, pour la transférer vers un autre appareil (ex: de votre téléphone vers votre ordinateur, ou pour partager avec un(e) collègue).</p>';
+  html += '<button onclick="handleExportWithPhotosClick()">Télécharger une sauvegarde complète (avec photos)</button> ';
+  html += '<span id="export-photos-status"></span>';
   html += '<p style="margin-top:16px;">Téléchargez une sauvegarde et effacez toutes les observations et productions pour repartir à zéro (ex: nouvelle année scolaire). La liste de classe n\'est pas touchée par cette action.</p>';
   html += '<button class="btn-delete" onclick="resetAllYearData()">Effacer toutes les données (nouvelle année)</button>';
   html += '</div>';
