@@ -361,7 +361,7 @@ function renderObsHistory() {
     html += '<td>' + o.date + '</td>';
     html += '<td>' + name + '</td>';
     html += '<td>' + typeLabel + '</td>';
-    html += '<td><strong>' + o.domaine + '</strong></td>';
+    html += '<td><strong>' + (o.subject || o.domaine) + '</strong></td>';
     html += '<td>' + (o.activityTag || '') + '</td>';
     html += '<td>' + noteDisplay + '</td>';
     html += '<td><button class="btn-delete" onclick="deleteObsEntry(' + o.id + ')">✕</button></td>';
