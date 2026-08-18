@@ -524,11 +524,13 @@ async function generateBulletinForStudent(studentCode, period) {
     var domain = domains[i];
     var domainEvidence = filterEvidenceByDomain(fullEvidence, domain);
 
-    // Domaine E (Éveil religieux) is Catholic-specific and optional — most
-    // non-Catholic students will have zero evidence here. Skip generating
-    // (and skip showing) this domain entirely rather than asking the AI
-    // to write a paragraph with nothing to base it on.
-    if (domain === 'E' && domainEvidence.observations.length === 0 && domainEvidence.productions.length === 0) {
+    // Skip any domain with zero evidence, rather than asking the AI to
+    // write about it. This isn't just tidiness — with nothing to base a
+    // comment on, the model can produce plausible-sounding but ungrounded
+    // filler despite being told not to invent facts, and that's riskier
+    // than an obviously-empty "no evidence" placeholder, since it reads
+    // as legitimate. Applies to every domain, not just Domaine E.
+    if (domainEvidence.observations.length === 0 && domainEvidence.productions.length === 0) {
       continue;
     }
 
