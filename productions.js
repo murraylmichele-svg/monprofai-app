@@ -1480,6 +1480,7 @@ function renderProductionSetupFieldsHtml() {
     html += '<option value="B">B - Résolution de problèmes et innovation</option>';
     html += '<option value="C">C - Autorégulation et bien-être</option>';
     html += '<option value="D">D - Appartenance et contribution</option>';
+    html += '<option value="E">E - Éveil religieux</option>';
     html += '</select>';
     html += '</div>';
     return html;
