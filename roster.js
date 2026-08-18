@@ -1300,14 +1300,18 @@ async function handleConfirmImport() {
 
   try {
     var codeMap = buildImportCodeMap(preview);
-    var result = await commitImportedObservations(importedData, codeMap);
+    var obsResult = await commitImportedObservations(importedData, codeMap);
+    var prodResult = await commitImportedProductions(importedData, codeMap);
 
     if (statusEl) statusEl.textContent = '';
     alert(
-      'Importation terminée.\n' +
-      result.addedCount + ' observation(s)/conversation(s) ajoutée(s).\n' +
-      result.skippedDuplicates + ' déjà présente(s) (ignorée(s)).\n' +
-      result.skippedExcluded + ' ignorée(s) (élève non inclus).'
+      'Importation terminée.\n\n' +
+      'Observations/conversations: ' + obsResult.addedCount + ' ajoutée(s), ' +
+      obsResult.skippedDuplicates + ' déjà présente(s), ' +
+      obsResult.skippedExcluded + ' ignorée(s) (élève non inclus).\n\n' +
+      'Productions: ' + prodResult.addedCount + ' ajoutée(s), ' +
+      prodResult.skippedDuplicates + ' déjà présente(s), ' +
+      prodResult.skippedExcluded + ' ignorée(s) (élève non inclus).'
     );
 
     window._pendingImportData = null;
