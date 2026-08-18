@@ -448,7 +448,8 @@ var BULLETIN_DOMAIN_LABELS = {
   A: 'Notions fondamentales de la langue et des mathématiques',
   B: 'Résolution de problèmes et innovation',
   C: 'Autorégulation et bien-être',
-  D: 'Appartenance et contribution'
+  D: 'Appartenance et contribution',
+  E: 'Éveil religieux'
 };
 
 function filterEvidenceByDomain(evidence, domain) {
