@@ -510,6 +510,7 @@ function submitObsForm() {
       });
       saveObservations(obs);
       document.getElementById('obs-history').innerHTML = renderObsHistory();
+      loadObsHistoryThumbnails();
     });
   }
 
