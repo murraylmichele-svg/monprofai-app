@@ -1150,19 +1150,23 @@ function renderImportPreviewHtml(preview) {
     html += '</ul>';
   }
 
-  html += '<h5>Élèves non reconnus (' + preview.newStudents.length + ')</h5>';
+ html += '<h5>Élèves non reconnus (' + preview.newStudents.length + ')</h5>';
   if (preview.newStudents.length === 0) {
     html += '<p><em>Aucun.</em></p>';
   } else {
+    html += '<p>Cochez les élèves à ajouter à votre liste de classe. Décochez ceux qui ne sont pas les vôtres (ex: élèves d\'un(e) collègue).</p>';
     html += '<ul>';
-    preview.newStudents.forEach(function(s) {
-      html += '<li>' + s.prenom + ' ' + s.nomInitial + ' (' + s.annee + ') — ' +
-        s.obsCount + ' obs., ' + s.prodCount + ' prod., ' + s.photoCount + ' photo(s)</li>';
+    preview.newStudents.forEach(function(s, i) {
+      html += '<li><label><input type="checkbox" id="import-new-' + i + '" checked> ' +
+        s.prenom + ' ' + s.nomInitial + ' (' + s.annee + ') — ' +
+        s.obsCount + ' obs., ' + s.prodCount + ' prod., ' + s.photoCount + ' photo(s)</label></li>';
     });
     html += '</ul>';
   }
 
-  html += '<p><em>Ceci est un aperçu seulement — aucune donnée n\'a encore été importée.</em></p>';
+  html += '<button onclick="handleConfirmImport()">Importer les observations et conversations</button>';
+  html += '<span id="import-commit-status"></span>';
+  html += '<p><em>Note: l\'importation des productions sera ajoutée dans une prochaine étape.</em></p>';
   html += '</div>';
   return html;
 }
