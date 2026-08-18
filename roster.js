@@ -1052,3 +1052,139 @@ function getDistinctGrades1to6Active() {
   roster.forEach(function(s) { seen[s.annee] = true; });
   return Object.keys(seen).sort();
 }
+// ============================================================
+// roster.js — MonProf.ai
+// ADDITION: Import parser (preview only — nothing written yet)
+// ============================================================
+// Reads a transfer file and shows what it contains, matched
+// against the CURRENT device's roster. This step never writes
+// to storage — that happens in a later piece (review/commit).
+//
+// Matching is done on prénom + initiale du nom + année, since
+// student codes (EL_01, EL_02...) are generated independently per
+// device and can't be trusted to mean the same student on both.
+// ============================================================
+
+function findLocalStudentMatch(importedStudent, localRoster) {
+  return localRoster.find(function(s) {
+    return s.prenom.trim().toLowerCase() === importedStudent.prenom.trim().toLowerCase() &&
+           s.nomInitial.trim().toLowerCase() === importedStudent.nomInitial.trim().toLowerCase() &&
+           s.annee === importedStudent.annee;
+  }) || null;
+}
+
+function buildImportPreview(importedData) {
+  var localRoster = getRoster();
+  var importedRoster = importedData.roster || [];
+  var importedObs = importedData.observations || [];
+  var importedProds = importedData.productions || [];
+
+  var matchedStudents = [];
+  var newStudents = [];
+
+  importedRoster.forEach(function(importedStudent) {
+    var obsCount = importedObs.filter(function(o) { return o.studentCode === importedStudent.code; }).length;
+    var prodCount = importedProds.filter(function(p) { return p.studentCode === importedStudent.code; }).length;
+
+    var photoCount = 0;
+    importedObs.forEach(function(o) {
+      if (o.studentCode === importedStudent.code && o.photos) photoCount += o.photos.length;
+    });
+    importedProds.forEach(function(p) {
+      if (p.studentCode === importedStudent.code && p.photos) photoCount += p.photos.length;
+    });
+
+    var localMatch = findLocalStudentMatch(importedStudent, localRoster);
+
+    var entry = {
+      importedCode: importedStudent.code,
+      prenom: importedStudent.prenom,
+      nomInitial: importedStudent.nomInitial,
+      annee: importedStudent.annee,
+      obsCount: obsCount,
+      prodCount: prodCount,
+      photoCount: photoCount
+    };
+
+    if (localMatch) {
+      entry.localCode = localMatch.code;
+      matchedStudents.push(entry);
+    } else {
+      newStudents.push(entry);
+    }
+  });
+
+  var allEntries = matchedStudents.concat(newStudents);
+
+  return {
+    exportedAt: importedData.exportedAt || null,
+    matchedStudents: matchedStudents,
+    newStudents: newStudents,
+    totalObservations: importedObs.length,
+    totalProductions: importedProds.length,
+    totalPhotos: allEntries.reduce(function(sum, s) { return sum + s.photoCount; }, 0)
+  };
+}
+
+function renderImportPreviewHtml(preview) {
+  var html = '<div class="import-preview-box">';
+  html += '<h4>Aperçu du fichier de transfert</h4>';
+  if (preview.exportedAt) {
+    html += '<p>Exporté le: ' + new Date(preview.exportedAt).toLocaleString('fr-CA') + '</p>';
+  }
+  html += '<p>' + preview.totalObservations + ' observation(s)/conversation(s), ' +
+    preview.totalProductions + ' production(s), ' + preview.totalPhotos + ' photo(s) au total.</p>';
+
+  html += '<h5>Élèves reconnus (' + preview.matchedStudents.length + ')</h5>';
+  if (preview.matchedStudents.length === 0) {
+    html += '<p><em>Aucun élève correspondant trouvé dans la liste de classe actuelle.</em></p>';
+  } else {
+    html += '<ul>';
+    preview.matchedStudents.forEach(function(s) {
+      html += '<li>' + s.prenom + ' ' + s.nomInitial + ' (' + s.annee + ') — ' +
+        s.obsCount + ' obs., ' + s.prodCount + ' prod., ' + s.photoCount + ' photo(s)</li>';
+    });
+    html += '</ul>';
+  }
+
+  html += '<h5>Élèves non reconnus (' + preview.newStudents.length + ')</h5>';
+  if (preview.newStudents.length === 0) {
+    html += '<p><em>Aucun.</em></p>';
+  } else {
+    html += '<ul>';
+    preview.newStudents.forEach(function(s) {
+      html += '<li>' + s.prenom + ' ' + s.nomInitial + ' (' + s.annee + ') — ' +
+        s.obsCount + ' obs., ' + s.prodCount + ' prod., ' + s.photoCount + ' photo(s)</li>';
+    });
+    html += '</ul>';
+  }
+
+  html += '<p><em>Ceci est un aperçu seulement — aucune donnée n\'a encore été importée.</em></p>';
+  html += '</div>';
+  return html;
+}
+
+function handleImportFileSelect(event) {
+  var file = event.target.files[0];
+  var previewArea = document.getElementById('import-preview-area');
+  if (!file) return;
+
+  if (previewArea) previewArea.innerHTML = '<p><em>Lecture du fichier...</em></p>';
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var importedData = JSON.parse(e.target.result);
+      var preview = buildImportPreview(importedData);
+      window._pendingImportData = importedData; // held for the next piece (review/commit)
+      if (previewArea) previewArea.innerHTML = renderImportPreviewHtml(preview);
+    } catch (err) {
+      console.error(err);
+      if (previewArea) previewArea.innerHTML = '<p><em>Erreur: ce fichier ne semble pas être un fichier de transfert valide.</em></p>';
+    }
+  };
+  reader.onerror = function() {
+    if (previewArea) previewArea.innerHTML = '<p><em>Erreur de lecture du fichier.</em></p>';
+  };
+  reader.readAsText(file);
+}
