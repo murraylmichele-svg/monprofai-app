@@ -681,7 +681,9 @@ function copyOneBulletinRow(studentCode) {
   if (draft.type === 'combined') {
     text = draft.text || '';
   } else if (draft.domains) {
-    text = ['A', 'B', 'C', 'D'].map(function(d) {
+    text = ['A', 'B', 'C', 'D', 'E'].filter(function(d) {
+      return draft.domains.hasOwnProperty(d);
+    }).map(function(d) {
       return 'Domaine ' + d + ':\n' + (draft.domains[d] || '');
     }).join('\n\n');
   }
