@@ -1104,6 +1104,7 @@ function buildImportPreview(importedData) {
       prenom: importedStudent.prenom,
       nomInitial: importedStudent.nomInitial,
       annee: importedStudent.annee,
+      pronom: importedStudent.pronom || 'elle',
       actif: importedStudent.actif !== false,
       peiHH: !!importedStudent.peiHH,
       peiAcademique: !!importedStudent.peiAcademique,
