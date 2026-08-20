@@ -38,6 +38,15 @@
   <script>
     // Register service worker for offline support
     if ('serviceWorker' in navigator) {
+      // Guard against an infinite reload loop — this must only fire once
+      // per page load, even if controllerchange somehow fires more than once.
+      var refreshingForNewVersion = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        if (refreshingForNewVersion) return;
+        refreshingForNewVersion = true;
+        window.location.reload();
+      });
+
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/monprofai-app/sw.js')
           .then(function(reg) {
