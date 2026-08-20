@@ -1233,7 +1233,6 @@ function buildImportCodeMap(preview) {
     var checkbox = document.getElementById('import-new-' + i);
     var included = checkbox ? checkbox.checked : true;
     if (included) {
-      if (included) {
       var newStudent = addStudent(s.prenom, s.nomInitial.replace('.', ''), 'elle', s.annee, s.peiHH, s.peiAcademique);
       if (!s.actif) {
         toggleStudentActif(newStudent.code);
