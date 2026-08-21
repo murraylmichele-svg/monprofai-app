@@ -253,9 +253,11 @@ function renderObservations() {
 
   var pendingCount = getPendingCount();
   var html = '<h2>Observations et conversations</h2>';
-html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</button> ';
-  html += '<button onclick="switchToObsDomainView()">Voir la répartition par domaine</button> ';
-  html += '<button onclick="switchToObsActivityView()">Voir le suivi par activité</button>';
+  html += '<div class="mp-view-switcher">';
+  html += '<button class="mp-view-btn" onclick="switchToObsAttentionView()"><i class="ti ti-clipboard-list" aria-hidden="true"></i>Suivi</button>';
+  html += '<button class="mp-view-btn" onclick="switchToObsDomainView()"><i class="ti ti-chart-pie" aria-hidden="true"></i>Domaines</button>';
+  html += '<button class="mp-view-btn" onclick="switchToObsActivityView()"><i class="ti ti-activity" aria-hidden="true"></i>Activités</button>';
+  html += '</div>';
 
   // Pending transcription banner
   if (pendingCount > 0) {
@@ -270,9 +272,9 @@ html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</bu
   html += '<h3>Nouvelle entrée</h3>';
 
   // Type toggle
-  html += '<div class="obs-type-toggle">';
-  html += '<button id="btn-type-obs" class="type-btn active" onclick="setObsType(\'observation\')">👁 Observation</button>';
-  html += '<button id="btn-type-conv" class="type-btn" onclick="setObsType(\'conversation\')">💬 Conversation</button>';
+  html += '<div class="mp-toggle">';
+  html += '<button id="btn-type-obs" class="active" onclick="setObsType(\'observation\')"><i class="ti ti-eye" aria-hidden="true"></i>Observation</button>';
+  html += '<button id="btn-type-conv" onclick="setObsType(\'conversation\')"><i class="ti ti-message-circle" aria-hidden="true"></i>Conversation</button>';
   html += '</div>';
   html += '<input type="hidden" id="obs-type" value="observation">';
 
@@ -304,25 +306,19 @@ html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</bu
 
   // Note + mic
   html += '<div class="form-row">';
-  html += '<label>Note</label>';
+  html += '<div class="mp-info-row">';
+  html += '<label style="margin:0;">Note</label>';
+  html += '<button type="button" class="mp-info-btn" onclick="toggleObsVoiceTip()" aria-label="Aide">?</button>';
+  html += '</div>';
+  html += '<div id="obs-voice-tip" class="mp-info-tip">La dictée vocale utilise le service Google. Aucun nom de famille n\'est transmis.</div>';
   html += '<textarea id="obs-note" rows="3" placeholder="Tapez votre note ou utilisez le micro ci-dessous..."></textarea>';
   html += '</div>';
 
   // Mic button
-  html += '<div class="mic-row">';
-  html += '<button id="btn-mic" class="mic-btn" onclick="toggleRecording()">🎤 Dicter</button>';
+  html += '<button id="btn-mic" class="mp-mic-btn" onclick="toggleRecording()"><i class="ti ti-microphone" aria-hidden="true"></i>Dicter</button>';
   html += '<span id="mic-status" class="mic-status"></span>';
-  html += '</div>';
 
-  // Google notice (shown once)
-  if (!localStorage.getItem('monprofai_voice_notice')) {
-    html += '<div class="voice-notice" id="voice-notice">';
-    html += '⚠️ La transcription vocale utilise le service Google. Aucun nom de famille n\'est transmis. ';
-    html += '<button onclick="dismissVoiceNotice()">Compris</button>';
-    html += '</div>';
-  }
-
-  html += '<button onclick="submitObsForm()">Enregistrer</button>';
+  html += '<button class="mp-save-btn" onclick="submitObsForm()"><i class="ti ti-check" aria-hidden="true"></i>Enregistrer</button>';
   html += '</div>';
 
  // History
@@ -354,21 +350,20 @@ html += '<button onclick="switchToObsAttentionView()">Voir la liste de suivi</bu
 
 function setObsType(type) {
   document.getElementById('obs-type').value = type;
-  document.getElementById('btn-type-obs').className = 'type-btn' + (type === 'observation' ? ' active' : '');
-  document.getElementById('btn-type-conv').className = 'type-btn' + (type === 'conversation' ? ' active' : '');
+  document.getElementById('btn-type-obs').className = (type === 'observation' ? 'active' : '');
+  document.getElementById('btn-type-conv').className = (type === 'conversation' ? 'active' : '');
 }
 
 function setDomaine(d) {
   document.getElementById('obs-domaine').value = d;
   ['A','B','C','D','E'].forEach(function(x) {
-    document.getElementById('domaine-' + x).className = 'domaine-btn' + (x === d ? ' active' : '');
+    document.getElementById('domaine-' + x).className = 'mp-chip' + (x === d ? ' active' : '');
   });
 }
 
-function dismissVoiceNotice() {
-  localStorage.setItem('monprofai_voice_notice', 'seen');
-  var notice = document.getElementById('voice-notice');
-  if (notice) notice.style.display = 'none';
+function toggleObsVoiceTip() {
+  var tip = document.getElementById('obs-voice-tip');
+  if (tip) tip.classList.toggle('visible');
 }
 
 // ============================================================
@@ -387,7 +382,7 @@ function toggleRecording() {
     }
     isRecording = false;
     if (micBtn) {
-      micBtn.textContent = '🎤 Dicter';
+      micBtn.innerHTML = '<i class="ti ti-microphone" aria-hidden="true"></i>Dicter';
       micBtn.classList.remove('recording');
     }
     if (micStatus) micStatus.textContent = '';
@@ -415,10 +410,10 @@ function toggleRecording() {
   recognition.onstart = function() {
     isRecording = true;
     if (micBtn) {
-      micBtn.textContent = '⏹ Arrêter';
+      micBtn.innerHTML = '<i class="ti ti-player-stop" aria-hidden="true"></i>Arrêter';
       micBtn.classList.add('recording');
     }
-    if (micStatus) micStatus.textContent = '🔴 Enregistrement...';
+    if (micStatus) micStatus.textContent = 'Enregistrement...';
   };
 
   recognition.onresult = function(e) {
@@ -432,16 +427,16 @@ function toggleRecording() {
   recognition.onend = function() {
     isRecording = false;
     if (micBtn) {
-      micBtn.textContent = '🎤 Dicter';
+      micBtn.innerHTML = '<i class="ti ti-microphone" aria-hidden="true"></i>Dicter';
       micBtn.classList.remove('recording');
     }
-    if (micStatus) micStatus.textContent = '✓ Terminé';
+    if (micStatus) micStatus.textContent = 'Terminé';
   };
 
   recognition.onerror = function(e) {
     isRecording = false;
     if (micBtn) {
-      micBtn.textContent = '🎤 Dicter';
+      micBtn.innerHTML = '<i class="ti ti-microphone" aria-hidden="true"></i>Dicter';
       micBtn.classList.remove('recording');
     }
     if (micStatus) micStatus.textContent = 'Erreur: ' + e.error;
@@ -553,35 +548,46 @@ function renderObsHistory() {
 
   obs = obs.slice().sort(function(a, b) { return b.timestamp - a.timestamp; });
 
+  var domainColors = {
+    A: 'var(--mp-honey)', B: 'var(--mp-plum)', C: 'var(--mp-sage)',
+    D: 'var(--mp-plum)', E: 'var(--mp-honey)'
+  };
+
   var html = '<h3>Entrées récentes (' + obs.length + ')</h3>';
-  html += '<table class="obs-table">';
-  html += '<tr><th>Date</th><th>Élève</th><th>Type</th><th>Dom.</th><th>Activité</th><th>Note</th><th>Photo</th><th></th></tr>';
+  html += '<div class="mp-entry-list">';
 
   obs.forEach(function(o) {
     var student = roster.find(function(s) { return s.code === o.studentCode; });
     var name = student ? displayName(student) : o.studentCode;
-    var typeLabel = o.type === 'conversation' ? '💬' : '👁';
+    var typeIcon = o.type === 'conversation' ? 'ti-message-circle' : 'ti-eye';
+    var domainKey = o.domaine || '';
+    var accentColor = domainColors[domainKey] || 'var(--mp-honey)';
+    var domainOrSubject = o.subject || o.domaine || '';
     var noteDisplay = o.pending
-      ? '<em class="pending-note">⏳ En attente de transcription</em>'
+      ? '<span class="mp-pending-note">En attente de transcription</span>'
       : '<span class="editable-note" onclick="editObsNote(' + o.id + ')">' + o.note + '</span>';
 
-    html += '<tr>';
-    html += '<td>' + o.date + '</td>';
-    html += '<td>' + name + '</td>';
-    html += '<td>' + typeLabel + '</td>';
-    html += '<td><strong>' + (o.subject || o.domaine) + '</strong></td>';
-    html += '<td>' + (o.activityTag || '') + '</td>';
-    html += '<td>' + noteDisplay + '</td>';
-    if (o.photoIds && o.photoIds.length > 0) {
-      html += '<td><span id="obs-recent-photo-' + o.id + '"><em>...</em></span></td>';
-    } else {
-      html += '<td></td>';
+    html += '<div class="mp-entry-card" style="--entry-color:' + accentColor + ';">';
+    html += '<div class="mp-entry-top">';
+    html += '<div class="mp-entry-name"><i class="ti ' + typeIcon + '" aria-hidden="true" style="color:var(--mp-taupe); margin-right:4px;"></i>' + name;
+    if (domainOrSubject) {
+      html += ' <span class="mp-entry-meta">· ' + domainOrSubject + '</span>';
     }
-    html += '<td><button class="btn-delete" onclick="deleteObsEntry(' + o.id + ')">✕</button></td>';
-    html += '</tr>';
+    html += '</div>';
+    html += '<button class="mp-entry-delete" aria-label="Supprimer" onclick="deleteObsEntry(' + o.id + ')"><i class="ti ti-trash" aria-hidden="true"></i></button>';
+    html += '</div>';
+    html += '<div class="mp-entry-note">' + noteDisplay + '</div>';
+    if (o.activityTag) {
+      html += '<div class="mp-entry-meta" style="font-size:13px; margin-top:2px;">' + o.activityTag + '</div>';
+    }
+    if (o.photoIds && o.photoIds.length > 0) {
+      html += '<div><span id="obs-recent-photo-' + o.id + '"></span></div>';
+    }
+    html += '<div class="mp-entry-date">' + o.date + '</div>';
+    html += '</div>';
   });
 
-  html += '</table>';
+  html += '</div>';
   return html;
 }
 
@@ -879,12 +885,12 @@ function renderObsLinkSectionHtml(studentCode) {
   if (!isGrade1to6(studentCode)) {
     var html = '<div class="form-row">';
     html += '<label>Domaine</label>';
-    html += '<div class="domaine-btns">';
-    html += '<button class="domaine-btn active" id="domaine-A" onclick="setDomaine(\'A\')"><strong>A</strong> Langue & maths</button>';
-    html += '<button class="domaine-btn" id="domaine-B" onclick="setDomaine(\'B\')"><strong>B</strong> Résolution & innovation</button>';
-    html += '<button class="domaine-btn" id="domaine-C" onclick="setDomaine(\'C\')"><strong>C</strong> Autorégulation & bien-être</button>';
-    html += '<button class="domaine-btn" id="domaine-D" onclick="setDomaine(\'D\')"><strong>D</strong> Appartenance & contribution</button>';
-    html += '<button class="domaine-btn" id="domaine-E" onclick="setDomaine(\'E\')"><strong>E</strong> Éveil religieux</button>';
+    html += '<div class="mp-chip-row">';
+    html += '<button class="mp-chip active" id="domaine-A" onclick="setDomaine(\'A\')" style="--chip-color:var(--mp-honey); --chip-bg:var(--mp-honey-bg);"><i class="ti ti-abc" aria-hidden="true"></i>A · Langue & maths</button>';
+    html += '<button class="mp-chip" id="domaine-B" onclick="setDomaine(\'B\')" style="--chip-color:var(--mp-plum); --chip-bg:var(--mp-plum-bg);"><i class="ti ti-bulb" aria-hidden="true"></i>B · Résolution & innovation</button>';
+    html += '<button class="mp-chip" id="domaine-C" onclick="setDomaine(\'C\')" style="--chip-color:var(--mp-sage); --chip-bg:var(--mp-sage-bg);"><i class="ti ti-heart" aria-hidden="true"></i>C · Autorégulation & bien-être</button>';
+    html += '<button class="mp-chip" id="domaine-D" onclick="setDomaine(\'D\')" style="--chip-color:var(--mp-plum); --chip-bg:var(--mp-plum-bg);"><i class="ti ti-users" aria-hidden="true"></i>D · Appartenance & contribution</button>';
+    html += '<button class="mp-chip" id="domaine-E" onclick="setDomaine(\'E\')" style="--chip-color:var(--mp-honey); --chip-bg:var(--mp-honey-bg);"><i class="ti ti-sparkles" aria-hidden="true"></i>E · Éveil religieux</button>';
     html += '</div>';
     html += '</div>';
     html += '<input type="hidden" id="obs-domaine" value="A">';

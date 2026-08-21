@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MonProf.ai</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/dist/tabler-icons.min.css">
 </head>
 <body>
 
@@ -24,12 +28,7 @@
     <div id="module-productions" style="display:none"></div>
     <div id="module-bulletins" style="display:none"></div>
   </main>
-  <footer id="app-version-footer">MonProf.ai — v48</footer>
-
-  <div id="update-banner" style="display:none;">
-    <span>Une nouvelle version est disponible.</span>
-    <button onclick="window.location.reload()">Actualiser</button>
-  </div>
+  <footer id="app-version-footer">MonProf.ai — v41</footer>
 
   <script src="xlsx.full.min.js"></script>
   <script src="roster.js"></script>
@@ -49,17 +48,13 @@
       navigator.serviceWorker.addEventListener('controllerchange', function() {
         if (refreshingForNewVersion) return;
         refreshingForNewVersion = true;
-        var banner = document.getElementById('update-banner');
-        if (banner) banner.style.display = 'flex';
+        window.location.reload();
       });
-
-      var swRegistration = null;
 
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/monprofai-app/sw.js')
           .then(function(reg) {
             console.log('Service worker registered:', reg.scope);
-            swRegistration = reg;
             // Force a check for a newer sw.js on every page load, instead of
             // waiting for the browser's own (often slow, especially on iOS
             // Safari) internal update-checking schedule.
@@ -68,33 +63,6 @@
           .catch(function(err) {
             console.log('Service worker registration failed:', err);
           });
-      });
-
-      // iOS Safari often restores a backgrounded tab from its back-forward
-      // cache (bfcache) or a suspended state instead of firing a fresh
-      // 'load' event, so the check above never re-runs when switching back
-      // to the app. These two listeners catch that case from different
-      // angles, since iOS doesn't reliably fire the same event every time:
-      // - 'pageshow' fires specifically on bfcache restores (event.persisted
-      //   is true in that case), which is the most likely culprit on iOS.
-      // - 'visibilitychange' catches the general "tab became visible again"
-      //   case as a second safety net.
-      function checkForUpdate() {
-        if (swRegistration) {
-          swRegistration.update();
-        }
-      }
-
-      window.addEventListener('pageshow', function(e) {
-        if (e.persisted) {
-          checkForUpdate();
-        }
-      });
-
-      document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible') {
-          checkForUpdate();
-        }
       });
     }
   </script>

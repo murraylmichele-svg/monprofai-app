@@ -1,0 +1,954 @@
+/* ============================================================
+   STYLES.CSS — MonProf.ai
+   ============================================================ */
+
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f0;
+  color: #1a1a2e;
+}
+
+header {
+  background: #2d5a3d;
+  color: white;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+nav button {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.4);
+  padding: 6px 14px;
+  margin-left: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+nav button:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+#app {
+  max-width: 800px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+h2 {
+  color: #2d5a3d;
+  border-bottom: 2px solid #2d5a3d;
+  padding-bottom: 8px;
+}
+
+h3 {
+  color: #2d5a3d;
+  margin-top: 24px;
+}
+
+input[type="text"], select {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  margin: 4px;
+}
+
+button {
+  background: #2d5a3d;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin: 4px;
+}
+
+button:hover {
+  background: #1e3f2a;
+}
+
+.form-row {
+  margin: 8px 0;
+}
+
+.roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.roster-table th, .roster-table td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.roster-table th {
+  background: #e8f4ec;
+  color: #2d5a3d;
+  font-weight: 600;
+}
+
+.roster-table tr:hover {
+  background: #f9fdf9;
+}
+/* Observations module */
+.obs-type-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.type-btn {
+  background: white;
+  color: #2d5a3d;
+  border: 2px solid #2d5a3d;
+  padding: 8px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.type-btn.active {
+  background: #2d5a3d;
+  color: white;
+}
+
+.domaine-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.domaine-btn {
+  background: white;
+  color: #2d5a3d;
+  border: 2px solid #2d5a3d;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.domaine-btn.active {
+  background: #2d5a3d;
+  color: white;
+}
+
+textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: system-ui, sans-serif;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #2d5a3d;
+  font-size: 13px;
+}
+
+.obs-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.obs-table th, .obs-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: top;
+}
+
+.obs-table th {
+  background: #e8f4ec;
+  color: #2d5a3d;
+  font-weight: 600;
+}
+
+.btn-delete {
+  background: #c0392b;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn-delete:hover {
+  background: #96281b;
+}
+
+#obs-form {
+  background: white;
+   /* Mic button */
+.mic-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 12px 0;
+}
+
+.mic-btn {
+  background: #1a5276;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.mic-btn.recording {
+  background: #c0392b;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.mic-status {
+  font-size: 13px;
+  color: #666;
+}
+
+/* Voice notice */
+.voice-notice {
+  background: #fef9e7;
+  border: 1px solid #f39c12;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Pending banner */
+.pending-banner {
+  background: #eaf4fb;
+  border: 1px solid #2980b9;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pending-note {
+  color: #999;
+}
+
+.editable-note {
+  cursor: pointer;
+  border-bottom: 1px dashed #aaa;
+}
+
+.editable-note:hover {
+  background: #f0f7f0;
+}
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+/* ============================================================
+   ADDITIONS — MonProf.ai
+   Append this to the END of your existing styles.css
+   ============================================================ */
+
+/* ---- BUG FIX: these rules were accidentally nested inside
+   #obs-form and got silently discarded by the browser. This
+   corrected version below takes over automatically since it
+   comes later in the file — nothing above needs to change. ---- */
+
+#obs-form {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+
+.mic-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 12px 0;
+}
+
+.mic-btn {
+  background: #1a5276;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.mic-btn.recording {
+  background: #c0392b;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.mic-status {
+  font-size: 13px;
+  color: #666;
+}
+
+.voice-notice {
+  background: #fef9e7;
+  border: 1px solid #f39c12;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pending-banner {
+  background: #eaf4fb;
+  border: 1px solid #2980b9;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pending-note {
+  color: #999;
+}
+
+.editable-note {
+  cursor: pointer;
+  border-bottom: 1px dashed #aaa;
+}
+
+.editable-note:hover {
+  background: #f0f7f0;
+}
+
+/* ---- GENERIC TABLE STYLING ----
+   Applies borders/spacing to every table in the app, including
+   ones added later (obs-attention-table, obs-domain-table,
+   production-history-table, production-grid-table,
+   production-recent-table) without needing a rule per table. ---- */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+table th,
+table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: top;
+}
+
+table th {
+  background: #e8f4ec;
+  color: #2d5a3d;
+  font-weight: 600;
+}
+
+table tr:hover {
+  background: #f9fdf9;
+}
+
+/* ---- Highlight rows/cells that need attention ---- */
+
+.obs-attention-flagged {
+  background: #fef5f5;
+}
+
+.obs-attention-flagged td {
+  color: #c0392b;
+  font-weight: 600;
+}
+
+.obs-domain-missing {
+  color: #c0392b;
+}
+
+.production-grid-missing {
+  color: #c0392b;
+}
+
+/* ---- Productions: live progress chip strip ---- */
+
+.production-chip-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.production-chip {
+  background: white;
+  border: 2px solid #2d5a3d;
+  color: #2d5a3d;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.production-chip:hover {
+  background: #f0f7f0;
+}
+
+.production-chip-current {
+  border-color: #1a5276;
+  box-shadow: 0 0 0 2px rgba(26,82,118,0.25);
+}
+
+.production-chip-done {
+  background: #e8f4ec;
+  border-color: #2d5a3d;
+}
+
+/* ---- Productions: "already recorded" box shown when
+   editing/adding to an existing entry ---- */
+
+.production-existing-box {
+  background: #fef9e7;
+  border: 1px solid #f39c12;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.production-existing-box p {
+  margin: 4px 0;
+}
+
+/* ---- Productions: history entries, activity label ---- */
+
+.production-entry-cell {
+  padding: 14px 12px !important;
+}
+
+.production-photo-container {
+  margin-top: 8px;
+}
+
+.production-activity-label {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 8px;
+}
+.production-entry-highlight {
+  background: #fef9e7 !important;
+  transition: background 0.5s ease;
+}
+.data-management-section {
+  margin-top: 32px;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
+  font-size: 12px;
+}
+
+.data-management-section h3 {
+  margin-top: 0;
+  margin-bottom: 6px;
+  color: #888;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.data-management-section .btn-delete {
+  font-size: 11px;
+  padding: 4px 10px;
+}
+.production-resume-banner {
+  background: #eaf4fb;
+  border: 1px solid #2980b9;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.production-resume-banner p {
+  margin: 0 0 8px 0;
+}
+.pei-reminder {
+  background: #fff3e0;
+  border: 1px solid #e67e22;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 8px 0;
+  font-size: 13px;
+  color: #a04000;
+}
+.g16-entries-list {
+  margin: 12px 0;
+}
+
+.g16-entry-item {
+  display: block;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.g16-entry-item:hover {
+  background: #f9fdf9;
+}
+
+.g16-entry-note {
+  color: #555;
+  font-style: italic;
+}
+.hh-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.hh-category-block {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 12px;
+  flex: 1 1 200px;
+}
+
+.hh-category-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2d5a3d;
+  margin-bottom: 6px;
+}
+
+.hh-cote-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.hh-cote-btn {
+  flex: 1;
+  padding: 6px 0;
+  border: 1px solid #2d5a3d;
+  background: white;
+  color: #2d5a3d;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.hh-cote-btn.active {
+  background: #2d5a3d;
+  color: white;
+}
+
+.hh-phrase-block {
+  background: #fafaf8;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.hh-phrase-block-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2d5a3d;
+  margin-bottom: 6px;
+}
+
+.hh-phrase-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+.hh-pei-box {
+  background: #fff3e0;
+  border: 1px solid #e67e22;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 10px 0;
+}
+
+.hh-pei-box textarea {
+  width: 100%;
+  margin: 6px 0;
+  font-size: 13px;
+}
+/* ============================================================
+   ADDITION — MonProf.ai
+   Allow the header nav to wrap gracefully on narrow screens,
+   now that "Observations et conversations" is a longer label
+   ============================================================ */
+
+header {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+nav button {
+  margin-left: 0;
+}
+
+@media (max-width: 480px) {
+  nav button {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+}
+.photo-preview-box {
+  margin-top: 8px;
+}
+
+.photo-preview-img {
+  max-width: 220px;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  display: block;
+}
+#app-version-footer {
+  text-align: center;
+  font-size: 11px;
+  color: #999;
+  padding: 16px 0 24px;
+}
+
+/* ============================================================
+   ADDITION — MonProf.ai
+   Warm redesign v1 — design tokens + Observations tab
+   Append this to the END of your existing styles.css
+   ============================================================ */
+
+:root {
+  --mp-bg: #FBF7F1;
+  --mp-card: #FFFFFF;
+  --mp-ink: #2B2420;
+  --mp-taupe: #8C8478;
+  --mp-honey: #E0932C;
+  --mp-honey-bg: #FCEBD8;
+  --mp-plum: #6B4257;
+  --mp-plum-bg: #F1E7EB;
+  --mp-sage: #7A9B76;
+  --mp-sage-bg: #EAF0E8;
+  --mp-coral: #C0603F;
+  --mp-line: #EDE6DA;
+}
+
+body {
+  background: var(--mp-bg);
+  color: var(--mp-ink);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+h2, h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  color: var(--mp-ink);
+  border-bottom: none;
+}
+
+h2 { font-size: 24px; }
+h3 { font-size: 18px; margin-top: 20px; }
+
+.mp-view-switcher {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.mp-view-btn {
+  flex: 1;
+  min-height: 44px;
+  background: var(--mp-card);
+  border: 0.5px solid var(--mp-line);
+  border-radius: 10px;
+  padding: 6px 4px;
+  font-size: 12px;
+  color: var(--mp-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.mp-view-btn i {
+  font-size: 19px;
+  color: var(--mp-plum);
+}
+
+#obs-form {
+  background: var(--mp-card);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: none;
+  margin-bottom: 16px;
+}
+
+.mp-toggle {
+  display: flex;
+  background: var(--mp-bg);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 14px;
+}
+
+.mp-toggle button {
+  flex: 1;
+  min-height: 44px;
+  padding: 9px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--mp-taupe);
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.mp-toggle button.active {
+  background: var(--mp-ink);
+  color: #fff;
+}
+
+.mp-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mp-chip {
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--mp-line);
+  background: #fff;
+  color: var(--mp-taupe);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mp-chip.active {
+  border-color: var(--chip-color, var(--mp-honey));
+  background: var(--chip-bg, var(--mp-honey-bg));
+  color: var(--chip-color, var(--mp-honey));
+}
+
+.mp-info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.mp-info-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--mp-taupe);
+  background: none;
+  color: var(--mp-taupe);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.mp-info-tip {
+  display: none;
+  background: var(--mp-honey-bg);
+  color: #8A4E0F;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.mp-info-tip.visible {
+  display: block;
+}
+
+.mp-mic-btn {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--mp-line);
+  background: #fff;
+  color: var(--mp-ink);
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  cursor: pointer;
+}
+
+.mp-mic-btn i { color: var(--mp-plum); font-size: 18px; }
+
+.mp-mic-btn.recording {
+  border-color: var(--mp-coral);
+  color: var(--mp-coral);
+}
+
+.mp-mic-btn.recording i { color: var(--mp-coral); }
+
+.mp-save-btn {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px;
+  border-radius: 10px;
+  border: none;
+  background: var(--mp-honey);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.mp-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mp-entry-card {
+  background: var(--mp-card);
+  border-radius: 12px;
+  padding: 12px 8px 12px 14px;
+  border-left: 3px solid var(--entry-color, var(--mp-honey));
+}
+
+.mp-entry-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.mp-entry-name {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--mp-ink);
+}
+
+.mp-entry-meta {
+  color: var(--mp-taupe);
+  font-weight: 400;
+}
+
+.mp-entry-delete {
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  color: var(--mp-taupe);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -10px -6px -10px 0;
+}
+
+.mp-entry-delete:hover { color: var(--mp-coral); }
+
+.mp-entry-note {
+  font-size: 14px;
+  color: var(--mp-ink);
+  margin-top: 4px;
+}
+
+.mp-entry-date {
+  font-size: 13px;
+  color: var(--mp-taupe);
+  margin-top: 6px;
+}
+
+.mp-pending-note {
+  font-size: 13px;
+  color: var(--mp-taupe);
+  font-style: italic;
+}
