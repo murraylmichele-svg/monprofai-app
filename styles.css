@@ -675,3 +675,27 @@ nav button {
   color: #999;
   padding: 16px 0 24px;
 }
+#update-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1a5276;
+  color: white;
+  padding: 12px 16px;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 14px;
+  z-index: 1000;
+}
+
+#update-banner button {
+  background: white;
+  color: #1a5276;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
