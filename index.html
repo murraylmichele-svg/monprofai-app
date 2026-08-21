@@ -47,10 +47,13 @@
         window.location.reload();
       });
 
+      var swRegistration = null;
+
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/monprofai-app/sw.js')
           .then(function(reg) {
             console.log('Service worker registered:', reg.scope);
+            swRegistration = reg;
             // Force a check for a newer sw.js on every page load, instead of
             // waiting for the browser's own (often slow, especially on iOS
             // Safari) internal update-checking schedule.
@@ -59,6 +62,17 @@
           .catch(function(err) {
             console.log('Service worker registration failed:', err);
           });
+      });
+
+      // iOS Safari often resumes a backgrounded tab from its suspended state
+      // instead of firing a fresh 'load' event, so the check above never
+      // re-runs when switching back to the app. This catches that case:
+      // whenever the page becomes visible again, ask the already-registered
+      // service worker to check for an update.
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible' && swRegistration) {
+          swRegistration.update();
+        }
       });
     }
   </script>
