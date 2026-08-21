@@ -49,7 +49,8 @@
       navigator.serviceWorker.addEventListener('controllerchange', function() {
         if (refreshingForNewVersion) return;
         refreshingForNewVersion = true;
-        window.location.reload();
+        var banner = document.getElementById('update-banner');
+        if (banner) banner.style.display = 'flex';
       });
 
       var swRegistration = null;
