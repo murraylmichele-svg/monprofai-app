@@ -699,3 +699,280 @@ nav button {
   cursor: pointer;
   font-weight: 600;
 }
+
+/* ============================================================
+   ADDITION — MonProf.ai
+   Warm redesign v1 — design tokens + Observations tab
+   Append this to the END of your existing styles.css
+   ============================================================ */
+
+:root {
+  --mp-bg: #FBF7F1;
+  --mp-card: #FFFFFF;
+  --mp-ink: #2B2420;
+  --mp-taupe: #8C8478;
+  --mp-honey: #E0932C;
+  --mp-honey-bg: #FCEBD8;
+  --mp-plum: #6B4257;
+  --mp-plum-bg: #F1E7EB;
+  --mp-sage: #7A9B76;
+  --mp-sage-bg: #EAF0E8;
+  --mp-coral: #C0603F;
+  --mp-line: #EDE6DA;
+}
+
+body {
+  background: var(--mp-bg);
+  color: var(--mp-ink);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+h2, h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  color: var(--mp-ink);
+  border-bottom: none;
+}
+
+h2 { font-size: 24px; }
+h3 { font-size: 18px; margin-top: 20px; }
+
+.mp-view-switcher {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.mp-view-btn {
+  flex: 1;
+  min-height: 44px;
+  background: var(--mp-card);
+  border: 0.5px solid var(--mp-line);
+  border-radius: 10px;
+  padding: 6px 4px;
+  font-size: 12px;
+  color: var(--mp-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.mp-view-btn i {
+  font-size: 19px;
+  color: var(--mp-plum);
+}
+
+#obs-form {
+  background: var(--mp-card);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: none;
+  margin-bottom: 16px;
+}
+
+.mp-toggle {
+  display: flex;
+  background: var(--mp-bg);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 14px;
+}
+
+.mp-toggle button {
+  flex: 1;
+  min-height: 44px;
+  padding: 9px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--mp-taupe);
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.mp-toggle button.active {
+  background: var(--mp-ink);
+  color: #fff;
+}
+
+.mp-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mp-chip {
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--mp-line);
+  background: #fff;
+  color: var(--mp-taupe);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mp-chip.active {
+  border-color: var(--chip-color, var(--mp-honey));
+  background: var(--chip-bg, var(--mp-honey-bg));
+  color: var(--chip-color, var(--mp-honey));
+}
+
+.mp-info-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.mp-info-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid var(--mp-taupe);
+  background: none;
+  color: var(--mp-taupe);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.mp-info-tip {
+  display: none;
+  background: var(--mp-honey-bg);
+  color: #8A4E0F;
+  font-size: 13px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.mp-info-tip.visible {
+  display: block;
+}
+
+.mp-mic-btn {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--mp-line);
+  background: #fff;
+  color: var(--mp-ink);
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 12px 0;
+  cursor: pointer;
+}
+
+.mp-mic-btn i { color: var(--mp-plum); font-size: 18px; }
+
+.mp-mic-btn.recording {
+  border-color: var(--mp-coral);
+  color: var(--mp-coral);
+}
+
+.mp-mic-btn.recording i { color: var(--mp-coral); }
+
+.mp-save-btn {
+  width: 100%;
+  min-height: 48px;
+  padding: 11px;
+  border-radius: 10px;
+  border: none;
+  background: var(--mp-honey);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin: 0;
+}
+
+.mp-entry-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mp-entry-card {
+  background: var(--mp-card);
+  border-radius: 12px;
+  padding: 12px 8px 12px 14px;
+  border-left: 3px solid var(--entry-color, var(--mp-honey));
+}
+
+.mp-entry-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.mp-entry-name {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--mp-ink);
+}
+
+.mp-entry-meta {
+  color: var(--mp-taupe);
+  font-weight: 400;
+}
+
+.mp-entry-delete {
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  color: var(--mp-taupe);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -10px -6px -10px 0;
+}
+
+.mp-entry-delete:hover { color: var(--mp-coral); }
+
+.mp-entry-note {
+  font-size: 14px;
+  color: var(--mp-ink);
+  margin-top: 4px;
+}
+
+.mp-entry-date {
+  font-size: 13px;
+  color: var(--mp-taupe);
+  margin-top: 6px;
+}
+
+.mp-pending-note {
+  font-size: 13px;
+  color: var(--mp-taupe);
+  font-style: italic;
+}
