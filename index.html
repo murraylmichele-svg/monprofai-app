@@ -64,14 +64,30 @@
           });
       });
 
-      // iOS Safari often resumes a backgrounded tab from its suspended state
-      // instead of firing a fresh 'load' event, so the check above never
-      // re-runs when switching back to the app. This catches that case:
-      // whenever the page becomes visible again, ask the already-registered
-      // service worker to check for an update.
-      document.addEventListener('visibilitychange', function() {
-        if (document.visibilityState === 'visible' && swRegistration) {
+      // iOS Safari often restores a backgrounded tab from its back-forward
+      // cache (bfcache) or a suspended state instead of firing a fresh
+      // 'load' event, so the check above never re-runs when switching back
+      // to the app. These two listeners catch that case from different
+      // angles, since iOS doesn't reliably fire the same event every time:
+      // - 'pageshow' fires specifically on bfcache restores (event.persisted
+      //   is true in that case), which is the most likely culprit on iOS.
+      // - 'visibilitychange' catches the general "tab became visible again"
+      //   case as a second safety net.
+      function checkForUpdate() {
+        if (swRegistration) {
           swRegistration.update();
+        }
+      }
+
+      window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+          checkForUpdate();
+        }
+      });
+
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+          checkForUpdate();
         }
       });
     }
