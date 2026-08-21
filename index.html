@@ -28,7 +28,12 @@
     <div id="module-productions" style="display:none"></div>
     <div id="module-bulletins" style="display:none"></div>
   </main>
-  <footer id="app-version-footer">MonProf.ai — v48</footer>
+  <footer id="app-version-footer">MonProf.ai — v49</footer>
+
+  <div id="update-banner" style="display:none;">
+    <span>Une nouvelle version est disponible.</span>
+    <button onclick="window.location.reload()">Actualiser</button>
+  </div>
 
   <script src="xlsx.full.min.js"></script>
   <script src="roster.js"></script>
@@ -48,13 +53,17 @@
       navigator.serviceWorker.addEventListener('controllerchange', function() {
         if (refreshingForNewVersion) return;
         refreshingForNewVersion = true;
-        window.location.reload();
+        var banner = document.getElementById('update-banner');
+        if (banner) banner.style.display = 'flex';
       });
+
+      var swRegistration = null;
 
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/monprofai-app/sw.js')
           .then(function(reg) {
             console.log('Service worker registered:', reg.scope);
+            swRegistration = reg;
             // Force a check for a newer sw.js on every page load, instead of
             // waiting for the browser's own (often slow, especially on iOS
             // Safari) internal update-checking schedule.
@@ -63,6 +72,33 @@
           .catch(function(err) {
             console.log('Service worker registration failed:', err);
           });
+      });
+
+      // iOS Safari often restores a backgrounded tab from its back-forward
+      // cache (bfcache) or a suspended state instead of firing a fresh
+      // 'load' event, so the check above never re-runs when switching back
+      // to the app. These two listeners catch that case from different
+      // angles, since iOS doesn't reliably fire the same event every time:
+      // - 'pageshow' fires specifically on bfcache restores (event.persisted
+      //   is true in that case), which is the most likely culprit on iOS.
+      // - 'visibilitychange' catches the general "tab became visible again"
+      //   case as a second safety net.
+      function checkForUpdate() {
+        if (swRegistration) {
+          swRegistration.update();
+        }
+      }
+
+      window.addEventListener('pageshow', function(e) {
+        if (e.persisted) {
+          checkForUpdate();
+        }
+      });
+
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') {
+          checkForUpdate();
+        }
       });
     }
   </script>
