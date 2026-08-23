@@ -207,7 +207,7 @@ function renderRoster() {
   html += '<span id="export-photos-status"></span>';
 
   html += '<div class="mp-data-row">';
-  html += '<label for="import-file-input" class="mp-data-btn" style="cursor:pointer;"><i class="ti ti-upload" aria-hidden="true"></i>Importer une sauvegarde</label>';
+  html += '<button type="button" class="mp-data-btn" onclick="document.getElementById(\'import-file-input\').click()"><i class="ti ti-upload" aria-hidden="true"></i>Importer une sauvegarde</button>';
   html += '<button type="button" class="mp-info-btn" onclick="toggleRosterTip(\'tip-import\')" aria-label="Aide">?</button>';
   html += '</div>';
   html += '<div id="tip-import" class="mp-info-tip">Importe une sauvegarde depuis un autre appareil (ex: transférer les données de votre téléphone vers cet ordinateur).</div>';
