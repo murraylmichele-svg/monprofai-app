@@ -207,18 +207,18 @@ function renderRoster() {
   html += '<span id="export-photos-status"></span>';
 
   html += '<div class="mp-data-row">';
-  html += '<button class="mp-data-btn mp-data-btn-danger" onclick="resetAllYearData()"><i class="ti ti-refresh" aria-hidden="true"></i>Nouvelle année</button>';
-  html += '<button type="button" class="mp-info-btn" onclick="toggleRosterTip(\'tip-reset\')" aria-label="Aide">?</button>';
-  html += '</div>';
-  html += '<div id="tip-reset" class="mp-info-tip">Sauvegarde puis efface toutes les observations et productions pour repartir à zéro. La liste de classe n\'est pas touchée par cette action.</div>';
-
-  html += '<div class="mp-data-row">';
   html += '<label for="import-file-input" class="mp-data-btn" style="cursor:pointer;"><i class="ti ti-upload" aria-hidden="true"></i>Importer une sauvegarde</label>';
   html += '<button type="button" class="mp-info-btn" onclick="toggleRosterTip(\'tip-import\')" aria-label="Aide">?</button>';
   html += '</div>';
   html += '<div id="tip-import" class="mp-info-tip">Importe une sauvegarde depuis un autre appareil (ex: transférer les données de votre téléphone vers cet ordinateur).</div>';
   html += '<input type="file" accept="application/json" id="import-file-input" onchange="handleImportFileSelect(event)" style="display:none;">';
   html += '<div id="import-preview-area"></div>';
+
+  html += '<div class="mp-data-row" style="margin-top:16px;">';
+  html += '<button class="mp-data-btn mp-data-btn-danger" onclick="resetAllYearData()"><i class="ti ti-refresh" aria-hidden="true"></i>Nouvelle année</button>';
+  html += '<button type="button" class="mp-info-btn" onclick="toggleRosterTip(\'tip-reset\')" aria-label="Aide">?</button>';
+  html += '</div>';
+  html += '<div id="tip-reset" class="mp-info-tip">Sauvegarde puis efface toutes les observations et productions pour repartir à zéro. La liste de classe n\'est pas touchée par cette action.</div>';
 
   html += '</div>';
 
