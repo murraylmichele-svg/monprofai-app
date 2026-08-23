@@ -159,13 +159,12 @@ function renderBulletins() {
     html += '</div>';
 
     html += '<div class="form-row">';
-    html += '<label>Période</label>';
-    html += '<div class="mp-toggle">';
-    html += '<button type="button" id="bulletin-period-btn-observations_initiales" class="' + (bulletinUIState.selectedPeriod === 'observations_initiales' ? 'active' : '') + '" onclick="setBulletinPeriod(\'observations_initiales\')">1re</button>';
-    html += '<button type="button" id="bulletin-period-btn-deuxieme" class="' + (bulletinUIState.selectedPeriod === 'deuxieme' ? 'active' : '') + '" onclick="setBulletinPeriod(\'deuxieme\')">2e</button>';
-    html += '<button type="button" id="bulletin-period-btn-troisieme" class="' + (bulletinUIState.selectedPeriod === 'troisieme' ? 'active' : '') + '" onclick="setBulletinPeriod(\'troisieme\')">3e</button>';
-    html += '</div>';
-    html += '<input type="hidden" id="bulletin-period-select" value="' + (bulletinUIState.selectedPeriod || 'observations_initiales') + '">';
+    html += '<label for="bulletin-period-select">Période</label>';
+    html += '<select id="bulletin-period-select" onchange="handleBulletinSelectorChange()">';
+    html += '<option value="observations_initiales"' + (bulletinUIState.selectedPeriod === 'observations_initiales' ? ' selected' : '') + '>Première (observations initiales)</option>';
+    html += '<option value="deuxieme"' + (bulletinUIState.selectedPeriod === 'deuxieme' ? ' selected' : '') + '>Deuxième période</option>';
+    html += '<option value="troisieme"' + (bulletinUIState.selectedPeriod === 'troisieme' ? ' selected' : '') + '>Troisième période</option>';
+    html += '</select>';
     html += '</div>';
 
     html += '<button class="mp-save-btn" id="bulletin-generate-btn" onclick="handleGenerateBulletinClick()"><i class="ti ti-sparkles" aria-hidden="true"></i>Générer le commentaire</button>';
@@ -189,18 +188,6 @@ function renderBulletins() {
   if (mjRoster.length > 0 && bulletinUIState.selectedStudent) {
     renderExistingDraftIfAny();
   }
-}
-
-function setBulletinPeriod(period) {
-  var input = document.getElementById('bulletin-period-select');
-  if (input) input.value = period;
-
-  ['observations_initiales', 'deuxieme', 'troisieme'].forEach(function(p) {
-    var btn = document.getElementById('bulletin-period-btn-' + p);
-    if (btn) btn.className = (p === period ? 'active' : '');
-  });
-
-  handleBulletinSelectorChange();
 }
 
 function handleBulletinSelectorChange() {
