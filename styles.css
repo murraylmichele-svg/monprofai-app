@@ -995,7 +995,8 @@ h3 { font-size: 18px; margin-top: 20px; }
 }
 
 .mp-card-block input[type="text"],
-.mp-card-block select {
+.mp-card-block select,
+.mp-card-block textarea {
   min-height: 44px;
   padding: 10px 12px;
   border-radius: 10px;
@@ -1003,6 +1004,12 @@ h3 { font-size: 18px; margin-top: 20px; }
   font-size: 16px;
   box-sizing: border-box;
   margin: 0;
+}
+
+.mp-card-block textarea {
+  min-height: 80px;
+  font-family: inherit;
+  resize: vertical;
 }
 
 .mp-pei-check {
@@ -1135,4 +1142,84 @@ h3 { font-size: 18px; margin-top: 20px; }
 
 #roster-form .mp-info-tip {
   margin-bottom: 10px;
+}
+
+/* ============================================================
+   ADDITION — MonProf.ai
+   Warm redesign v3 — Productions tab (single-student flow)
+   Append this to the END of your existing styles.css
+   ============================================================ */
+
+.mp-photo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px dashed var(--mp-line);
+  background: #fff;
+  color: var(--mp-taupe);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.mp-photo-btn i {
+  color: var(--mp-plum);
+  font-size: 17px;
+}
+
+.photo-preview-box .mp-photo-btn {
+  border-style: solid;
+  margin-top: 8px;
+}
+
+.mp-level-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mp-level-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.mp-level-chip {
+  flex: 1;
+  min-width: 70px;
+  min-height: 40px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  border: 1.5px solid var(--mp-line);
+  background: #fff;
+  color: var(--mp-taupe);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.mp-level-radio:checked + .mp-level-chip {
+  border-color: var(--mp-sage);
+  background: var(--mp-sage-bg);
+  color: #4A6B47;
+}
+
+.mp-level-radio:focus-visible + .mp-level-chip {
+  outline: 2px solid var(--mp-plum);
+  outline-offset: 1px;
 }
