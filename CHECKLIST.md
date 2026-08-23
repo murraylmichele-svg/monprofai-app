@@ -33,3 +33,17 @@ fichier `index.html` force cette vérification à chaque chargement (via
 `reg.update()`), mais le rafraîchissement du cache lui-même dépend toujours
 du numéro `CACHE_NAME` dans `sw.js`. D'où l'importance de toujours faire les
 étapes 2 et 3 ensemble.
+
+## Fichiers d'exportation — bonne pratique de confidentialité
+
+Le fichier créé par le transfert de données entre appareils contient des
+renseignements personnels en texte clair (prénoms, initiales, photos encodées)
+et n'est pas chiffré. À traiter comme un document sensible :
+
+- **Supprimer le fichier immédiatement** après l'avoir importé sur l'autre appareil.
+- **Ne jamais l'envoyer par courriel** ni le partager par une messagerie non sécurisée.
+- **Éviter qu'il reste dans un dossier synchronisé** avec un service infonuagique
+  (iCloud, OneDrive, Google Drive, etc.) — vérifier vos réglages de sauvegarde
+  automatique si le fichier est passé par le dossier Téléchargements.
+- En cas de doute, vaut mieux régénérer un nouvel export que de conserver un
+  ancien fichier "juste au cas où."
