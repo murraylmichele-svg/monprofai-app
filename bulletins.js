@@ -657,9 +657,9 @@ function renderBulletinTableView() {
   var roster = getRoster().filter(function(s) { return s.actif; });
   var drafts = getBulletinDrafts();
 
-  var html = '<div class="bulletin-table-view">';
-  html += '<h3>Tous les brouillons — ' + (BULLETIN_PERIODS[period] || period) + '</h3>';
-  html += '<button onclick="copyAllBulletinsToClipboard()">Copier tout (tableau)</button>';
+  var html = '<div class="mp-card-block">';
+  html += '<h3 style="margin-top:0;">Tous les brouillons — ' + (BULLETIN_PERIODS[period] || period) + '</h3>';
+  html += '<button class="mp-data-btn" style="margin-bottom:12px;" onclick="copyAllBulletinsToClipboard()"><i class="ti ti-copy" aria-hidden="true"></i>Copier tout</button>';
   html += '<table class="bulletin-summary-table">';
   html += '<tr><th>Élève</th><th>Commentaire</th><th></th></tr>';
 
@@ -1015,8 +1015,9 @@ function renderGrade16BulletinSectionHtml() {
     return '<p>Aucun élève de la 1re à la 6e année dans la liste de classe active.</p>';
   }
 
-  var html = '<div class="form-row">';
-  html += '<label for="g16-student-select">Élève: </label>';
+  var html = '<div class="mp-card-block">';
+  html += '<div class="form-row">';
+  html += '<label for="g16-student-select">Élève</label>';
   html += '<select id="g16-student-select" onchange="handleGrade16SelectorChange()">';
   html += '<option value="">-- Sélectionner --</option>';
   roster.forEach(function(s) {
@@ -1027,7 +1028,7 @@ function renderGrade16BulletinSectionHtml() {
   html += '</div>';
 
   html += '<div class="form-row">';
-  html += '<label for="g16-subject-select">Matière: </label>';
+  html += '<label for="g16-subject-select">Matière</label>';
   html += '<select id="g16-subject-select" onchange="handleGrade16SelectorChange()">';
   GRADES_1_6_SUBJECTS.forEach(function(subj) {
     var sel = (subj === grade16BulletinState.selectedSubject) ? ' selected' : '';
@@ -1037,7 +1038,7 @@ function renderGrade16BulletinSectionHtml() {
   html += '</div>';
 
   html += '<div class="form-row">';
-  html += '<label for="g16-period-select">Période: </label>';
+  html += '<label for="g16-period-select">Période</label>';
   html += '<select id="g16-period-select" onchange="handleGrade16SelectorChange()">';
   html += '<option value="progres"' + (grade16BulletinState.selectedPeriod === 'progres' ? ' selected' : '') + '>Bulletin de progrès (automne)</option>';
   html += '<option value="scolaire1"' + (grade16BulletinState.selectedPeriod === 'scolaire1' ? ' selected' : '') + '>Bulletin scolaire (janvier)</option>';
@@ -1045,12 +1046,13 @@ function renderGrade16BulletinSectionHtml() {
   html += '</select>';
   html += '</div>';
 
-  html += '<button onclick="renderGrade16TableView()">Voir tous les brouillons (tableau)</button>';
+  html += '<button class="mp-data-btn" onclick="renderGrade16TableView()"><i class="ti ti-table" aria-hidden="true"></i>Voir tous les brouillons</button>';
+  html += '</div>';
+
   html += '<div id="g16-entries-area"><p><em>Sélectionnez un élève et une matière pour voir les preuves disponibles.</em></p></div>';
   html += '<div id="g16-review-area"></div>';
 
-  html += '<hr>';
-  html += '<h3>Habiletés d\'apprentissage et habitudes de travail (HH)</h3>';
+  html += '<h3 style="margin-top:24px;">Habiletés d\'apprentissage et habitudes de travail (HH)</h3>';
   html += '<div id="hh-section">';
   html += renderHHSectionHtml();
   html += '</div>';
@@ -1103,26 +1105,38 @@ function renderGrade16EntriesChecklist() {
     return;
   }
 
-  var html = '<h4>Preuves disponibles (cochez celles à inclure)</h4>';
-  html += '<div class="g16-entries-list">';
+  var html = '<div class="mp-card-block">';
+  html += '<div class="mp-info-row">';
+  html += '<h4 style="margin:0;">Preuves à inclure</h4>';
+  html += '<button type="button" class="mp-info-btn" onclick="toggleG16EntriesTip()" aria-label="Aide">?</button>';
+  html += '</div>';
+  html += '<div id="g16-entries-tip" class="mp-info-tip">Seules les entrées cochées seront envoyées à l\'IA pour générer le commentaire.</div>';
+  html += '<div class="mp-check-list">';
 
   entries.forEach(function(e) {
     var checked = grade16BulletinState.selectedEntryIds.indexOf(e.id) !== -1 ? ' checked' : '';
     var gradeInfo = e.grade ? (' — Niveau: ' + e.grade) : '';
-    html += '<label class="g16-entry-item">';
-    html += '<input type="checkbox" value="' + e.id + '" onchange="toggleGrade16Entry(\'' + e.id + '\', this.checked)"' + checked + '> ';
-    html += '<strong>' + e.date + '</strong> — ' + (e.strand || '') +
+    html += '<label class="mp-check-item">';
+    html += '<input type="checkbox" value="' + e.id + '" onchange="toggleGrade16Entry(\'' + e.id + '\', this.checked)"' + checked + '>';
+    html += '<span><strong>' + e.date + '</strong> — ' + (e.strand || '') +
       (e.achievementCategory ? ' (' + e.achievementCategory + ')' : '') +
-      (e.activityTag ? ' — ' + e.activityTag : '') + gradeInfo + '<br>';
-    html += '<span class="g16-entry-note">' + (e.note || '') + '</span>';
+      (e.activityTag ? ' — ' + e.activityTag : '') + gradeInfo;
+    if (e.note) html += '<br><span class="mp-entry-meta">' + e.note + '</span>';
+    html += '</span>';
     html += '</label>';
   });
 
   html += '</div>';
-  html += '<button onclick="handleGenerateGrade16Click()">Générer le commentaire</button>';
+  html += '<button class="mp-save-btn" style="margin-top:14px;" onclick="handleGenerateGrade16Click()"><i class="ti ti-sparkles" aria-hidden="true"></i>Générer le commentaire</button>';
   html += '<span id="g16-generate-status"></span>';
+  html += '</div>';
 
   entriesArea.innerHTML = html;
+}
+
+function toggleG16EntriesTip() {
+  var tip = document.getElementById('g16-entries-tip');
+  if (tip) tip.classList.toggle('visible');
 }
 
 function toggleGrade16Entry(entryId, isChecked) {
@@ -1176,40 +1190,55 @@ function renderGrade16Review(draft) {
   var reviewArea = document.getElementById('g16-review-area');
   if (!reviewArea) return;
 
-  var html = '<div class="bulletin-review-box">';
-  html += '<h4>Brouillon</h4>';
+  var html = '<div class="mp-card-block">';
+  html += '<h3 style="margin-top:0;">Brouillon</h3>';
   html += '<textarea id="g16-edit-text" rows="6" oninput="updateG16CharCount()">' + escapeHtmlForTextarea(draft.text) + '</textarea>';
-  html += '<div id="g16-char-count"></div>';
+  html += '<div style="display:flex; justify-content:flex-end; margin-bottom:14px;"><span id="g16-char-count" class="mp-char-pill"></span></div>';
 
   if (draft.period === 'progres') {
-    html += '<div class="form-row">';
-    html += '<label>Formule de progrès: </label>';
-    html += '<select id="g16-progres-select">';
-    html += '<option value="">-- Sélectionner --</option>';
+    html += '<label>Formule de progrès</label>';
+    html += '<div class="mp-chip-row" id="g16-progres-chips">';
     PROGRES_OPTIONS.forEach(function(opt) {
-      html += '<option value="' + opt + '"' + (draft.cote === opt ? ' selected' : '') + '>' + opt + '</option>';
+      var active = (draft.cote === opt) ? ' active' : '';
+      html += '<button type="button" class="mp-chip' + active + '" style="--chip-color:var(--mp-sage); --chip-bg:var(--mp-sage-bg);" onclick="selectG16Cote(\'' + opt.replace(/'/g, "\\'") + '\')">' + opt + '</button>';
     });
-    html += '</select>';
     html += '</div>';
+    html += '<input type="hidden" id="g16-progres-select" value="' + (draft.cote || '') + '">';
   } else {
-    html += '<div class="form-row">';
-    html += '<label>Cote: </label>';
-    html += '<select id="g16-cote-select">';
-    html += '<option value="">-- Sélectionner --</option>';
+    html += '<label>Cote</label>';
+    html += '<div class="mp-chip-row" id="g16-cote-chips">';
     COTE_OPTIONS.forEach(function(c) {
-      html += '<option value="' + c + '"' + (draft.cote === c ? ' selected' : '') + '>' + c + '</option>';
+      var active = (draft.cote === c) ? ' active' : '';
+      html += '<button type="button" class="mp-chip' + active + '" style="--chip-color:var(--mp-sage); --chip-bg:var(--mp-sage-bg); min-height:36px; padding:6px 12px;" onclick="selectG16Cote(\'' + c + '\')">' + c + '</button>';
     });
-    html += '</select>';
     html += '</div>';
+    html += '<input type="hidden" id="g16-cote-select" value="' + (draft.cote || '') + '">';
   }
 
-  html += '<button onclick="saveGrade16Edits()">Enregistrer</button> ';
-  html += '<button onclick="copyGrade16DraftToClipboard()">Copier</button>';
+  html += '<div style="display:flex; gap:8px; margin-top:14px;">';
+  html += '<button class="mp-save-btn" style="margin:0;" onclick="saveGrade16Edits()"><i class="ti ti-check" aria-hidden="true"></i>Enregistrer</button>';
+  html += '<button class="mp-data-btn" onclick="copyGrade16DraftToClipboard()"><i class="ti ti-copy" aria-hidden="true"></i>Copier</button>';
+  html += '</div>';
   html += '<span id="g16-save-status"></span>';
   html += '</div>';
 
   reviewArea.innerHTML = html;
   updateG16CharCount();
+}
+
+function selectG16Cote(value) {
+  var progresInput = document.getElementById('g16-progres-select');
+  var coteInput = document.getElementById('g16-cote-select');
+  if (progresInput) progresInput.value = value;
+  if (coteInput) coteInput.value = value;
+
+  var container = progresInput ? document.getElementById('g16-progres-chips') : document.getElementById('g16-cote-chips');
+  if (container) {
+    var buttons = container.querySelectorAll('.mp-chip');
+    buttons.forEach(function(btn) {
+      btn.className = (btn.textContent === value ? 'mp-chip active' : 'mp-chip');
+    });
+  }
 }
 
 function updateG16CharCount() {
@@ -1218,8 +1247,8 @@ function updateG16CharCount() {
   if (!textarea || !countEl) return;
   var count = textarea.value.length;
   var limit = SUBJECT_CHAR_LIMITS[grade16BulletinState.selectedSubject] || 1000;
-  countEl.textContent = count + ' / ' + limit + ' caractères (limite Aspen)';
-  countEl.style.color = count > limit ? '#c0392b' : '#666';
+  countEl.textContent = count + ' / ' + limit + ' caractères';
+  countEl.className = 'mp-char-pill' + (count > limit ? ' mp-char-pill-over' : '');
 }
 
 function saveGrade16Edits() {
@@ -1668,8 +1697,9 @@ function renderHHSectionHtml() {
     return '<p>Aucun élève de la 1re à la 6e année dans la liste de classe active.</p>';
   }
 
-  var html = '<div class="form-row">';
-  html += '<label for="hh-student-select">Élève: </label>';
+  var html = '<div class="mp-card-block">';
+  html += '<div class="form-row">';
+  html += '<label for="hh-student-select">Élève</label>';
   html += '<select id="hh-student-select" onchange="handleHHSelectorChange()">';
   html += '<option value="">-- Sélectionner --</option>';
   roster.forEach(function(s) {
@@ -1680,7 +1710,7 @@ function renderHHSectionHtml() {
   html += '</div>';
 
   html += '<div class="form-row">';
-  html += '<label for="hh-period-select">Période: </label>';
+  html += '<label for="hh-period-select">Période</label>';
   html += '<select id="hh-period-select" onchange="handleHHSelectorChange()">';
   html += '<option value="progres"' + (hhState.selectedPeriod === 'progres' ? ' selected' : '') + '>Bulletin de progrès (automne)</option>';
   html += '<option value="scolaire1"' + (hhState.selectedPeriod === 'scolaire1' ? ' selected' : '') + '>Bulletin scolaire (janvier)</option>';
@@ -1688,7 +1718,9 @@ function renderHHSectionHtml() {
   html += '</select>';
   html += '</div>';
 
-  html += '<button onclick="renderHHTableView()">Voir tous les brouillons (tableau)</button>';
+  html += '<button class="mp-data-btn" onclick="renderHHTableView()"><i class="ti ti-table" aria-hidden="true"></i>Voir tous les brouillons</button>';
+  html += '</div>';
+
   html += '<div id="hh-dynamic-area"><p><em>Sélectionnez un élève pour commencer.</em></p></div>';
 
   return html;
@@ -1742,24 +1774,24 @@ function renderHHDynamicArea() {
   var html = getPeiReminderHtml(hhState.selectedStudent);
 
   if (student && student.peiHH) {
-    html += '<div class="hh-pei-box">';
-    html += '<label><input type="checkbox" id="hh-pei-include"' + (hhState.peiSentenceIncluded ? ' checked' : '') +
+    html += '<div class="mp-existing-box">';
+    html += '<label style="display:flex; align-items:center; gap:8px; margin-bottom:8px;"><input type="checkbox" id="hh-pei-include" style="width:18px; height:18px;"' + (hhState.peiSentenceIncluded ? ' checked' : '') +
       ' onchange="toggleHHPeiInclude(this.checked)"> Inclure l\'énoncé PEI dans ce commentaire</label>';
     html += '<textarea id="hh-pei-text" rows="2" placeholder="Collez ici l\'énoncé fourni par la SERT..." oninput="updateHHPeiText(this.value)">' +
       escapeHtmlForTextarea(hhState.peiSentenceText) + '</textarea>';
-    html += '<button onclick="saveHHPeiTemplate()">Enregistrer comme modèle par défaut</button>';
+    html += '<button class="mp-data-btn" style="margin-top:8px;" onclick="saveHHPeiTemplate()"><i class="ti ti-bookmark" aria-hidden="true"></i>Enregistrer comme modèle par défaut</button>';
     html += '</div>';
   }
 
-  html += '<div class="hh-categories">';
+  html += '<div class="mp-hh-grid">';
   HH_CATEGORY_KEYS.forEach(function(cat) {
     var currentCote = hhState.cotes[cat.key];
-    html += '<div class="hh-category-block">';
-    html += '<div class="hh-category-label">' + cat.label + '</div>';
-    html += '<div class="hh-cote-btns">';
+    html += '<div class="mp-hh-card">';
+    html += '<div class="mp-hh-card-label">' + cat.label + '</div>';
+    html += '<div class="mp-hh-cote-row">';
     ['E', 'T', 'S', 'N'].forEach(function(c) {
       var activeClass = (currentCote === c) ? ' active' : '';
-      html += '<button class="hh-cote-btn' + activeClass + '" onclick="selectHHCote(\'' + cat.key + '\', \'' + c + '\')">' + c + '</button>';
+      html += '<button class="mp-hh-cote-btn' + activeClass + '" onclick="selectHHCote(\'' + cat.key + '\', \'' + c + '\')">' + c + '</button>';
     });
     html += '</div>';
     html += '</div>';
@@ -1813,13 +1845,15 @@ function renderHHDynamicArea() {
   }
   html += '</div>';
 
-  html += '<h4>Commentaire assemblé</h4>';
+  html += '<h4 style="margin-top:20px;">Commentaire assemblé</h4>';
   html += '<textarea id="hh-assembled-text" rows="6" oninput="updateHHCharCount()">' +
     escapeHtmlForTextarea(assembleHHComment()) + '</textarea>';
-  html += '<div id="hh-char-count"></div>';
+  html += '<div style="display:flex; justify-content:flex-end; margin-bottom:14px;"><span id="hh-char-count" class="mp-char-pill"></span></div>';
 
-  html += '<button onclick="saveHHDraftFromUI()">Enregistrer</button> ';
-  html += '<button onclick="copyHHDraftToClipboard()">Copier</button>';
+  html += '<div style="display:flex; gap:8px;">';
+  html += '<button class="mp-save-btn" style="margin:0;" onclick="saveHHDraftFromUI()"><i class="ti ti-check" aria-hidden="true"></i>Enregistrer</button>';
+  html += '<button class="mp-data-btn" onclick="copyHHDraftToClipboard()"><i class="ti ti-copy" aria-hidden="true"></i>Copier</button>';
+  html += '</div>';
   html += '<span id="hh-save-status"></span>';
 
   dynamicArea.innerHTML = html;
@@ -1933,7 +1967,7 @@ function updateHHCharCount() {
   var count = textarea.value.length;
   var limit = 2560;
   countEl.textContent = count + ' / ' + limit + ' caractères';
-  countEl.style.color = count > limit ? '#c0392b' : '#666';
+  countEl.className = 'mp-char-pill' + (count > limit ? ' mp-char-pill-over' : '');
 }
 
 function saveHHDraftFromUI() {

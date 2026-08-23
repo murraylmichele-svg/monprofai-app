@@ -1306,3 +1306,122 @@ h3 { font-size: 18px; margin-top: 20px; }
 .production-entry-highlight {
   background: var(--mp-honey-bg) !important;
 }
+
+/* ============================================================
+   ADDITION — MonProf.ai
+   Warm redesign v5 — Bulletins tab
+   Append this to the END of your existing styles.css
+   ============================================================ */
+
+.mp-check-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mp-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--mp-line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--mp-ink);
+  cursor: pointer;
+}
+
+.mp-check-item input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.mp-char-pill {
+  display: inline-block;
+  background: var(--mp-sage-bg);
+  color: #4A6B47;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.mp-char-pill-over {
+  background: #FBE4DD;
+  color: var(--mp-coral);
+}
+
+.mp-hh-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.mp-hh-card {
+  background: var(--mp-card);
+  border-radius: 12px;
+  padding: 12px;
+  flex: 1 1 45%;
+  min-width: 140px;
+}
+
+.mp-hh-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mp-ink);
+  margin-bottom: 8px;
+}
+
+.mp-hh-cote-row {
+  display: flex;
+  gap: 6px;
+}
+
+.mp-hh-cote-btn {
+  flex: 1;
+  min-height: 40px;
+  padding: 6px 0;
+  border-radius: 8px;
+  border: 1.5px solid var(--mp-line);
+  background: #fff;
+  color: var(--mp-taupe);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.mp-hh-cote-btn.active {
+  background: var(--mp-honey);
+  border-color: var(--mp-honey);
+  color: #fff;
+}
+
+/* Warm restyle of the forces/prochaines-étapes phrase pickers —
+   same class names as before, new colors/spacing. Later in the
+   file, so this wins over the earlier .hh-phrase-block rules. */
+.hh-phrase-block {
+  background: var(--mp-card);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.hh-phrase-block-label {
+  color: var(--mp-plum);
+}
+
+.hh-phrase-item {
+  padding: 6px 0;
+}
+
+.hh-phrase-item:hover {
+  background: var(--mp-honey-bg);
+  border-radius: 6px;
+}
