@@ -801,7 +801,7 @@ h3 { font-size: 18px; margin-top: 20px; }
 }
 
 .mp-toggle button.active {
-  background: var(--mp-ink);
+  background: var(--mp-honey);
   color: #fff;
 }
 
