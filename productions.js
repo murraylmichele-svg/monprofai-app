@@ -377,12 +377,12 @@ function renderProductionSingleCaptureFieldsHtml(studentCode) {
 
   html += '<div class="form-row">';
   html += '<label>Domaine</label>';
- html += '<div class="domaine-btns">';
-  html += '<button class="domaine-btn active" id="prod-single-domaine-A" onclick="setProductionSingleDomaine(\'A\')"><strong>A</strong> Langue & maths</button>';
-  html += '<button class="domaine-btn" id="prod-single-domaine-B" onclick="setProductionSingleDomaine(\'B\')"><strong>B</strong> Résolution & innovation</button>';
-  html += '<button class="domaine-btn" id="prod-single-domaine-C" onclick="setProductionSingleDomaine(\'C\')"><strong>C</strong> Autorégulation & bien-être</button>';
-  html += '<button class="domaine-btn" id="prod-single-domaine-D" onclick="setProductionSingleDomaine(\'D\')"><strong>D</strong> Appartenance & contribution</button>';
-  html += '<button class="domaine-btn" id="prod-single-domaine-E" onclick="setProductionSingleDomaine(\'E\')"><strong>E</strong> Éveil religieux</button>';
+  html += '<div class="mp-chip-row">';
+  html += '<button class="mp-chip active" id="prod-single-domaine-A" onclick="setProductionSingleDomaine(\'A\')" style="--chip-color:var(--mp-honey); --chip-bg:var(--mp-honey-bg);"><i class="ti ti-abc" aria-hidden="true"></i>A · Langue & maths</button>';
+  html += '<button class="mp-chip" id="prod-single-domaine-B" onclick="setProductionSingleDomaine(\'B\')" style="--chip-color:var(--mp-plum); --chip-bg:var(--mp-plum-bg);"><i class="ti ti-bulb" aria-hidden="true"></i>B · Résolution & innovation</button>';
+  html += '<button class="mp-chip" id="prod-single-domaine-C" onclick="setProductionSingleDomaine(\'C\')" style="--chip-color:var(--mp-sage); --chip-bg:var(--mp-sage-bg);"><i class="ti ti-heart" aria-hidden="true"></i>C · Autorégulation & bien-être</button>';
+  html += '<button class="mp-chip" id="prod-single-domaine-D" onclick="setProductionSingleDomaine(\'D\')" style="--chip-color:var(--mp-plum); --chip-bg:var(--mp-plum-bg);"><i class="ti ti-users" aria-hidden="true"></i>D · Appartenance & contribution</button>';
+  html += '<button class="mp-chip" id="prod-single-domaine-E" onclick="setProductionSingleDomaine(\'E\')" style="--chip-color:var(--mp-honey); --chip-bg:var(--mp-honey-bg);"><i class="ti ti-sparkles" aria-hidden="true"></i>E · Éveil religieux</button>';
   html += '</div>';
   html += '</div>';
   html += '<input type="hidden" id="prod-single-domaine" value="A">';
@@ -398,29 +398,40 @@ function renderProductionSingleCaptureFieldsHtml(studentCode) {
   html += '</div>';
 
   html += '<div class="form-row">';
-  html += '<label>Photo (optionnelle):</label><br>';
+  html += '<label>Photo (optionnelle)</label>';
   html += '<div id="prod-single-photo-area">' + renderProductionSinglePhotoAreaHtml() + '</div>';
   html += '<span id="prod-single-photo-status"></span>';
   html += '</div>';
 
   html += '<div class="form-row">';
-  html += '<label>Niveau interne (facultatif, jamais montré aux parents):</label><br>';
-  html += '<label><input type="radio" name="prod-single-level" value="" checked> Pas de niveau</label> ';
-  html += '<label><input type="radio" name="prod-single-level" value="emergent"> Émergent</label> ';
-  html += '<label><input type="radio" name="prod-single-level" value="developing"> En développement</label> ';
-  html += '<label><input type="radio" name="prod-single-level" value="confirmed"> Confirmé</label>';
+  html += '<div class="mp-info-row">';
+  html += '<label style="margin:0;">Niveau interne</label>';
+  html += '<button type="button" class="mp-info-btn" onclick="toggleProdLevelTip()" aria-label="Aide">?</button>';
+  html += '</div>';
+  html += '<div id="prod-level-tip" class="mp-info-tip">Facultatif — jamais montré aux parents, sert seulement à votre propre suivi.</div>';
+  html += '<div class="mp-level-group">';
+  html += '<input type="radio" class="mp-level-radio" name="prod-single-level" id="prod-lvl-none" value="" checked><label for="prod-lvl-none" class="mp-level-chip">Aucun</label>';
+  html += '<input type="radio" class="mp-level-radio" name="prod-single-level" id="prod-lvl-emergent" value="emergent"><label for="prod-lvl-emergent" class="mp-level-chip">Émergent</label>';
+  html += '<input type="radio" class="mp-level-radio" name="prod-single-level" id="prod-lvl-developing" value="developing"><label for="prod-lvl-developing" class="mp-level-chip">En développement</label>';
+  html += '<input type="radio" class="mp-level-radio" name="prod-single-level" id="prod-lvl-confirmed" value="confirmed"><label for="prod-lvl-confirmed" class="mp-level-chip">Confirmé</label>';
+  html += '</div>';
   html += '</div>';
 
-  html += '<button onclick="saveProductionSingleEntry(\'' + studentCode + '\')">Enregistrer</button>';
+  html += '<button class="mp-save-btn" onclick="saveProductionSingleEntry(\'' + studentCode + '\')"><i class="ti ti-check" aria-hidden="true"></i>Enregistrer</button>';
   html += '<span id="prod-single-save-status"></span>';
 
   return html;
 }
 
+function toggleProdLevelTip() {
+  var tip = document.getElementById('prod-level-tip');
+  if (tip) tip.classList.toggle('visible');
+}
+
 function setProductionSingleDomaine(d) {
   document.getElementById('prod-single-domaine').value = d;
   ['A', 'B', 'C', 'D', 'E'].forEach(function(x) {
-    document.getElementById('prod-single-domaine-' + x).className = 'domaine-btn' + (x === d ? ' active' : '');
+    document.getElementById('prod-single-domaine-' + x).className = 'mp-chip' + (x === d ? ' active' : '');
   });
 }
 
@@ -428,11 +439,12 @@ function renderProductionSinglePhotoAreaHtml() {
   if (productionSingleCapture.photoPreviewUrl) {
     var html = '<div class="photo-preview-box">';
     html += '<img src="' + productionSingleCapture.photoPreviewUrl + '" alt="Aperçu de la photo" class="photo-preview-img">';
-    html += '<br><button type="button" onclick="retakeProductionSinglePhoto()">Reprendre la photo</button>';
+    html += '<button type="button" class="mp-photo-btn" onclick="retakeProductionSinglePhoto()"><i class="ti ti-refresh" aria-hidden="true"></i>Reprendre la photo</button>';
     html += '</div>';
     return html;
   }
-  return '<input type="file" accept="image/*" id="prod-single-photo-input" onchange="handleProductionSinglePhotoSelect(event)">';
+  return '<label for="prod-single-photo-input" class="mp-photo-btn"><i class="ti ti-camera" aria-hidden="true"></i>Ajouter une photo</label>' +
+    '<input type="file" accept="image/*" id="prod-single-photo-input" onchange="handleProductionSinglePhotoSelect(event)" style="display:none;">';
 }
 
 async function handleProductionSinglePhotoSelect(event) {
@@ -542,9 +554,9 @@ function renderProductionSetupScreen(container) {
     html += '</div>';
   }
 
-  html += '<div class="obs-type-toggle">';
-  html += '<button class="type-btn' + (productionCaptureMode === 'single' ? ' active' : '') + '" onclick="setProductionCaptureMode(\'single\')">Un élève</button>';
-  html += '<button class="type-btn' + (productionCaptureMode === 'batch' ? ' active' : '') + '" onclick="setProductionCaptureMode(\'batch\')">Toute la classe</button>';
+  html += '<div class="mp-toggle">';
+  html += '<button class="' + (productionCaptureMode === 'single' ? 'active' : '') + '" onclick="setProductionCaptureMode(\'single\')"><i class="ti ti-user" aria-hidden="true"></i>Un élève</button>';
+  html += '<button class="' + (productionCaptureMode === 'batch' ? 'active' : '') + '" onclick="setProductionCaptureMode(\'batch\')"><i class="ti ti-users" aria-hidden="true"></i>Toute la classe</button>';
   html += '</div>';
 
   if (productionCaptureMode === 'batch') {
@@ -554,17 +566,19 @@ function renderProductionSetupScreen(container) {
     html += renderProductionSetupFieldsHtml();
     html += '</div>';
     html += '<button onclick="startProductionSession()">Commencer la séance</button> ';
-    html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
-    html += '<button onclick="switchToProductionGrid()">Suivi par activité</button>';
     html += '</div>';
   } else {
-    html += '<div id="production-setup">';
-    html += '<h3>Nouvelle entrée (un élève)</h3>';
+    html += '<div id="production-setup" class="mp-card-block">';
+    html += '<h3 style="margin-top:0;">Nouvelle entrée</h3>';
     html += renderProductionSingleFormHtml();
-    html += '<button onclick="switchToProductionHistory()">Voir l\'historique par élève</button> ';
-    html += '<button onclick="switchToProductionGrid()">Suivi par activité</button>';
     html += '</div>';
   }
+
+  html += '<div class="mp-view-switcher">';
+  html += '<button class="mp-view-btn" onclick="switchToProductionHistory()"><i class="ti ti-history" aria-hidden="true"></i>Historique</button>';
+  html += '<button class="mp-view-btn" onclick="switchToProductionGrid()"><i class="ti ti-clipboard-check" aria-hidden="true"></i>Par activité</button>';
+  html += '</div>';
+
   html += '<div id="production-recent-list"><p><em>Chargement...</em></p></div>';
 
   html += '<div class="data-management-section">';
@@ -1283,29 +1297,42 @@ async function loadAndRenderRecentProductions() {
   all = all.slice().sort(function(a, b) { return b.createdAt.localeCompare(a.createdAt); });
   var recent = all.slice(0, PRODUCTION_RECENT_LIST_LIMIT);
 
- var html = '<h3>Entrées récentes (' + all.length + ')</h3>';
-  html += '<table class="production-recent-table">';
-  html += '<tr><th>Date</th><th>Élève</th><th>Dom.</th><th>Activité</th><th>Note</th><th>Photo</th><th></th></tr>';
+  var domainColors = {
+    A: 'var(--mp-honey)', B: 'var(--mp-plum)', C: 'var(--mp-sage)',
+    D: 'var(--mp-plum)', E: 'var(--mp-honey)'
+  };
+
+  var html = '<h3>Entrées récentes (' + all.length + ')</h3>';
+  html += '<div class="mp-entry-list">';
 
   recent.forEach(function(p) {
     var student = roster.find(function(s) { return s.code === p.studentCode; });
     var name = student ? displayName(student) : p.studentCode;
+    var domainKey = p.domain || '';
+    var accentColor = domainColors[domainKey] || 'var(--mp-honey)';
+    var domainOrSubject = p.subject || p.domain || '';
 
-    html += '<tr>';
-    html += '<td>' + formatProductionDate(p.createdAt) + '</td>';
-    html += '<td>' + name + '</td>';
-    html += '<td><strong>' + (p.subject || p.domain) + '</strong></td>';
-    html += '<td>' + (p.activityTag || '') + '</td>';
-    html += '<td>' + (p.note || '') + '</td>';
-    if (p.photoIds && p.photoIds.length > 0) {
-      html += '<td><span id="recent-photo-' + p.id + '"><em>...</em></span></td>';
-    } else {
-      html += '<td></td>';
+    html += '<div class="mp-entry-card" style="--entry-color:' + accentColor + ';">';
+    html += '<div class="mp-entry-top">';
+    html += '<div class="mp-entry-name">' + name;
+    if (domainOrSubject) {
+      html += ' <span class="mp-entry-meta">· ' + domainOrSubject + '</span>';
     }
-    html += '<td><button onclick="jumpToProductionEntryFromRecent(\'' + p.studentCode + '\', \'' + p.id + '\')">Ajouter une note</button></td>';
-    html += '</tr>';
+    html += '</div>';
+    html += '<button class="mp-entry-delete" aria-label="Ajouter une note" onclick="jumpToProductionEntryFromRecent(\'' + p.studentCode + '\', \'' + p.id + '\')"><i class="ti ti-message-plus" aria-hidden="true"></i></button>';
+    html += '</div>';
+    html += '<div class="mp-entry-note">' + (p.note || '') + '</div>';
+    if (p.activityTag) {
+      html += '<div class="mp-entry-meta" style="font-size:13px; margin-top:2px;">' + p.activityTag + '</div>';
+    }
+    if (p.photoIds && p.photoIds.length > 0) {
+      html += '<div><span id="recent-photo-' + p.id + '"></span></div>';
+    }
+    html += '<div class="mp-entry-date">' + formatProductionDate(p.createdAt) + '</div>';
+    html += '</div>';
   });
-  html += '</table>';
+
+  html += '</div>';
   container.innerHTML = html;
 
   recent.forEach(function(p) {
