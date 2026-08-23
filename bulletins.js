@@ -142,12 +142,13 @@ function renderBulletins() {
   var mjRoster = allActive.filter(function(s) { return !isGrade1to6(s.code); });
   var g16Roster = allActive.filter(function(s) { return isGrade1to6(s.code); });
 
- var html = '';
+ var html = '<h2>Bulletins</h2>';
 
   if (mjRoster.length > 0) {
-    html += '<h2>Bulletin M-J</h2>';
+    html += '<div class="mp-card-block">';
+    html += '<h3 style="margin-top:0;">Bulletin M-J</h3>';
     html += '<div class="form-row">';
-    html += '<label for="bulletin-student-select">Élève: </label>';
+    html += '<label for="bulletin-student-select">Élève</label>';
     html += '<select id="bulletin-student-select" onchange="handleBulletinSelectorChange()">';
     html += '<option value="">-- Sélectionner --</option>';
     mjRoster.forEach(function(s) {
@@ -158,25 +159,26 @@ function renderBulletins() {
     html += '</div>';
 
     html += '<div class="form-row">';
-    html += '<label for="bulletin-period-select">Période: </label>';
-    html += '<select id="bulletin-period-select" onchange="handleBulletinSelectorChange()">';
-    html += '<option value="observations_initiales"' + (bulletinUIState.selectedPeriod === 'observations_initiales' ? ' selected' : '') + '>Première (observations initiales)</option>';
-    html += '<option value="deuxieme"' + (bulletinUIState.selectedPeriod === 'deuxieme' ? ' selected' : '') + '>Deuxième période</option>';
-    html += '<option value="troisieme"' + (bulletinUIState.selectedPeriod === 'troisieme' ? ' selected' : '') + '>Troisième période</option>';
-    html += '</select>';
+    html += '<label>Période</label>';
+    html += '<div class="mp-toggle">';
+    html += '<button type="button" id="bulletin-period-btn-observations_initiales" class="' + (bulletinUIState.selectedPeriod === 'observations_initiales' ? 'active' : '') + '" onclick="setBulletinPeriod(\'observations_initiales\')">1re</button>';
+    html += '<button type="button" id="bulletin-period-btn-deuxieme" class="' + (bulletinUIState.selectedPeriod === 'deuxieme' ? 'active' : '') + '" onclick="setBulletinPeriod(\'deuxieme\')">2e</button>';
+    html += '<button type="button" id="bulletin-period-btn-troisieme" class="' + (bulletinUIState.selectedPeriod === 'troisieme' ? 'active' : '') + '" onclick="setBulletinPeriod(\'troisieme\')">3e</button>';
+    html += '</div>';
+    html += '<input type="hidden" id="bulletin-period-select" value="' + (bulletinUIState.selectedPeriod || 'observations_initiales') + '">';
     html += '</div>';
 
-    html += '<button id="bulletin-generate-btn" onclick="handleGenerateBulletinClick()">Générer le commentaire</button> ';
-    html += '<button id="bulletin-generate-all-btn" onclick="handleGenerateAllBulletinsClick()">Générer pour toute la classe</button> ';
-    html += '<button onclick="renderBulletinTableView()">Voir tous les brouillons (tableau)</button>';
+    html += '<button class="mp-save-btn" id="bulletin-generate-btn" onclick="handleGenerateBulletinClick()"><i class="ti ti-sparkles" aria-hidden="true"></i>Générer le commentaire</button>';
+    html += '<button class="mp-data-btn" id="bulletin-generate-all-btn" onclick="handleGenerateAllBulletinsClick()" style="margin-top:8px;"><i class="ti ti-users" aria-hidden="true"></i>Générer pour toute la classe</button>';
+    html += '<button class="mp-data-btn" onclick="renderBulletinTableView()" style="margin-top:8px;"><i class="ti ti-table" aria-hidden="true"></i>Voir tous les brouillons</button>';
     html += '<span id="bulletin-generate-status"></span>';
+    html += '</div>';
 
     html += '<div id="bulletin-review-area"></div>';
   }
 
   if (g16Roster.length > 0) {
-    if (mjRoster.length > 0) html += '<hr>';
-    html += '<h2>Bulletin 1re - 6e année</h2>';
+    html += '<h3 style="margin-top:24px;">Bulletin 1re - 6e année</h3>';
     html += '<div id="grade16-bulletin-section">';
     html += renderGrade16BulletinSectionHtml();
     html += '</div>';
@@ -187,6 +189,18 @@ function renderBulletins() {
   if (mjRoster.length > 0 && bulletinUIState.selectedStudent) {
     renderExistingDraftIfAny();
   }
+}
+
+function setBulletinPeriod(period) {
+  var input = document.getElementById('bulletin-period-select');
+  if (input) input.value = period;
+
+  ['observations_initiales', 'deuxieme', 'troisieme'].forEach(function(p) {
+    var btn = document.getElementById('bulletin-period-btn-' + p);
+    if (btn) btn.className = (p === period ? 'active' : '');
+  });
+
+  handleBulletinSelectorChange();
 }
 
 function handleBulletinSelectorChange() {
@@ -253,8 +267,8 @@ function renderBulletinReview(draft) {
   var reviewArea = document.getElementById('bulletin-review-area');
   if (!reviewArea) return;
 
-  var html = '<div class="bulletin-review-box">';
-  html += '<h3>Brouillon</h3>';
+  var html = '<div class="mp-card-block">';
+  html += '<h3 style="margin-top:0;">Brouillon</h3>';
 
   if (draft.type === 'combined') {
     html += '<textarea id="bulletin-edit-combined" rows="8">' + escapeHtmlForTextarea(draft.text) + '</textarea>';
@@ -262,13 +276,15 @@ function renderBulletinReview(draft) {
     var domainLabels = { A: 'Domaine A', B: 'Domaine B', C: 'Domaine C', D: 'Domaine D', E: 'Domaine E - Éveil religieux' };
     ['A', 'B', 'C', 'D', 'E'].forEach(function(d) {
       if (d === 'E' && !(draft.domains && draft.domains.hasOwnProperty('E'))) return;
-      html += '<h4>' + domainLabels[d] + '</h4>';
+      html += '<label style="margin-top:12px;">' + domainLabels[d] + '</label>';
       html += '<textarea id="bulletin-edit-domain-' + d + '" rows="5">' + escapeHtmlForTextarea((draft.domains && draft.domains[d]) || '') + '</textarea>';
     });
   }
 
-  html += '<button onclick="saveBulletinEdits()">Enregistrer les modifications</button> ';
-  html += '<button onclick="copyBulletinDraftToClipboard()">Copier</button>';
+  html += '<div style="display:flex; gap:8px; margin-top:14px;">';
+  html += '<button class="mp-save-btn" style="margin:0;" onclick="saveBulletinEdits()"><i class="ti ti-check" aria-hidden="true"></i>Enregistrer</button>';
+  html += '<button class="mp-data-btn" onclick="copyBulletinDraftToClipboard()"><i class="ti ti-copy" aria-hidden="true"></i>Copier</button>';
+  html += '</div>';
   html += '<span id="bulletin-save-status"></span>';
   html += '</div>';
 
