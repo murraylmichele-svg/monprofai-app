@@ -133,22 +133,23 @@ function renderRoster() {
   var inactifs = roster.filter(function(s) { return !s.actif; });
 
   var html = '<h2>Ma classe</h2>';
+  html += '<div style="color:var(--mp-taupe); font-size:14px; margin-top:-8px; margin-bottom:16px;">' + actifs.length + ' élève' + (actifs.length !== 1 ? 's' : '') + ' actif' + (actifs.length !== 1 ? 's' : '') + '</div>';
 
   // Add student form
-  html += '<div id="roster-form">';
-  html += '<h3 id="form-title">Ajouter un élève</h3>';
+  html += '<div id="roster-form" class="mp-card-block">';
+  html += '<h3 id="form-title" style="margin-top:0;">Ajouter un élève</h3>';
   html += '<input type="hidden" id="edit-code" value="">';
-  html += '<div class="form-row">';
-  html += '<input type="text" id="input-prenom" placeholder="Prénom" maxlength="30">';
-  html += '<input type="text" id="input-nom" placeholder="Initiale du nom (ex: M)" maxlength="2">';
+  html += '<div class="form-row" style="display:flex; gap:8px;">';
+  html += '<input type="text" id="input-prenom" placeholder="Prénom" maxlength="30" style="flex:2;">';
+  html += '<input type="text" id="input-nom" placeholder="Initiale" maxlength="2" style="flex:1;">';
   html += '</div>';
-  html += '<div class="form-row">';
-  html += '<select id="input-pronom">';
+  html += '<div class="form-row" style="display:flex; gap:8px;">';
+  html += '<select id="input-pronom" style="flex:1;">';
   html += '<option value="elle">elle</option>';
   html += '<option value="il">il</option>';
   html += '<option value="iel">iel</option>';
   html += '</select>';
-  html += '<select id="input-annee">';
+  html += '<select id="input-annee" style="flex:1;">';
   html += '<option value="Maternelle">Maternelle</option>';
   html += '<option value="Jardin">Jardin</option>';
   html += '<option value="1">1re année</option>';
@@ -159,11 +160,11 @@ function renderRoster() {
   html += '<option value="6">6e année</option>';
   html += '</select>';
   html += '</div>';
-  html += '<div class="form-row">';
-  html += '<label><input type="checkbox" id="input-pei-hh"> PEI - HH</label> ';
-  html += '<label><input type="checkbox" id="input-pei-academique"> PEI - Académique</label>';
+  html += '<div class="form-row" style="display:flex; gap:8px;">';
+  html += '<label class="mp-pei-check"><input type="checkbox" id="input-pei-hh"> PEI - HH</label>';
+  html += '<label class="mp-pei-check"><input type="checkbox" id="input-pei-academique"> PEI - Académique</label>';
   html += '</div>';
-  html += '<button onclick="submitRosterForm()">Enregistrer</button>';
+  html += '<button class="mp-save-btn" onclick="submitRosterForm()"><i class="ti ti-user-plus" aria-hidden="true"></i>Enregistrer</button>';
   html += '<button onclick="cancelRosterForm()" id="btn-cancel" style="display:none">Annuler</button>';
   html += '</div>';
 
@@ -172,58 +173,80 @@ function renderRoster() {
   if (actifs.length === 0) {
     html += '<p>Aucun élève pour le moment. Ajoutez vos élèves ci-dessus.</p>';
   } else {
-    html += '<table class="roster-table">';
-    html += '<tr><th>Code</th><th>Nom</th><th>Pronom</th><th>Année</th><th>Actions</th></tr>';
+    html += '<div class="mp-student-list">';
     actifs.forEach(function(s) {
-      html += '<tr>';
-      html += '<td>' + s.code + '</td>';
-      html += '<td>' + displayName(s) + '</td>';
-      html += '<td>' + s.pronom + '</td>';
-      html += '<td>' + s.annee + '</td>';
-      html += '<td>';
-      html += '<button onclick="editStudent(\'' + s.code + '\')">Modifier</button> ';
-      html += '<button onclick="toggleStudentActif(\'' + s.code + '\'); renderRoster();">Désactiver</button> ';
-      html += '<button class="btn-delete" onclick="removeStudentCompletely(\'' + s.code + '\')">Supprimer définitivement</button>';
-      html += '</td>';
-      html += '</tr>';
+      html += renderStudentCardHtml(s, true);
     });
-    html += '</table>';
+    html += '</div>';
   }
 
   // Inactive students
   if (inactifs.length > 0) {
     html += '<h3>Élèves inactifs (' + inactifs.length + ')</h3>';
-    html += '<table class="roster-table">';
+    html += '<div class="mp-student-list mp-student-list-inactive">';
     inactifs.forEach(function(s) {
-      html += '<tr>';
-      html += '<td>' + s.code + '</td>';
-      html += '<td>' + displayName(s) + '</td>';
-      html += '<td colspan="2"><em>inactif</em></td>';
-      html += '<td>';
-      html += '<button onclick="toggleStudentActif(\'' + s.code + '\'); renderRoster();">Réactiver</button> ';
-      html += '<button class="btn-delete" onclick="removeStudentCompletely(\'' + s.code + '\')">Supprimer définitivement</button>';
-      html += '</td>';
-      html += '</tr>';
+      html += renderStudentCardHtml(s, false);
     });
-    html += '</table>';
+    html += '</div>';
   }
 
-  html += '<div class="data-management-section">';
-  html += '<h3>Gestion des données</h3>';
-  html += '<p>Téléchargez un fichier CSV de toutes les observations, conversations et productions (notes/niveaux) — utile pour partager avec la direction.</p>';
-  html += '<button onclick="exportMarksSpreadsheet()">Télécharger les données (CSV)</button> ';
-  html += '<button onclick="exportGradebookXLSX()">Télécharger le carnet de notes (Excel, par matière/domaine)</button>';
-  html += '<p style="margin-top:16px;">Téléchargez une sauvegarde complète, incluant les photos, pour la transférer vers un autre appareil (ex: de votre téléphone vers votre ordinateur, ou pour partager avec un(e) collègue).</p>';
-  html += '<button onclick="handleExportWithPhotosClick()">Télécharger une sauvegarde complète (avec photos)</button> ';
+  html += '<div class="mp-card-block">';
+  html += '<h3 style="margin-top:0;">Gestion des données</h3>';
+
+  html += '<div class="mp-data-row">';
+  html += '<button class="mp-data-btn" onclick="exportGradebookXLSX()"><i class="ti ti-file-spreadsheet" aria-hidden="true"></i>Carnet de notes (Excel)</button>';
+  html += '<button type="button" class="mp-info-btn" onclick="toggleRosterTip(\'tip-gradebook\')" aria-label="Aide">?</button>';
+  html += '</div>';
+  html += '<div id="tip-gradebook" class="mp-info-tip">Télécharge un fichier Excel des notes par matière/domaine, utile pour partager avec la direction. Un export CSV simple est aussi disponible: <a href="#" onclick="exportMarksSpreadsheet(); return false;">télécharger en CSV</a>.</div>';
+
+  html += '<div class="mp-data-row">';
+  html += '<button class="mp-data-btn" id="btn-export-photos" onclick="handleExportWithPhotosClick()"><i class="ti ti-device-mobile-share" aria-hidden="true"></i>Transférer vers un autre appareil</button>';
+  html += '<button type="button" class="mp-info-btn" onclick="toggleRosterTip(\'tip-transfer\')" aria-label="Aide">?</button>';
+  html += '</div>';
+  html += '<div id="tip-transfer" class="mp-info-tip">Sauvegarde complète avec photos, pour passer d\'un téléphone à un ordinateur, ou pour partager avec une collègue. <strong>Supprimez ce fichier après l\'avoir importé</strong> — il contient des renseignements personnels non chiffrés.</div>';
   html += '<span id="export-photos-status"></span>';
-  html += '<p style="margin-top:16px;">Téléchargez une sauvegarde et effacez toutes les observations et productions pour repartir à zéro (ex: nouvelle année scolaire). La liste de classe n\'est pas touchée par cette action.</p>';
-  html += '<button class="btn-delete" onclick="resetAllYearData()">Effacer toutes les données (nouvelle année)</button>';
-  html += '<p style="margin-top:16px;">Importer une sauvegarde depuis un autre appareil (ex: transférer les données de votre téléphone vers cet ordinateur):</p>';
-  html += '<input type="file" accept="application/json" id="import-file-input" onchange="handleImportFileSelect(event)">';
+
+  html += '<div class="mp-data-row">';
+  html += '<button class="mp-data-btn mp-data-btn-danger" onclick="resetAllYearData()"><i class="ti ti-refresh" aria-hidden="true"></i>Nouvelle année</button>';
+  html += '<button type="button" class="mp-info-btn" onclick="toggleRosterTip(\'tip-reset\')" aria-label="Aide">?</button>';
+  html += '</div>';
+  html += '<div id="tip-reset" class="mp-info-tip">Sauvegarde puis efface toutes les observations et productions pour repartir à zéro. La liste de classe n\'est pas touchée par cette action.</div>';
+
+  html += '<div class="mp-data-row">';
+  html += '<label for="import-file-input" class="mp-data-btn" style="cursor:pointer;"><i class="ti ti-upload" aria-hidden="true"></i>Importer une sauvegarde</label>';
+  html += '<button type="button" class="mp-info-btn" onclick="toggleRosterTip(\'tip-import\')" aria-label="Aide">?</button>';
+  html += '</div>';
+  html += '<div id="tip-import" class="mp-info-tip">Importe une sauvegarde depuis un autre appareil (ex: transférer les données de votre téléphone vers cet ordinateur).</div>';
+  html += '<input type="file" accept="application/json" id="import-file-input" onchange="handleImportFileSelect(event)" style="display:none;">';
   html += '<div id="import-preview-area"></div>';
+
   html += '</div>';
 
   container.innerHTML = html;
+}
+
+function toggleRosterTip(id) {
+  var tip = document.getElementById(id);
+  if (tip) tip.classList.toggle('visible');
+}
+
+function renderStudentCardHtml(s, isActive) {
+  var html = '<div class="mp-student-card">';
+  html += '<div class="mp-student-info">';
+  html += '<div class="mp-student-name">' + displayName(s) + '</div>';
+  html += '<div class="mp-student-meta">' + s.code + ' · ' + (isActive ? s.annee + ' · ' + s.pronom : '<em>inactif</em>') + '</div>';
+  html += '</div>';
+  html += '<div class="mp-student-actions">';
+  if (isActive) {
+    html += '<button class="mp-icon-action" aria-label="Modifier" onclick="editStudent(\'' + s.code + '\')"><i class="ti ti-pencil" aria-hidden="true"></i></button>';
+    html += '<button class="mp-icon-action" aria-label="Désactiver" onclick="toggleStudentActif(\'' + s.code + '\'); renderRoster();"><i class="ti ti-eye-off" aria-hidden="true"></i></button>';
+  } else {
+    html += '<button class="mp-icon-action" aria-label="Réactiver" onclick="toggleStudentActif(\'' + s.code + '\'); renderRoster();"><i class="ti ti-eye" aria-hidden="true"></i></button>';
+  }
+  html += '<button class="mp-icon-action mp-icon-action-danger" aria-label="Supprimer définitivement" onclick="removeStudentCompletely(\'' + s.code + '\')"><i class="ti ti-trash" aria-hidden="true"></i></button>';
+  html += '</div>';
+  html += '</div>';
+  return html;
 }
 
 function submitRosterForm() {
