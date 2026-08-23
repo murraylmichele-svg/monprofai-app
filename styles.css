@@ -976,3 +976,163 @@ h3 { font-size: 18px; margin-top: 20px; }
   color: var(--mp-taupe);
   font-style: italic;
 }
+
+/* ============================================================
+   ADDITION — MonProf.ai
+   Warm redesign v2 — Classe tab
+   Append this to the END of your existing styles.css
+   ============================================================ */
+
+.mp-card-block {
+  background: var(--mp-card);
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.mp-card-block .form-row {
+  margin: 0 0 12px 0;
+}
+
+.mp-card-block input[type="text"],
+.mp-card-block select {
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 0.5px solid var(--mp-line);
+  font-size: 16px;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.mp-pei-check {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--mp-line);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--mp-taupe);
+  cursor: pointer;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.mp-pei-check input {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.mp-student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.mp-student-list-inactive {
+  opacity: 0.7;
+}
+
+.mp-student-card {
+  background: var(--mp-card);
+  border-radius: 12px;
+  padding: 10px 8px 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mp-student-name {
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--mp-ink);
+}
+
+.mp-student-meta {
+  font-size: 13px;
+  color: var(--mp-taupe);
+  margin-top: 2px;
+}
+
+.mp-student-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.mp-icon-action {
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  color: var(--mp-plum);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+
+.mp-icon-action[aria-label="Désactiver"],
+.mp-icon-action[aria-label="Réactiver"] {
+  color: var(--mp-taupe);
+}
+
+.mp-icon-action-danger {
+  color: var(--mp-taupe);
+}
+
+.mp-icon-action-danger:hover {
+  color: var(--mp-coral);
+}
+
+.mp-data-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.mp-data-btn {
+  flex: 1;
+  min-height: 44px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--mp-line);
+  background: #fff;
+  color: var(--mp-ink);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  margin: 0;
+  text-align: center;
+}
+
+.mp-data-btn i {
+  color: var(--mp-plum);
+  font-size: 16px;
+}
+
+.mp-data-btn-danger {
+  border-color: var(--mp-coral);
+  color: var(--mp-coral);
+}
+
+.mp-data-btn-danger i {
+  color: var(--mp-coral);
+}
+
+#roster-form .mp-info-tip {
+  margin-bottom: 10px;
+}
