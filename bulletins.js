@@ -178,6 +178,7 @@ function renderBulletins() {
 
   if (g16Roster.length > 0) {
     html += '<h3 style="margin-top:24px;">Bulletin 1re - 6e année</h3>';
+    html += '<p style="color:var(--mp-taupe); font-size:14px; margin:0 0 12px 0;">Sélectionnez un élève et une matière ci-dessous pour voir les preuves disponibles et générer un commentaire.</p>';
     html += '<div id="grade16-bulletin-section">';
     html += renderGrade16BulletinSectionHtml();
     html += '</div>';
@@ -1036,10 +1037,11 @@ function renderGrade16BulletinSectionHtml() {
   html += '<button class="mp-data-btn" onclick="renderGrade16TableView()"><i class="ti ti-table" aria-hidden="true"></i>Voir tous les brouillons</button>';
   html += '</div>';
 
-  html += '<div id="g16-entries-area"><p><em>Sélectionnez un élève et une matière pour voir les preuves disponibles.</em></p></div>';
+  html += '<div id="g16-entries-area"></div>';
   html += '<div id="g16-review-area"></div>';
 
   html += '<h3 style="margin-top:24px;">Habiletés d\'apprentissage et habitudes de travail (HH)</h3>';
+  html += '<p style="color:var(--mp-taupe); font-size:14px; margin:0 0 12px 0;">Sélectionnez un élève ci-dessous pour commencer le commentaire HH.</p>';
   html += '<div id="hh-section">';
   html += renderHHSectionHtml();
   html += '</div>';
@@ -1062,7 +1064,7 @@ async function handleGrade16SelectorChange() {
   var entriesArea = document.getElementById('g16-entries-area');
 
   if (!grade16BulletinState.selectedStudent) {
-    if (entriesArea) entriesArea.innerHTML = '<p><em>Sélectionnez un élève et une matière pour voir les preuves disponibles.</em></p>';
+    if (entriesArea) entriesArea.innerHTML = '';
     return;
   }
 
@@ -1708,7 +1710,7 @@ function renderHHSectionHtml() {
   html += '<button class="mp-data-btn" onclick="renderHHTableView()"><i class="ti ti-table" aria-hidden="true"></i>Voir tous les brouillons</button>';
   html += '</div>';
 
-  html += '<div id="hh-dynamic-area"><p><em>Sélectionnez un élève pour commencer.</em></p></div>';
+  html += '<div id="hh-dynamic-area"></div>';
 
   return html;
 }
@@ -1726,7 +1728,7 @@ function handleHHSelectorChange() {
     hhState.cotes = {};
     hhState.selectedForces = {};
     hhState.selectedProchaines = {};
-    if (dynamicArea) dynamicArea.innerHTML = '<p><em>Sélectionnez un élève pour commencer.</em></p>';
+    if (dynamicArea) dynamicArea.innerHTML = '';
     return;
   }
 
