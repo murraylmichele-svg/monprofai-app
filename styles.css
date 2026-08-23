@@ -1223,3 +1223,86 @@ h3 { font-size: 18px; margin-top: 20px; }
   outline: 2px solid var(--mp-plum);
   outline-offset: 1px;
 }
+
+/* ============================================================
+   ADDITION — MonProf.ai
+   Warm redesign v4 — Productions tab (batch mode, history, grid)
+   Append this to the END of your existing styles.css
+   ============================================================ */
+
+/* Progress chip strip during a batch session — overrides the
+   earlier green/blue production-chip rules further up the file,
+   since this rule comes later and wins. */
+.production-chip-strip {
+  margin: 0 0 16px 0;
+}
+
+.production-chip {
+  background: var(--mp-card);
+  border: 1.5px solid var(--mp-line);
+  color: var(--mp-taupe);
+}
+
+.production-chip:hover {
+  background: var(--mp-honey-bg);
+}
+
+.production-chip-current {
+  border-color: var(--mp-plum);
+  box-shadow: 0 0 0 2px var(--mp-plum-bg);
+  color: var(--mp-ink);
+}
+
+.production-chip-done {
+  background: var(--mp-sage-bg);
+  border-color: var(--mp-sage);
+  color: #4A6B47;
+}
+
+.mp-existing-box {
+  background: var(--mp-honey-bg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+}
+
+.mp-existing-label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #8A4E0F;
+  margin-bottom: 6px;
+}
+
+/* Compact niveau grid for long option lists (12 official niveaux) —
+   chips size to their content instead of stretching to fill the row. */
+.mp-level-group-many .mp-level-chip {
+  flex: 0 0 auto;
+  min-width: 44px;
+  padding: 6px 10px;
+}
+
+.mp-add-note-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.mp-add-note-row input[type="text"] {
+  flex: 1;
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 0.5px solid var(--mp-line);
+  font-size: 14px;
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.mp-add-note-row .mp-icon-action {
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.production-entry-highlight {
+  background: var(--mp-honey-bg) !important;
+}

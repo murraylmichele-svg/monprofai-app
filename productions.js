@@ -560,12 +560,12 @@ function renderProductionSetupScreen(container) {
   html += '</div>';
 
   if (productionCaptureMode === 'batch') {
-    html += '<div id="production-setup">';
-    html += '<h3>Nouvelle séance (toute la classe)</h3>';
+    html += '<div id="production-setup" class="mp-card-block">';
+    html += '<h3 style="margin-top:0;">Nouvelle séance (toute la classe)</h3>';
     html += '<div id="production-setup-dynamic-fields">';
     html += renderProductionSetupFieldsHtml();
     html += '</div>';
-    html += '<button onclick="startProductionSession()">Commencer la séance</button> ';
+    html += '<button class="mp-save-btn" onclick="startProductionSession()"><i class="ti ti-player-play" aria-hidden="true"></i>Commencer la séance</button>';
     html += '</div>';
   } else {
     html += '<div id="production-setup" class="mp-card-block">';
@@ -682,37 +682,36 @@ function renderProductionCaptureScreen(container) {
   var existingEntry = productionSession.entryMap[student.code];
 
   var html = '<h2>Productions</h2>';
-  html += '<p class="production-activity-label">Activité/Évaluation: <strong>' + productionSession.activityTag + '</strong>';
+  html += '<p class="production-activity-label">' + productionSession.activityTag;
   if (productionSession.subject) {
-    html += ' &nbsp; | &nbsp; Matière: <strong>' + productionSession.subject + '</strong>';
-    html += ' &nbsp; | &nbsp; ' + productionSession.strand;
+    html += ' · ' + productionSession.subject + ' · ' + productionSession.strand;
   } else {
-    html += ' &nbsp; | &nbsp; Domaine: <strong>' + productionSession.domain + '</strong>';
+    html += ' · Domaine ' + productionSession.domain;
   }
-  html += ' &nbsp; | &nbsp; Élève ' + (idx + 1) + ' sur ' + total + '</p>';
+  html += ' · Élève ' + (idx + 1) + ' sur ' + total + '</p>';
 
   html += renderProductionChipStrip();
 
-  html += '<div id="production-capture">';
-  html += '<h3>' + displayName(student) + '</h3>';
+  html += '<div id="production-capture" class="mp-card-block">';
+  html += '<h3 style="margin-top:0;">' + displayName(student) + '</h3>';
   html += getPeiReminderHtml(student.code);
 
   if (existingEntry) {
-    html += '<div class="production-existing-box">';
-    html += '<p><strong>Déjà enregistré pour cette activité:</strong></p>';
-    html += '<p>Note existante: ' + (existingEntry.note || '(vide)') + '</p>';
+    html += '<div class="mp-existing-box">';
+    html += '<div class="mp-existing-label">Déjà enregistré pour cette activité</div>';
+    html += '<div class="mp-entry-note">' + (existingEntry.note || '(vide)') + '</div>';
     if (productionSession.subject) {
-      html += '<p>Niveau actuel: ' + (existingEntry.grade || 'Aucun') + '</p>';
+      html += '<div class="mp-entry-meta">Niveau actuel: ' + (existingEntry.grade || 'Aucun') + '</div>';
     } else {
-      html += '<p>Niveau actuel: ' + getLevelLabel(existingEntry.level) + '</p>';
+      html += '<div class="mp-entry-meta">Niveau actuel: ' + getLevelLabel(existingEntry.level) + '</div>';
     }
-    html += '<p>Photos existantes: ' + existingEntry.photoIds.length + '</p>';
-    html += '<p><em>Ce que vous ajoutez ci-dessous s\'ajoutera à cette entrée.</em></p>';
+    html += '<div class="mp-entry-meta">Photos existantes: ' + existingEntry.photoIds.length + '</div>';
+    html += '<div class="mp-entry-meta" style="font-style:italic;">Ce que vous ajoutez ci-dessous s\'ajoutera à cette entrée.</div>';
     html += '</div>';
   }
 
   html += '<div class="form-row">';
-  html += '<label>' + (existingEntry ? 'Ajouter une photo' : 'Photo') + ' (optionnelle):</label><br>';
+  html += '<label>' + (existingEntry ? 'Ajouter une photo' : 'Photo') + ' (optionnelle)</label>';
   html += '<div id="production-photo-area">' + renderProductionPhotoAreaHtml() + '</div>';
   html += '<span id="photo-status"></span>';
   html += '</div>';
@@ -723,47 +722,68 @@ function renderProductionCaptureScreen(container) {
 
   html += '<div class="form-row">';
   if (productionSession.subject) {
-    html += '<label>Niveau (officiel):</label><br>';
+    html += '<label>Niveau (officiel)</label>';
+    html += '<div class="mp-level-group mp-level-group-many">';
     if (existingEntry) {
-      html += '<label><input type="radio" name="input-level" value="__keep__" checked> Ne pas changer</label> ';
-      html += '<label><input type="radio" name="input-level" value=""> Aucun niveau</label> ';
+      html += buildNiveauChipHtml('input-level', '__keep__', 'ne-pas-changer', 'Ne pas changer', true);
+      html += buildNiveauChipHtml('input-level', '', 'aucun', 'Aucun', false);
     } else {
-      html += '<label><input type="radio" name="input-level" value="" checked> Pas de niveau</label> ';
+      html += buildNiveauChipHtml('input-level', '', 'aucun', 'Aucun', true);
     }
     NIVEAU_OPTIONS.forEach(function(niveau) {
-      html += '<label><input type="radio" name="input-level" value="' + niveau + '"> ' + niveau + '</label> ';
+      html += buildNiveauChipHtml('input-level', niveau, 'niv-' + niveau, niveau, false);
     });
+    html += '</div>';
   } else {
-    html += '<label>Niveau interne (facultatif, jamais montré aux parents):</label><br>';
+    html += '<div class="mp-info-row">';
+    html += '<label style="margin:0;">Niveau interne</label>';
+    html += '<button type="button" class="mp-info-btn" onclick="toggleProdLevelTip()" aria-label="Aide">?</button>';
+    html += '</div>';
+    html += '<div id="prod-level-tip" class="mp-info-tip">Facultatif — jamais montré aux parents, sert seulement à votre propre suivi.</div>';
+    html += '<div class="mp-level-group">';
     if (existingEntry) {
-      html += '<label><input type="radio" name="input-level" value="__keep__" checked> Ne pas changer</label> ';
-      html += '<label><input type="radio" name="input-level" value=""> Aucun niveau</label> ';
+      html += buildNiveauChipHtml('input-level', '__keep__', 'ne-pas-changer', 'Ne pas changer', true);
+      html += buildNiveauChipHtml('input-level', '', 'aucun', 'Aucun', false);
     } else {
-      html += '<label><input type="radio" name="input-level" value="" checked> Pas de niveau</label> ';
+      html += buildNiveauChipHtml('input-level', '', 'aucun', 'Aucun', true);
     }
-    html += '<label><input type="radio" name="input-level" value="emergent"> Émergent</label> ';
-    html += '<label><input type="radio" name="input-level" value="developing"> En développement</label> ';
-    html += '<label><input type="radio" name="input-level" value="confirmed"> Confirmé</label>';
+    html += buildNiveauChipHtml('input-level', 'emergent', 'emergent', 'Émergent', false);
+    html += buildNiveauChipHtml('input-level', 'developing', 'developing', 'En développement', false);
+    html += buildNiveauChipHtml('input-level', 'confirmed', 'confirmed', 'Confirmé', false);
+    html += '</div>';
   }
   html += '</div>';
 
-  html += '<button onclick="saveProductionEntry()">' + (existingEntry ? 'Ajouter et suivant' : 'Enregistrer et suivant') + '</button> ';
-  html += '<button onclick="skipProductionEntry()">Passer cet élève</button> ';
-  html += '<button onclick="endProductionSession()">Terminer la séance</button>';
+  html += '<button class="mp-save-btn" onclick="saveProductionEntry()"><i class="ti ti-check" aria-hidden="true"></i>' + (existingEntry ? 'Ajouter et suivant' : 'Enregistrer et suivant') + '</button>';
+  html += '<div style="display:flex; gap:8px; margin-top:8px;">';
+  html += '<button class="mp-data-btn" onclick="skipProductionEntry()"><i class="ti ti-player-skip-forward" aria-hidden="true"></i>Passer</button>';
+  html += '<button class="mp-data-btn mp-data-btn-danger" onclick="endProductionSession()"><i class="ti ti-flag-check" aria-hidden="true"></i>Terminer</button>';
+  html += '</div>';
   html += '</div>';
 
   container.innerHTML = html;
+}
+
+// Shared helper for radio-as-chip niveau options — used by both the
+// batch capture loop (M/J and grades 1-6) and reused wherever a
+// niveau/level needs to render as a tappable chip instead of a raw
+// radio button. idSuffix keeps ids unique per option.
+function buildNiveauChipHtml(name, value, idSuffix, label, checked) {
+  var id = name + '-' + idSuffix;
+  return '<input type="radio" class="mp-level-radio" name="' + name + '" id="' + id + '" value="' + value + '"' + (checked ? ' checked' : '') + '>' +
+    '<label for="' + id + '" class="mp-level-chip">' + label + '</label>';
 }
 
 function renderProductionPhotoAreaHtml() {
   if (productionSession.currentPhotoPreviewUrl) {
     var html = '<div class="photo-preview-box">';
     html += '<img src="' + productionSession.currentPhotoPreviewUrl + '" alt="Aperçu de la photo" class="photo-preview-img">';
-    html += '<br><button type="button" onclick="retakeProductionPhoto()">Reprendre la photo</button>';
+    html += '<button type="button" class="mp-photo-btn" onclick="retakeProductionPhoto()"><i class="ti ti-refresh" aria-hidden="true"></i>Reprendre la photo</button>';
     html += '</div>';
     return html;
   }
-  return '<input type="file" accept="image/*" id="input-photo" onchange="handleProductionPhotoSelect(event)">';
+  return '<label for="input-photo" class="mp-photo-btn"><i class="ti ti-camera" aria-hidden="true"></i>Ajouter une photo</label>' +
+    '<input type="file" accept="image/*" id="input-photo" onchange="handleProductionPhotoSelect(event)" style="display:none;">';
 }
 
 async function handleProductionPhotoSelect(event) {
@@ -926,12 +946,12 @@ function endProductionSession() {
 function renderProductionSummaryScreen(container) {
   var html = '<h2>Productions</h2>';
   html += renderProductionChipStrip();
-  html += '<div id="production-summary">';
-  html += '<h3>Séance terminée</h3>';
-  html += '<p>Activité: <strong>' + productionSession.activityTag + '</strong></p>';
-  html += '<p>' + productionSession.savedCount + ' entrée(s) enregistrée(s).</p>';
-  html += '<p><em>Touchez un nom ci-dessus pour ajouter des informations.</em></p>';
-  html += '<button onclick="resetProductionSession()">Nouvelle séance</button>';
+  html += '<div id="production-summary" class="mp-card-block">';
+  html += '<h3 style="margin-top:0;"><i class="ti ti-confetti" aria-hidden="true" style="color:var(--mp-honey); margin-right:6px;"></i>Séance terminée</h3>';
+  html += '<div class="mp-entry-meta" style="margin-bottom:4px;">' + productionSession.activityTag + '</div>';
+  html += '<div style="font-size:15px; margin-bottom:14px;">' + productionSession.savedCount + ' entrée(s) enregistrée(s)</div>';
+  html += '<div class="mp-entry-meta" style="font-style:italic; margin-bottom:14px;">Touchez un nom ci-dessus pour ajouter des informations.</div>';
+  html += '<button class="mp-save-btn" onclick="resetProductionSession()"><i class="ti ti-plus" aria-hidden="true"></i>Nouvelle séance</button>';
   html += '</div>';
 
   container.innerHTML = html;
@@ -1007,8 +1027,8 @@ function renderProductionHistoryScreen(container) {
   var activeStudents = roster.filter(function(s) { return s.actif; });
 
   var html = '<h2>Productions</h2>';
-  html += '<button onclick="switchToProductionSetup()">Retour</button>';
-  html += '<h3>Historique par élève</h3>';
+  html += '<button class="mp-data-btn" style="margin-bottom:16px;" onclick="switchToProductionSetup()"><i class="ti ti-arrow-left" aria-hidden="true"></i>Retour</button>';
+  html += '<h3 style="margin-top:0;">Historique par élève</h3>';
 
   if (activeStudents.length === 0) {
     html += '<p>Aucun élève actif dans la liste de classe.</p>';
@@ -1016,14 +1036,16 @@ function renderProductionHistoryScreen(container) {
     return;
   }
 
-  html += '<div class="form-row">';
-  html += '<label for="history-student-select">Choisir un élève: </label>';
+  html += '<div class="mp-card-block">';
+  html += '<div class="form-row" style="margin:0;">';
+  html += '<label>Choisir un élève</label>';
   html += '<select id="history-student-select" onchange="loadAndRenderStudentHistory(this.value)">';
   html += '<option value="">-- Sélectionner --</option>';
   activeStudents.forEach(function(s) {
     html += '<option value="' + s.code + '">' + displayName(s) + '</option>';
   });
   html += '</select>';
+  html += '</div>';
   html += '</div>';
 
   html += '<div id="production-history-results"></div>';
@@ -1062,46 +1084,45 @@ async function loadAndRenderStudentHistory(code) {
   // Newest first for reading
   entries = entries.slice().reverse();
 
-  var html = '<table class="production-history-table">';
+  var html = '<div class="mp-entry-list">';
 
   for (var i = 0; i < entries.length; i++) {
     var entry = entries[i];
-    html += '<tr class="production-entry">';
-    html += '<td class="production-entry-cell">';
-    html += '<p><strong>' + formatProductionDate(entry.createdAt) + '</strong></p>';
+    html += '<div class="mp-entry-card" id="entry-card-' + entry.id + '" style="--entry-color:var(--mp-honey);">';
+    html += '<div class="mp-entry-top">';
+    html += '<div class="mp-entry-name">' + formatProductionDate(entry.createdAt);
     if (entry.subject) {
-      html += '<p>' + entry.subject + ' — ' + entry.strand + '</p>';
-      if (entry.achievementCategory) {
-        html += '<p><em>Compétence: ' + entry.achievementCategory + '</em></p>';
-      }
+      html += ' <span class="mp-entry-meta">· ' + entry.subject + ' — ' + entry.strand + '</span>';
     } else {
-      html += '<p>' + getDomainLabel(entry.domain) + '</p>';
+      html += ' <span class="mp-entry-meta">· ' + getDomainLabel(entry.domain) + '</span>';
+    }
+    html += '</div>';
+    html += '</div>';
+    if (entry.achievementCategory) {
+      html += '<div class="mp-entry-meta" style="font-size:13px;"><em>Compétence: ' + entry.achievementCategory + '</em></div>';
     }
     if (entry.activityTag) {
-      html += '<p><em>' + entry.activityTag + '</em></p>';
+      html += '<div class="mp-entry-meta" style="font-size:13px; margin-top:2px;">' + entry.activityTag + '</div>';
     }
     if (entry.note) {
-      html += '<p>' + entry.note + '</p>';
+      html += '<div class="mp-entry-note">' + entry.note + '</div>';
     }
-    if (entry.subject) {
-      html += '<p>Niveau: ' + (entry.grade || 'Aucun') + '</p>';
-    } else {
-      html += '<p>Niveau interne: ' + getLevelLabel(entry.level) + '</p>';
-    }
+    html += '<div class="mp-entry-meta" style="font-size:13px; margin-top:4px;">';
+    html += entry.subject ? ('Niveau: ' + (entry.grade || 'Aucun')) : ('Niveau interne: ' + getLevelLabel(entry.level));
+    html += '</div>';
 
     if (entry.photoIds && entry.photoIds.length > 0) {
       html += '<div class="production-photo-container" id="photo-container-' + entry.id + '"><em>Chargement de la photo...</em></div>';
     }
 
-    html += '<div class="production-add-note-row">';
+    html += '<div class="mp-add-note-row">';
     html += '<input type="text" id="add-note-' + entry.id + '" placeholder="Ajouter une note...">';
-    html += ' <button onclick="addNoteToHistoryEntry(\'' + entry.id + '\', \'' + code + '\')">Ajouter</button>';
+    html += '<button class="mp-icon-action" aria-label="Ajouter" onclick="addNoteToHistoryEntry(\'' + entry.id + '\', \'' + code + '\')"><i class="ti ti-send" aria-hidden="true"></i></button>';
     html += '</div>';
 
-    html += '</td>';
-    html += '</tr>';
+    html += '</div>';
   }
-  html += '</table>';
+  html += '</div>';
   resultsContainer.innerHTML = html;
 
   // Load photos after the HTML is in place, one at a time
@@ -1161,9 +1182,9 @@ async function getDistinctActivityTags() {
 
 async function renderProductionGridScreen(container) {
   var html = '<h2>Productions</h2>';
-  html += '<button onclick="switchToProductionSetup()">Retour</button>';
-  html += '<h3>Suivi par activité</h3>';
-  html += '<div id="grid-select-area"><p>Chargement des activités...</p></div>';
+  html += '<button class="mp-data-btn" style="margin-bottom:16px;" onclick="switchToProductionSetup()"><i class="ti ti-arrow-left" aria-hidden="true"></i>Retour</button>';
+  html += '<h3 style="margin-top:0;">Suivi par activité</h3>';
+  html += '<div id="grid-select-area" class="mp-card-block"><p style="margin:0;">Chargement des activités...</p></div>';
   html += '<div id="production-grid-results"></div>';
 
   container.innerHTML = html;
@@ -1173,12 +1194,12 @@ async function renderProductionGridScreen(container) {
   if (!selectArea) return; // user navigated away before this finished loading
 
   if (tags.length === 0) {
-    selectArea.innerHTML = '<p>Aucune activité enregistrée pour le moment.</p>';
+    selectArea.innerHTML = '<p style="margin:0;">Aucune activité enregistrée pour le moment.</p>';
     return;
   }
 
-  var selectHtml = '<div class="form-row">';
-  selectHtml += '<label for="grid-activity-select">Choisir une activité: </label>';
+  var selectHtml = '<div class="form-row" style="margin:0;">';
+  selectHtml += '<label>Choisir une activité</label>';
   selectHtml += '<select id="grid-activity-select" onchange="loadAndRenderActivityGrid(this.value)">';
   selectHtml += '<option value="">-- Sélectionner --</option>';
   tags.forEach(function(tag) {
@@ -1401,11 +1422,11 @@ function scrollToAndHighlightEntry(entryId) {
   input.scrollIntoView({ behavior: 'smooth', block: 'center' });
   input.focus();
 
-  var row = input.closest('tr');
-  if (row) {
-    row.classList.add('production-entry-highlight');
+  var card = document.getElementById('entry-card-' + entryId);
+  if (card) {
+    card.classList.add('production-entry-highlight');
     setTimeout(function() {
-      row.classList.remove('production-entry-highlight');
+      card.classList.remove('production-entry-highlight');
     }, 2000);
   }
 }
@@ -1659,14 +1680,16 @@ function renderProductionSingleG16FieldsHtml(studentCode) {
   html += '</div>';
 
   html += '<div class="form-row">';
-  html += '<label>Niveau (officiel):</label><br>';
-  html += '<label><input type="radio" name="prod-single-niveau" value="" checked> Aucun niveau</label> ';
+  html += '<label>Niveau (officiel)</label>';
+  html += '<div class="mp-level-group mp-level-group-many">';
+  html += buildNiveauChipHtml('prod-single-niveau', '', 'aucun', 'Aucun', true);
   NIVEAU_OPTIONS.forEach(function(n) {
-    html += '<label><input type="radio" name="prod-single-niveau" value="' + n + '"> ' + n + '</label> ';
+    html += buildNiveauChipHtml('prod-single-niveau', n, 'niv-' + n, n, false);
   });
   html += '</div>';
+  html += '</div>';
 
-  html += '<button onclick="saveProductionSingleG16Entry(\'' + studentCode + '\')">Enregistrer</button>';
+  html += '<button class="mp-save-btn" onclick="saveProductionSingleG16Entry(\'' + studentCode + '\')"><i class="ti ti-check" aria-hidden="true"></i>Enregistrer</button>';
   html += '<span id="prod-single-save-status"></span>';
 
   return html;
