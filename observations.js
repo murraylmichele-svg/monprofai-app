@@ -310,7 +310,7 @@ function renderObservations() {
   html += '<label style="margin:0;">Note</label>';
   html += '<button type="button" class="mp-info-btn" onclick="toggleObsVoiceTip()" aria-label="Aide">?</button>';
   html += '</div>';
-  html += '<div id="obs-voice-tip" class="mp-info-tip">La dictée vocale utilise le service Google. Aucun nom de famille n\'est transmis.</div>';
+  html += '<div id="obs-voice-tip" class="mp-info-tip">La dictée vocale utilise le service Google. Évitez de nommer l\'élève à voix haute — dites plutôt "l\'élève" ou utilisez "il/elle".</div>';
   html += '<textarea id="obs-note" rows="3" placeholder="Tapez votre note ou utilisez le micro ci-dessous..."></textarea>';
   html += '</div>';
 
