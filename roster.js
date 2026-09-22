@@ -240,7 +240,11 @@ function toggleRosterTip(id) {
 function renderStudentCardHtml(s, isActive) {
   var html = '<div class="mp-student-card">';
   html += '<div class="mp-student-info">';
-  html += '<div class="mp-student-name">' + displayName(s) + '</div>';
+   if (isActive) {
+    html += '<div class="mp-student-name mp-student-name-clickable" onclick="openStudentDetail(\'' + s.code + '\')">' + displayName(s) + '</div>';
+  } else {
+    html += '<div class="mp-student-name">' + displayName(s) + '</div>';
+  }
   html += '<div class="mp-student-meta">' + s.code + ' · ' + (isActive ? s.annee + ' · ' + s.pronom : '<em>inactif</em>') + '</div>';
   html += '</div>';
   html += '<div class="mp-student-actions">';
