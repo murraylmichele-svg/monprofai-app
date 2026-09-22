@@ -129,6 +129,12 @@ function deanonymizeText(text) {
 function renderRoster() {
   var container = document.getElementById('module-roster');
   if (!container) return;
+
+  if (rosterView.mode === 'detail' && rosterView.studentCode) {
+    renderStudentDetailScreen(container, rosterView.studentCode);
+    return;
+  }
+
   var roster = getRoster();
   var actifs = roster.filter(function(s) { return s.actif; });
   var inactifs = roster.filter(function(s) { return !s.actif; });
