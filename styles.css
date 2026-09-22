@@ -1425,3 +1425,10 @@ h3 { font-size: 18px; margin-top: 20px; }
   background: var(--mp-honey-bg);
   border-radius: 6px;
 }
+.mp-student-name-clickable {
+  cursor: pointer;
+}
+
+.mp-student-name-clickable:hover {
+  text-decoration: underline;
+}
