@@ -1364,3 +1364,250 @@ async function handleConfirmImport() {
     console.error(err);
   }
 }
+// ============================================================
+// roster.js — MonProf.ai
+// ADDITION: Per-student detail view (Classe tab)
+// ============================================================
+
+function openStudentDetail(code) {
+  rosterView.mode = 'detail';
+  rosterView.studentCode = code;
+  renderRoster();
+}
+
+function closeStudentDetail() {
+  rosterView.mode = 'list';
+  rosterView.studentCode = null;
+  renderRoster();
+}
+
+function renderStudentDetailScreen(container, code) {
+  var student = getRoster().find(function(s) { return s.code === code; });
+
+  if (!student) {
+    container.innerHTML = '<button class="mp-data-btn" onclick="closeStudentDetail()"><i class="ti ti-arrow-left" aria-hidden="true"></i>Retour</button><p>Élève introuvable.</p>';
+    return;
+  }
+
+  var html = '<button class="mp-data-btn" style="margin-bottom:16px;" onclick="closeStudentDetail()"><i class="ti ti-arrow-left" aria-hidden="true"></i>Retour</button>';
+  html += '<h2 style="margin-top:0;">' + displayName(student) + '</h2>';
+  html += '<div style="color:var(--mp-taupe); font-size:14px; margin-top:-8px; margin-bottom:16px;">' + student.code + ' · ' + student.annee + ' · ' + student.pronom + '</div>';
+  html += getPeiReminderHtml(code);
+
+  html += '<h3>Observations et conversations</h3>';
+  html += '<div id="detail-obs-list">' + renderStudentObsSectionHtml(code) + '</div>';
+
+  html += '<h3>Productions</h3>';
+  html += '<div id="detail-prod-list"><p>Chargement...</p></div>';
+
+  html += '<h3>Bulletins</h3>';
+  html += renderStudentDetailBulletinsHtml(code);
+
+  container.innerHTML = html;
+
+  loadStudentDetailObsThumbnails(code);
+  renderStudentDetailProductions(code);
+}
+
+// ---- OBSERVATIONS SECTION ----
+
+function renderStudentObsSectionHtml(code) {
+  var obs = getObservationsForStudent(code).slice().sort(function(a, b) { return b.timestamp - a.timestamp; });
+
+  if (obs.length === 0) {
+    return '<p><em>Aucune entrée pour le moment.</em></p>';
+  }
+
+  var domainColors = {
+    A: 'var(--mp-honey)', B: 'var(--mp-plum)', C: 'var(--mp-sage)',
+    D: 'var(--mp-plum)', E: 'var(--mp-honey)'
+  };
+
+  var html = '<div class="mp-entry-list">';
+
+  obs.forEach(function(o) {
+    var typeIcon = o.type === 'conversation' ? 'ti-message-circle' : 'ti-eye';
+    var domainKey = o.domaine || '';
+    var accentColor = domainColors[domainKey] || 'var(--mp-honey)';
+    var domainOrSubject = o.subject || o.domaine || '';
+    var noteDisplay = o.pending
+      ? '<span class="mp-pending-note">En attente de transcription</span>'
+      : '<span class="editable-note" onclick="editObsNoteFromDetail(' + o.id + ', \'' + code + '\')">' + o.note + '</span>';
+
+    html += '<div class="mp-entry-card" style="--entry-color:' + accentColor + ';">';
+    html += '<div class="mp-entry-top">';
+    html += '<div class="mp-entry-name"><i class="ti ' + typeIcon + '" aria-hidden="true" style="color:var(--mp-taupe); margin-right:4px;"></i>';
+    if (domainOrSubject) html += '<span class="mp-entry-meta">' + domainOrSubject + '</span>';
+    html += '</div>';
+    html += '<button class="mp-entry-delete" aria-label="Supprimer" onclick="deleteObsEntryFromDetail(' + o.id + ', \'' + code + '\')"><i class="ti ti-trash" aria-hidden="true"></i></button>';
+    html += '</div>';
+    html += '<div class="mp-entry-note">' + noteDisplay + '</div>';
+    if (o.activityTag) html += '<div class="mp-entry-meta" style="font-size:13px; margin-top:2px;">' + o.activityTag + '</div>';
+    if (o.photoIds && o.photoIds.length > 0) html += '<div><span id="detail-obs-photo-' + o.id + '"></span></div>';
+    html += '<div class="mp-entry-date">' + o.date + '</div>';
+    html += '</div>';
+  });
+
+  html += '</div>';
+  return html;
+}
+
+function editObsNoteFromDetail(id, code) {
+  var obs = getObservations();
+  var entry = obs.find(function(o) { return o.id === id; });
+  if (!entry) return;
+
+  var newNote = prompt('Modifier la note:', entry.note);
+  if (newNote === null) return;
+
+  obs = obs.map(function(o) { if (o.id === id) o.note = newNote.trim(); return o; });
+  saveObservations(obs);
+  refreshStudentDetailObs(code);
+}
+
+function deleteObsEntryFromDetail(id, code) {
+  deleteObservation(id);
+  refreshStudentDetailObs(code);
+}
+
+function refreshStudentDetailObs(code) {
+  var container = document.getElementById('detail-obs-list');
+  if (container) {
+    container.innerHTML = renderStudentObsSectionHtml(code);
+    loadStudentDetailObsThumbnails(code);
+  }
+}
+
+function loadStudentDetailObsThumbnails(code) {
+  var obs = getObservationsForStudent(code);
+  obs.forEach(function(o) {
+    if (o.photoIds && o.photoIds.length > 0) {
+      loadObsDetailThumbnail(o.id, o.photoIds[0]);
+    }
+  });
+}
+
+async function loadObsDetailThumbnail(observationId, photoId) {
+  var span = document.getElementById('detail-obs-photo-' + observationId);
+  if (!span) return;
+
+  var mediaRecord = await getObservationPhoto(photoId);
+  if (!span || !mediaRecord || !mediaRecord.blob) return;
+
+  var objectUrl = URL.createObjectURL(mediaRecord.blob);
+  span.innerHTML = '<img src="' + objectUrl + '" alt="Photo" style="max-width:50px; max-height:50px; object-fit:cover; border-radius:4px; cursor:pointer;" onclick="window.open(\'' + objectUrl + '\', \'_blank\')">';
+}
+
+// ---- PRODUCTIONS SECTION ----
+
+async function renderStudentDetailProductions(code) {
+  var container = document.getElementById('detail-prod-list');
+  if (!container) return;
+
+  var entries = await getProductionsByStudent(code);
+  if (!container) return;
+
+  if (entries.length === 0) {
+    container.innerHTML = '<p><em>Aucune production enregistrée pour cet élève.</em></p>';
+    return;
+  }
+
+  entries = entries.slice().reverse();
+
+  var html = '<div class="mp-entry-list">';
+
+  for (var i = 0; i < entries.length; i++) {
+    var entry = entries[i];
+    html += '<div class="mp-entry-card" style="--entry-color:var(--mp-honey);">';
+    html += '<div class="mp-entry-top">';
+    html += '<div class="mp-entry-name">' + formatProductionDate(entry.createdAt);
+    if (entry.subject) {
+      html += ' <span class="mp-entry-meta">· ' + entry.subject + ' — ' + entry.strand + '</span>';
+    } else {
+      html += ' <span class="mp-entry-meta">· ' + getDomainLabel(entry.domain) + '</span>';
+    }
+    html += '</div></div>';
+    if (entry.achievementCategory) html += '<div class="mp-entry-meta" style="font-size:13px;"><em>Compétence: ' + entry.achievementCategory + '</em></div>';
+    if (entry.activityTag) html += '<div class="mp-entry-meta" style="font-size:13px; margin-top:2px;">' + entry.activityTag + '</div>';
+    if (entry.note) html += '<div class="mp-entry-note">' + entry.note + '</div>';
+    html += '<div class="mp-entry-meta" style="font-size:13px; margin-top:4px;">';
+    html += entry.subject ? ('Niveau: ' + (entry.grade || 'Aucun')) : ('Niveau interne: ' + getLevelLabel(entry.level));
+    html += '</div>';
+    if (entry.photoIds && entry.photoIds.length > 0) {
+      html += '<div class="production-photo-container" id="detail-prod-photo-' + entry.id + '"><em>Chargement de la photo...</em></div>';
+    }
+    html += '</div>';
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+
+  for (var j = 0; j < entries.length; j++) {
+    var e = entries[j];
+    if (e.photoIds && e.photoIds.length > 0) {
+      loadStudentDetailProductionPhoto(e.id, e.photoIds[0]);
+    }
+  }
+}
+
+async function loadStudentDetailProductionPhoto(productionId, photoId) {
+  var mediaRecord = await getProductionPhoto(photoId);
+  var photoContainer = document.getElementById('detail-prod-photo-' + productionId);
+  if (!photoContainer || !mediaRecord || !mediaRecord.blob) return;
+
+  var objectUrl = URL.createObjectURL(mediaRecord.blob);
+  photoContainer.innerHTML = '<img src="' + objectUrl + '" alt="Photo de production" style="max-width:100px; max-height:100px; object-fit:cover; border-radius:4px; cursor:pointer;" onclick="window.open(\'' + objectUrl + '\', \'_blank\')">';
+}
+
+// ---- BULLETINS SECTION (status only) ----
+
+function renderStudentDetailBulletinsHtml(code) {
+  var student = getRoster().find(function(s) { return s.code === code; });
+  if (!student) return '';
+
+  var html = '';
+
+  if (!isGrade1to6(code)) {
+    var mjPeriods = [
+      { key: 'observations_initiales', label: 'Première (observations initiales)' },
+      { key: 'deuxieme', label: 'Deuxième période' },
+      { key: 'troisieme', label: 'Troisième période' }
+    ];
+    html += '<table class="bulletin-summary-table">';
+    html += '<tr><th>Période</th><th>Statut</th></tr>';
+    mjPeriods.forEach(function(p) {
+      var draft = getBulletinDraft(code, p.key);
+      html += '<tr><td>' + p.label + '</td><td>' + (draft ? '✓ Généré' : 'Pas encore généré') + '</td></tr>';
+    });
+    html += '</table>';
+  } else {
+    var periods = [
+      { key: 'progres', label: 'Progrès (automne)' },
+      { key: 'scolaire1', label: 'Scolaire (janvier)' },
+      { key: 'scolaire2', label: 'Scolaire (juin)' }
+    ];
+    html += '<table class="bulletin-summary-table">';
+    html += '<tr><th>Matière</th>';
+    periods.forEach(function(p) { html += '<th>' + p.label + '</th>'; });
+    html += '</tr>';
+    GRADES_1_6_SUBJECTS.forEach(function(subj) {
+      html += '<tr><td>' + subj + '</td>';
+      periods.forEach(function(p) {
+        var draft = getGrade16Draft(code, subj, p.key);
+        html += '<td>' + (draft ? '✓' : '—') + '</td>';
+      });
+      html += '</tr>';
+    });
+    html += '<tr><td>HH</td>';
+    periods.forEach(function(p) {
+      var draft = getHHDraft(code, p.key);
+      html += '<td>' + (draft ? '✓' : '—') + '</td>';
+    });
+    html += '</tr>';
+    html += '</table>';
+  }
+
+  html += '<p style="color:var(--mp-taupe); font-size:13px; margin-top:8px;">Pour générer ou modifier un commentaire, rendez-vous dans l\'onglet Bulletins et sélectionnez cet élève.</p>';
+
+  return html;
+}
