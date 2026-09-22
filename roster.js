@@ -3,6 +3,7 @@
 // ============================================================
 
 var ROSTER_KEY = 'monprofai_roster';
+var rosterView = { mode: 'list', studentCode: null };
 
 // Load roster from localStorage
 function getRoster() {
