@@ -448,6 +448,17 @@ function toggleRecording() {
 }
 
 function submitObsForm() {
+  if (window._activeRecognition) {
+    try { window._activeRecognition.stop(); } catch (e) {}
+    window._activeRecognition = null;
+  }
+  isRecording = false;
+  var micBtnStop = document.getElementById('btn-mic');
+  if (micBtnStop) {
+    micBtnStop.innerHTML = '<i class="ti ti-microphone" aria-hidden="true"></i>Dicter';
+    micBtnStop.classList.remove('recording');
+  }
+
   var studentCode = document.getElementById('obs-student').value;
   var type = document.getElementById('obs-type').value;
   var note = document.getElementById('obs-note').value.trim();
