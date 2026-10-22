@@ -326,7 +326,7 @@ function saveBulletinEdits() {
 // ============================================================
 
 var BULLETIN_PROXY_URL = 'https://web-production-f1270.up.railway.app/api/claude';
-var BULLETIN_PROXY_SECRET = 'monprof-juin2026';
+var BULLETIN_PROXY_SECRET = 'iJdCsIZk1FCMEXlxP39ADk0cRLUJeSWo';
 
 function buildBulletinPrompt(evidence, pronom) {
   var lines = [];
