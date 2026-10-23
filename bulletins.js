@@ -418,12 +418,22 @@ function findRosterNameInText(text) {
   return null;
 }
 
-async function callBulletinProxy(promptText) {
+async function callBulletinProxy(promptText, opts) {
+     opts = opts || {};
   var leaked = findRosterNameInText(promptText);
   if (leaked) {
     throw new Error('Envoi bloqué par mesure de confidentialité: le prénom "' + leaked +
       '" a été détecté dans le texte. Modifie la note puis réessaie.');
   }
+  if (!opts.skipPreview && !mpBatchApproved) {
+       var ok = await mpConfirmSend(promptText, !!window.mpBatchMode);
+       if (!ok) {
+         var cancelErr = new Error('Envoi annulé.');
+         cancelErr.name = 'MpCancel';
+         throw cancelErr;
+       }
+       if (window.mpBatchMode) mpBatchApproved = true;
+     }
   var response = await fetch(BULLETIN_PROXY_URL, {
     method: 'POST',
     headers: {
