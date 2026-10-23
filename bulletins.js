@@ -358,12 +358,12 @@ function buildBulletinPrompt(evidence, pronom) {
 
   evidence.observations.forEach(function(o) {
     var typeLabel = o.type === 'conversation' ? 'Conversation' : 'Observation';
-    lines.push('- [' + o.date + '] ' + typeLabel + ' (Domaine ' + o.domaine + ')' +
+    lines.push('- ' + typeLabel + ' (Domaine ' + o.domaine + ')' +
       (o.activityTag ? ' — Activité: ' + o.activityTag : '') + ': ' + o.note);
   });
 
   evidence.productions.forEach(function(p) {
-    lines.push('- [' + p.date + '] Production (Domaine ' + p.domain + ')' +
+    lines.push('- Production (Domaine ' + p.domain + ')' +
       (p.activityTag ? ' — Activité: ' + p.activityTag : '') + ': ' + p.note);
   });
 
