@@ -918,11 +918,10 @@ function buildGrade16SubjectPrompt(period, subject, pronom, studentCode, selecte
 
   selectedEntries.forEach(function(e) {
     var gradeInfo = e.grade ? (' [Niveau: ' + e.grade + ']') : '';
-    lines.push('- [' + e.date + '] ' + (e.strand || '') +
-      (e.achievementCategory ? ' — ' + e.achievementCategory : '') +
-      (e.activityTag ? ' — ' + e.activityTag : '') + gradeInfo + ': ' + anonymizeText(e.note));
-  });
-
+    lines.push('- ' + (e.strand || '') +
+         (e.achievementCategory ? ' — ' + e.achievementCategory : '') +
+         (e.activityTag ? ' — ' + anonymizeText(e.activityTag, studentCode) : '') + gradeInfo + ': ' + anonymizeText(e.note, studentCode));
+});
   return lines.join('\n');
 }
 
