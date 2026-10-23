@@ -1000,7 +1000,7 @@ async function shortenCommentViaAI(rawText, charLimit) {
     'Ne raccourcis pas simplement en supprimant des phrases à la fin — reformule l\'ensemble de façon plus concise. ' +
     'Réponds UNIQUEMENT avec le texte final reformulé, sans préambule, sans guillemets, sans indication du nombre de caractères.';
 
-  return await callBulletinProxy(prompt);
+  return await callBulletinProxy(prompt, { skipPreview: true });
 }
 
 // Guaranteed last-resort fallback if the AI still won't comply after retries —
