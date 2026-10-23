@@ -232,8 +232,12 @@ async function handleGenerateBulletinClick() {
   try {
     var result = await generateBulletinForStudent(studentCode, period);
     saveBulletinDraft(studentCode, period, result);
-    if (statusEl) statusEl.textContent = '';
-    renderBulletinReview(getBulletinDraft(studentCode, period));
+       var isEmpty = (result.type === 'combined' && !(result.text || '').trim()) ||
+         (result.type === 'byDomain' && Object.keys(result.domains || {}).length === 0);
+       renderBulletinReview(getBulletinDraft(studentCode, period));
+       if (statusEl) statusEl.textContent = isEmpty
+         ? ' Aucune preuve enregistrée pour cet élève. Ajoute d\'abord des observations.'
+         : '';
   } catch (err) {
     if (statusEl) statusEl.textContent = '';
     alert('Erreur lors de la génération: ' + err.message);
