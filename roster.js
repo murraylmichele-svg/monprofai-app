@@ -100,16 +100,91 @@ function displayName(student) {
   return student.prenom + ' ' + student.nomInitial;
 }
 
-// PRIVACY: swap real names for codes in text before sending to API
-function anonymizeText(text) {
+// PRIVACY: swap real names for codes in text before sending to API.
+// ownCode = the student this text is about. Other students become
+// "un(e) camarade" so the AI never sees links between children.
+function anonymizeText(text, ownCode) {
+  text = String(text == null ? '' : text).normalize('NFC');
   var roster = getRoster();
-  roster.forEach(function(s) {
-    var full = s.prenom + ' ' + s.nomInitial;
-    var first = s.prenom;
-    // Replace full display name first, then first name alone
-    text = text.split(full).join(s.code);
-    text = text.split(first).join(s.code);
+  var CAMARADE = 'un(e) camarade';
+ 
+  var accents = { a: 'aàâä', c: 'cç', e: 'eéèêë', i: 'iîï', o: 'oôö', u: 'uùûü', y: 'yÿ' };
+ 
+  function plain(s) {
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+  function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+ 
+  // Pattern for a first name: any capitalization, accents optional,
+  // space and hyphen interchangeable.
+  function namePattern(name) {
+    var base = plain(name);
+    var out = '';
+    for (var i = 0; i < base.length; i++) {
+      var ch = base.charAt(i);
+      if (ch === ' ' || ch === '-') {
+        out += '[\\s\\-]+';
+      } else if (/[a-z]/.test(ch)) {
+        var set = accents[ch] || ch;
+        out += '[' + set + set.toUpperCase() + ']';
+      } else {
+        out += esc(ch);
+      }
+    }
+    return out;
+  }
+ 
+  // Pattern for a last-name initial: capital letter only (so "m'a" is not touched).
+  function initialPattern(initial) {
+    var ch = plain(initial).charAt(0);
+    if (!ch) return '';
+    if (!/[a-z]/.test(ch)) return esc(ch);
+    return '[' + (accents[ch] || ch).toUpperCase() + ']';
+  }
+ 
+  function replaceName(pattern, target) {
+    var re = new RegExp('(^|[^\\p{L}\\p{N}])(' + pattern + ')(?![\\p{L}\\p{N}])', 'gu');
+    text = text.replace(re, function (m, before) { return before + target; });
+  }
+ 
+  function targetFor(s) {
+    return (!ownCode || s.code === ownCode) ? s.code : CAMARADE;
+  }
+ 
+  var students = roster.filter(function (s) { return plain(s.prenom); });
+  students.sort(function (a, b) { return plain(b.prenom).length - plain(a.prenom).length; });
+ 
+  var counts = {};
+  students.forEach(function (s) {
+    var k = plain(s.prenom);
+    counts[k] = (counts[k] || 0) + 1;
   });
+ 
+  // 1) Full names with initial ("Sophie M." or "Sophie M")
+  students.forEach(function (s) {
+    var initial = String(s.nomInitial || '').replace('.', '').trim();
+    if (!initial) return;
+    replaceName(namePattern(s.prenom) + '\\s+' + initialPattern(initial) + '\\.?', targetFor(s));
+  });
+ 
+  // 2) First names alone
+  var done = {};
+  students.forEach(function (s) {
+    var k = plain(s.prenom);
+    if (done[k]) return;
+    done[k] = true;
+    var target;
+    if (counts[k] > 1) {
+      var ownShares = ownCode && students.some(function (r) {
+        return r.code === ownCode && plain(r.prenom) === k;
+      });
+      target = ownShares ? ownCode : CAMARADE;
+    } else {
+      target = targetFor(s);
+    }
+    replaceName(namePattern(s.prenom), target);
+  });
+ 
   return text;
 }
 
