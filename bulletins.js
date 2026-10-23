@@ -28,8 +28,8 @@ async function getBulletinEvidenceForStudent(studentCode) {
       date: o.date,
       domaine: o.domaine,
       type: o.type,
-      activityTag: o.activityTag || '',
-      note: anonymizeText(o.note || '')
+      activityTag: anonymizeText(o.activityTag || '', studentCode),
+      note: anonymizeText(o.note || '', studentCode)
     };
   });
 
@@ -37,8 +37,8 @@ async function getBulletinEvidenceForStudent(studentCode) {
     return {
       date: formatProductionDate(p.createdAt),
       domain: p.domain,
-      activityTag: p.activityTag || '',
-      note: anonymizeText(p.note || '')
+      activityTag: anonymizeText(p.activityTag || '', studentCode),
+      note: anonymizeText(p.note || '', studentCode)
     };
   });
 
