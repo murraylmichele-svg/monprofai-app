@@ -496,11 +496,11 @@ function buildDomainBulletinPrompt(evidence, domain, pronom, periodLabel) {
 
   evidence.observations.forEach(function(o) {
     var typeLabel = o.type === 'conversation' ? 'Conversation' : 'Observation';
-    lines.push('- [' + o.date + '] ' + typeLabel + (o.activityTag ? ' — Activité: ' + o.activityTag : '') + ': ' + o.note);
+    lines.push('- ' + typeLabel + (o.activityTag ? ' — Activité: ' + o.activityTag : '') + ': ' + o.note);
   });
 
   evidence.productions.forEach(function(p) {
-    lines.push('- [' + p.date + '] Production' + (p.activityTag ? ' — Activité: ' + p.activityTag : '') + ': ' + p.note);
+    lines.push('- Production' + (p.activityTag ? ' — Activité: ' + p.activityTag : '') + ': ' + p.note);
   });
 
   return lines.join('\n');
