@@ -678,6 +678,9 @@ async function handleGenerateAllBulletinsClick() {
   var statusEl = document.getElementById('bulletin-generate-status');
   var btn = document.getElementById('bulletin-generate-all-btn');
   if (btn) btn.disabled = true;
+  window.mpBatchMode = true;
+  mpBatchApproved = false;
+  var failed = 0;
 
   for (var i = 0; i < roster.length; i++) {
     var student = roster[i];
@@ -688,12 +691,17 @@ async function handleGenerateAllBulletinsClick() {
       var result = await generateBulletinForStudent(student.code, period);
       saveBulletinDraft(student.code, period, result);
     } catch (err) {
+      if (err && err.name === 'MpCancel') break;
+      failed++;
       console.error('Erreur pour ' + student.code + ':', err);
     }
   }
 
   if (statusEl) statusEl.textContent = '';
   if (btn) btn.disabled = false;
+  window.mpBatchMode = false;
+  mpBatchApproved = false;
+  if (failed > 0) alert(failed + ' commentaire(s) n\'ont pas été générés (nom détecté ou erreur). Génère-les un par un.');
 
   renderBulletinTableView();
 }
