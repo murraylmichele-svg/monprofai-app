@@ -369,8 +369,28 @@ function buildBulletinPrompt(evidence, pronom) {
 
   return lines.join('\n');
 }
+// PRIVACY: last line of defence. Blocks any request that still
+// contains a roster first name (accent and case insensitive).
+function findRosterNameInText(text) {
+  function clean(s) {
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  }
+  var hay = ' ' + clean(text) + ' ';
+  var roster = getRoster();
+  for (var i = 0; i < roster.length; i++) {
+    var n = clean(roster[i].prenom);
+    if (n && hay.indexOf(' ' + n + ' ') !== -1) return roster[i].prenom;
+  }
+  return null;
+}
 
 async function callBulletinProxy(promptText) {
+  var leaked = findRosterNameInText(promptText);
+  if (leaked) {
+    throw new Error('Envoi bloqué par mesure de confidentialité: le prénom "' + leaked +
+      '" a été détecté dans le texte. Modifie la note puis réessaie.');
+  }
   var response = await fetch(BULLETIN_PROXY_URL, {
     method: 'POST',
     headers: {
