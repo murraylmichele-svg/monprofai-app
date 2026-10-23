@@ -369,6 +369,39 @@ function buildBulletinPrompt(evidence, pronom) {
 
   return lines.join('\n');
 }
+var mpBatchApproved = false;
+
+function mpConfirmSend(promptText, isBatch) {
+  return new Promise(function(resolve) {
+    var ov = document.createElement('div');
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+    var box = document.createElement('div');
+    box.style.cssText = 'background:#fff;color:#222;max-width:640px;width:100%;max-height:85vh;overflow:auto;border-radius:12px;padding:16px;';
+    var h = document.createElement('h3');
+    h.textContent = 'Voici exactement ce qui sera envoyé';
+    var p = document.createElement('p');
+    p.textContent = isBatch
+      ? 'Exemple pour le premier élève. Les autres suivront le même format. Aucun nom ne doit apparaître.'
+      : 'Vérifie qu\'aucun nom d\'élève n\'apparaît. Les élèves sont remplacés par des codes.';
+    var pre = document.createElement('pre');
+    pre.style.cssText = 'white-space:pre-wrap;font-size:13px;background:#f4f4f4;padding:10px;border-radius:8px;';
+    pre.textContent = promptText;
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;margin-top:12px;';
+    var no = document.createElement('button');
+    no.textContent = 'Annuler';
+    var yes = document.createElement('button');
+    yes.textContent = 'Envoyer';
+    function done(v) { document.body.removeChild(ov); resolve(v); }
+    no.onclick = function() { done(false); };
+    yes.onclick = function() { done(true); };
+    row.appendChild(no); row.appendChild(yes);
+    box.appendChild(h); box.appendChild(p); box.appendChild(pre); box.appendChild(row);
+    ov.appendChild(box);
+    document.body.appendChild(ov);
+  });
+}
+
 // PRIVACY: last line of defence. Blocks any request that still
 // contains a roster first name (accent and case insensitive).
 function findRosterNameInText(text) {
